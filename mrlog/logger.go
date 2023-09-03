@@ -22,7 +22,7 @@ type (
         Debug(message any, args ...any)
     }
 
-	logger struct {
+	loggerAdapter struct {
         name string
         level LogLevel
         color bool
@@ -51,8 +51,8 @@ func New(prefix string, level string, color bool) (Logger, error) {
     return newLogger(prefix + " ", lvl, color), nil
 }
 
-func newLogger(prefix string, level LogLevel, color bool) *logger {
-    return &logger {
+func newLogger(prefix string, level LogLevel, color bool) *loggerAdapter {
+    return &loggerAdapter {
         level: level,
         color: color,
         infoLog: log.New(os.Stdout, prefix, 0),
@@ -60,12 +60,12 @@ func newLogger(prefix string, level LogLevel, color bool) *logger {
     }
 }
 
-func (l *logger) With(name string) Logger {
+func (l *loggerAdapter) With(name string) Logger {
     if l.name != "" {
         name = l.name + ":" + name
     }
 
-    return &logger {
+    return &loggerAdapter {
         name: name,
         level: l.level,
         color: l.color,
@@ -74,33 +74,33 @@ func (l *logger) With(name string) Logger {
     }
 }
 
-func (l *logger) Error(message any, args ...any) {
+func (l *loggerAdapter) Error(message any, args ...any) {
     l.logPrint(l.errLog, 3, "ERROR", message, args)
 }
 
-func (l *logger) Warn(message string, args ...any) {
+func (l *loggerAdapter) Warn(message string, args ...any) {
     if l.level >= LogWarnLevel {
         l.logPrint(l.infoLog, 3, "WARN", message, args)
     }
 }
 
-func (l *logger) Info(message string, args ...any) {
+func (l *loggerAdapter) Info(message string, args ...any) {
     if l.level >= LogInfoLevel {
         l.logPrint(l.infoLog, 0, "INFO", message, args)
     }
 }
 
-func (l *logger) Debug(message any, args ...any) {
+func (l *loggerAdapter) Debug(message any, args ...any) {
     if l.level >= LogDebugLevel {
         l.logPrint(l.infoLog, 0, "DEBUG", message, args)
     }
 }
 
-func (l *logger) Emit(message string, args ...any) {
+func (l *loggerAdapter) Emit(message string, args ...any) {
     l.logPrint(l.infoLog, 0, "EVENT", message, args)
 }
 
-func (l *logger) logPrint(logger *log.Logger, callerSkip int, prefix string, message any, args []any) {
+func (l *loggerAdapter) logPrint(logger *log.Logger, callerSkip int, prefix string, message any, args []any) {
     var buf []byte
 
     l.formatHeader(&buf, prefix, callerSkip)
@@ -113,7 +113,7 @@ func (l *logger) logPrint(logger *log.Logger, callerSkip int, prefix string, mes
     }
 }
 
-func (l *logger) formatHeader(buf *[]byte, prefix string, callerSkip int) {
+func (l *loggerAdapter) formatHeader(buf *[]byte, prefix string, callerSkip int) {
     *buf = append(*buf, time.Now().Format(datetime)...)
     *buf = append(*buf, ' ')
     *buf = append(*buf, prefix...)
@@ -138,7 +138,7 @@ func (l *logger) formatHeader(buf *[]byte, prefix string, callerSkip int) {
     }
 }
 
-func (l *logger) formatMessage(buf *[]byte, message any) {
+func (l *loggerAdapter) formatMessage(buf *[]byte, message any) {
     switch msg := message.(type) {
     case error:
         *buf = append(*buf, msg.Error()...)
