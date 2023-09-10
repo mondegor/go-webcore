@@ -67,7 +67,7 @@ func (v *validatorAdapter) Validate(ctx context.Context, structure any) error {
     errors, ok := err.(validator.ValidationErrors)
 
     if !ok {
-        return mrerr.FactoryInternal.Wrap(err)
+        return mrerr.ErrFactoryInternal.Wrap(err)
     }
 
     errorList := mrerr.NewList()

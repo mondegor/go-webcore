@@ -33,7 +33,7 @@ func (h *AppHelper) Close(c io.Closer) {
     err := c.Close()
 
     if err != nil {
-        h.logger.Error(mrerr.FactoryInternalFailedToClose.Caller(1).Wrap(err, fmt.Sprintf("%v", c)))
+        h.logger.Error(mrerr.ErrFactoryInternalFailedToClose.Caller(1).Wrap(err, fmt.Sprintf("%v", c)))
     }
 }
 
