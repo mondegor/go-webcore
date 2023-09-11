@@ -5,17 +5,17 @@ import (
     "fmt"
     "math/big"
 
-    "github.com/mondegor/go-core/mrlog"
+    "github.com/mondegor/go-webcore/mrcore"
 )
 
 func GenDigitCode(length int) string {
     if length < 1 {
-        mrlog.Error("param length < 1")
+        mrcore.LogError("param 'length': %d < 1", length)
         length = 1
     }
 
     if length > 19 {
-        mrlog.Error("param length > 19")
+        mrcore.LogError("param 'length': %d > 19", length)
         length = 19
     }
 
@@ -23,7 +23,7 @@ func GenDigitCode(length int) string {
     value, err := rand.Int(rand.Reader, big.NewInt(min * 9))
 
     if err != nil {
-        mrlog.Error(err)
+        mrcore.LogError(err.Error())
         value = big.NewInt(min * 9)
     }
 

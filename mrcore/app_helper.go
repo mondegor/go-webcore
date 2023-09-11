@@ -7,16 +7,15 @@ import (
     "os"
     "os/signal"
     "syscall"
-
-    "github.com/mondegor/go-core/mrlog"
-    "github.com/mondegor/go-sysmess/mrerr"
 )
 
-type AppHelper struct {
-    logger mrlog.Logger
-}
+type (
+	AppHelper struct {
+        logger Logger
+    }
+)
 
-func NewAppHelper(logger mrlog.Logger) *AppHelper {
+func NewAppHelper(logger Logger) *AppHelper {
     return &AppHelper{
         logger: logger,
     }
@@ -24,7 +23,7 @@ func NewAppHelper(logger mrlog.Logger) *AppHelper {
 
 func (h *AppHelper) ExitOnError(err error) {
     if err != nil {
-        h.logger.Error(err)
+        h.logger.Err(err)
         os.Exit(1)
     }
 }
@@ -33,7 +32,7 @@ func (h *AppHelper) Close(c io.Closer) {
     err := c.Close()
 
     if err != nil {
-        h.logger.Error(mrerr.ErrFactoryInternalFailedToClose.Caller(1).Wrap(err, fmt.Sprintf("%v", c)))
+        h.logger.Err(FactoryErrInternalFailedToClose.Caller(1).Wrap(err, fmt.Sprintf("%v", c)))
     }
 }
 

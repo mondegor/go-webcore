@@ -41,6 +41,10 @@ github.com/mondegor/go-sysmess v0.1.2 h1:XkvPOocLDAM7uH0SUamu6J8GagF3Caa3Lg/ENaw
 github.com/mondegor/go-sysmess v0.1.2/go.mod h1:/3AX7adlerlwWTR7MnUg3PTwAIuxZ5MLJtGt6yG91zs=
 github.com/mondegor/go-sysmess v0.2.1 h1:ySqwo/3yt245ltMZj4ZKkoiTa5yX5wUL2Xp0JAooabM=
 github.com/mondegor/go-sysmess v0.2.1/go.mod h1:GtJeZujWYCVm6uR9Y/Yhxa8d68qqoFQ0iOYXEpgOsoA=
+github.com/mondegor/go-sysmess v0.2.2 h1:IdwU8xE5RerFu5GV2mmDs6pcV30e8p0KFmfxE72QaUc=
+github.com/mondegor/go-sysmess v0.2.2/go.mod h1:GtJeZujWYCVm6uR9Y/Yhxa8d68qqoFQ0iOYXEpgOsoA=
+github.com/mondegor/go-sysmess v0.2.3 h1:vW6DoUmHqtwjys8IwneV+gac9BN3U/w7rlvT8YRcIi4=
+github.com/mondegor/go-sysmess v0.2.3/go.mod h1:GtJeZujWYCVm6uR9Y/Yhxa8d68qqoFQ0iOYXEpgOsoA=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=

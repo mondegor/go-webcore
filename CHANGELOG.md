@@ -1,5 +1,17 @@
-# GoCore Changelog
-Все изменения библиотеки GoCore будут документироваться на этой странице.
+# GoWebCore Changelog
+Все изменения библиотеки GoWebCore будут документироваться на этой странице.
+
+## 2023-09-11
+### Added
+- Добавлены парсеры данных поступающих из запросов (enum, list и т.д.);
+
+### Changed
+- ExtractLogger -> LoggerFromContext;
+- ExtractLocale -> LocaleFromContext;
+- Изменён интерфейс логгера;
+
+### Fixed
+- Формат глобальных const, type, var приведён к общему виду;
 
 ## 2023-09-10
 ### Changed

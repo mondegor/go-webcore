@@ -1,4 +1,4 @@
-package mrlog
+package mrcore
 
 import (
     "fmt"
@@ -10,51 +10,31 @@ import (
 )
 
 const (
-    datetime = "2006/01/02 15:04:05"
+	datetime = "2006/01/02 15:04:05"
 )
 
 type (
-    Logger interface {
-        With(name string) Logger
-        Error(message any, args ...any)
-        Warn(message string, args ...any)
-        Info(message string, args ...any)
-        Debug(message any, args ...any)
-    }
-
-	loggerAdapter struct {
+    loggerAdapter struct {
         name string
         level LogLevel
-        color bool
         infoLog *log.Logger
         errLog *log.Logger
     }
 )
 
-var std = newLogger("[default] ", LogInfoLevel, false)
-
-func Default() Logger {
-    return std
-}
-
-func Error(message any, args ...any) {
-    std.logPrint(std.errLog, 3, "ERROR", message, args)
-}
-
-func New(prefix string, level string, color bool) (Logger, error) {
+func NewLogger(prefix string, level string) (Logger, error) {
     lvl, err := ParseLogLevel(level)
 
     if err != nil {
         return nil, err
     }
 
-    return newLogger(prefix + " ", lvl, color), nil
+    return newLogger(prefix, lvl), nil
 }
 
-func newLogger(prefix string, level LogLevel, color bool) *loggerAdapter {
+func newLogger(prefix string, level LogLevel) Logger {
     return &loggerAdapter {
         level: level,
-        color: color,
         infoLog: log.New(os.Stdout, prefix, 0),
         errLog: log.New(os.Stderr, prefix, 0),
     }
@@ -62,19 +42,22 @@ func newLogger(prefix string, level LogLevel, color bool) *loggerAdapter {
 
 func (l *loggerAdapter) With(name string) Logger {
     if l.name != "" {
-        name = l.name + ":" + name
+        name = fmt.Sprintf("%s:%s", l.name, name)
     }
 
     return &loggerAdapter {
         name: name,
         level: l.level,
-        color: l.color,
         infoLog: l.infoLog,
         errLog: l.errLog,
     }
 }
 
-func (l *loggerAdapter) Error(message any, args ...any) {
+func (l *loggerAdapter) Err(e error) {
+    l.logPrint(l.errLog, 3, "ERROR", e.Error(), []any{})
+}
+
+func (l *loggerAdapter) Error(message string, args ...any) {
     l.logPrint(l.errLog, 3, "ERROR", message, args)
 }
 
@@ -90,7 +73,7 @@ func (l *loggerAdapter) Info(message string, args ...any) {
     }
 }
 
-func (l *loggerAdapter) Debug(message any, args ...any) {
+func (l *loggerAdapter) Debug(message string, args ...any) {
     if l.level >= LogDebugLevel {
         l.logPrint(l.infoLog, 0, "DEBUG", message, args)
     }
@@ -100,11 +83,12 @@ func (l *loggerAdapter) Emit(message string, args ...any) {
     l.logPrint(l.infoLog, 0, "EVENT", message, args)
 }
 
-func (l *loggerAdapter) logPrint(logger *log.Logger, callerSkip int, prefix string, message any, args []any) {
+func (l *loggerAdapter) logPrint(logger *log.Logger, callerSkip int, prefix string, message string, args []any) {
     var buf []byte
 
     l.formatHeader(&buf, prefix, callerSkip)
-    l.formatMessage(&buf, message)
+
+    buf = append(buf, message...)
 
     if len(args) == 0 {
         logger.Print(string(buf))
@@ -116,14 +100,14 @@ func (l *loggerAdapter) logPrint(logger *log.Logger, callerSkip int, prefix stri
 func (l *loggerAdapter) formatHeader(buf *[]byte, prefix string, callerSkip int) {
     *buf = append(*buf, time.Now().Format(datetime)...)
     *buf = append(*buf, ' ')
-    *buf = append(*buf, prefix...)
 
     if l.name != "" {
-        *buf = append(*buf, ' ', '[')
+        *buf = append(*buf, '[')
         *buf = append(*buf, l.name...)
         *buf = append(*buf, ']', ' ')
     }
 
+    *buf = append(*buf, prefix...)
     *buf = append(*buf, '\t')
 
     if callerSkip > 0 {
@@ -135,18 +119,5 @@ func (l *loggerAdapter) formatHeader(buf *[]byte, prefix string, callerSkip int)
         }
 
         *buf = append(*buf, fmt.Sprintf("%s:%d\t", filepath.Base(file), line)...)
-    }
-}
-
-func (l *loggerAdapter) formatMessage(buf *[]byte, message any) {
-    switch msg := message.(type) {
-    case error:
-        *buf = append(*buf, msg.Error()...)
-
-    case string:
-        *buf = append(*buf, msg...)
-
-    default:
-        *buf = append(*buf, fmt.Sprintf("Message %v has unknown type %v", message, msg)...)
     }
 }

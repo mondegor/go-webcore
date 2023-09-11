@@ -2,20 +2,12 @@ package main
 
 import (
     "context"
-    "fmt"
 
-    "github.com/mondegor/go-core/mrcore"
-    "github.com/mondegor/go-core/mrlog"
+    "github.com/mondegor/go-webcore/mrcore"
 )
 
 func main() {
-    logger, err := mrlog.New("[shutdown]", "info", true)
-
-    if err != nil {
-        fmt.Println(err)
-        return
-    }
-
+    logger := mrcore.DefaultLogger().With("shutdown")
     appHelper := mrcore.NewAppHelper(logger)
 
     ctx, cancel := context.WithCancel(context.Background())

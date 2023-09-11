@@ -1,10 +1,11 @@
-module github.com/mondegor/go-core
+module github.com/mondegor/go-webcore
 
 go 1.20
 
 require (
 	github.com/go-playground/validator/v10 v10.15.3
-	github.com/mondegor/go-sysmess v0.2.1
+	github.com/google/uuid v1.3.1
+	github.com/mondegor/go-sysmess v0.2.3
 )
 
 require (
@@ -12,7 +13,6 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/google/uuid v1.3.1 // indirect
 	github.com/ilyakaznacheev/cleanenv v1.5.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
