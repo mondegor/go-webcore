@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/google/uuid v1.3.1
-	github.com/mondegor/go-sysmess v0.2.3
+	github.com/mondegor/go-sysmess v0.3.0
 )
 
 require (
