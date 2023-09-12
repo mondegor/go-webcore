@@ -3,24 +3,24 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-    FactoryErrIncorrectInputData = NewFactory(
+    FactoryErrServiceIncorrectInputData = NewFactory(
         "errServiceIncorrectData", ErrorKindInternal, "data '{{ .data }}' is incorrect")
 
-    FactoryErrEntityTemporarilyUnavailable = NewFactory(
+    FactoryErrServiceEntityTemporarilyUnavailable = NewFactory(
         "errServiceEntityTemporarilyUnavailable", ErrorKindSystem, "entity '{{ .name }}' is temporarily unavailable")
 
-    FactoryErrEntityNotFound = NewFactory(
+    FactoryErrServiceEntityNotFound = NewFactory(
         "errServiceEntityNotFound", ErrorKindInternalNotice, "entity '{{ .name }}' is not found")
 
-    FactoryErrEntityNotCreated = NewFactory(
+    FactoryErrServiceEntityNotCreated = NewFactory(
         "errServiceEntityNotCreated", ErrorKindSystem, "entity '{{ .name }}' is not created")
 
-    FactoryErrEntityNotUpdated = NewFactory(
+    FactoryErrServiceEntityNotUpdated = NewFactory(
         "errServiceEntityNotUpdated", ErrorKindSystem, "entity '{{ .name }}' is not updated")
 
-    FactoryErrEntityNotRemoved = NewFactory(
+    FactoryErrServiceEntityNotRemoved = NewFactory(
         "errServiceEntityNotRemoved", ErrorKindSystem, "entity '{{ .name }}' is not removed")
 
-    FactoryErrIncorrectSwitchStatus = NewFactory(
+    FactoryErrServiceIncorrectSwitchStatus = NewFactory(
         "errServiceIncorrectSwitchStatus", ErrorKindInternal, "incorrect switch status: '{{ .currentStatus }}' -> '{{ .statusTo }}' for entity '{{ .name }}(ID={{ .id }})'")
 )

@@ -9,6 +9,7 @@
 ### Changed
 - пакет mrenv разделён на mrctx и mrreq и соответственно удалены из названий постфиксы *FromContext, *FromRequest;
 - Обновлены зависимости библиотеки;
+- Обновлены списки часто используемых ошибок;
 
 ### Fixed
 - Исправлен баг: package mrenv -> package mrctx 
