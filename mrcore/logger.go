@@ -17,8 +17,8 @@ type (
 
     Logger interface {
         With(name string) Logger
-        Err(err error)
         Error(message string, args ...any)
+        Err(err error)
         Warn(message string, args ...any)
         Info(message string, args ...any)
         Debug(message string, args ...any)
@@ -44,6 +44,14 @@ func LogError(message string, args ...any) {
     }
 
     defaultLogger.Error(message, args...)
+}
+
+func LogErr(e error) {
+    if defaultLogger == nil {
+        return
+    }
+
+    defaultLogger.Err(e)
 }
 
 func ParseLogLevel(level string) (LogLevel, error) {

@@ -53,12 +53,12 @@ func (l *loggerAdapter) With(name string) Logger {
     }
 }
 
-func (l *loggerAdapter) Err(e error) {
-    l.logPrint(l.errLog, 3, "ERROR", e.Error(), []any{})
-}
-
 func (l *loggerAdapter) Error(message string, args ...any) {
     l.logPrint(l.errLog, 3, "ERROR", message, args)
+}
+
+func (l *loggerAdapter) Err(e error) {
+    l.logPrint(l.errLog, 3, "ERROR", e.Error(), []any{})
 }
 
 func (l *loggerAdapter) Warn(message string, args ...any) {
