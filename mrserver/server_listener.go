@@ -22,7 +22,7 @@ type (
     }
 )
 
-func (s *serverAdapter) createListener(opt *ListenOptions) (net.Listener, error) {
+func (s *ServerAdapter) createListener(opt *ListenOptions) (net.Listener, error) {
     var listener net.Listener
     var listenErr error
 

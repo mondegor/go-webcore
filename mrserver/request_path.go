@@ -8,24 +8,24 @@ import (
 )
 
 type (
-	RequestPath struct {
+	requestPath struct {
         params httprouter.Params
     }
 )
 
-func newRequestPath(r *http.Request) *RequestPath {
+func newRequestPath(r *http.Request) *requestPath {
     params, ok := r.Context().Value(httprouter.ParamsKey).(httprouter.Params)
 
     if !ok {
         params = nil
     }
 
-    return &RequestPath{
+    return &requestPath{
         params: params,
     }
 }
 
-func (r *RequestPath) Get(name string) string {
+func (r *requestPath) Get(name string) string {
     if r.params == nil {
         return ""
     }
@@ -33,7 +33,7 @@ func (r *RequestPath) Get(name string) string {
     return r.params.ByName(name)
 }
 
-func (r *RequestPath) GetInt(name string) int64 {
+func (r *requestPath) GetInt(name string) int64 {
     value, err := strconv.ParseInt(r.Get(name), 10, 64)
 
     if err != nil {

@@ -10,7 +10,7 @@ import (
 )
 
 type (
-    serverAdapter struct {
+    ServerAdapter struct {
         server *http.Server
         notifyChan chan error
         shutdownTimeout time.Duration
@@ -25,7 +25,7 @@ type (
     }
 )
 
-func NewServer(logger mrcore.Logger, opt ServerOptions) *serverAdapter {
+func NewServer(logger mrcore.Logger, opt ServerOptions) *ServerAdapter {
     httpServer := &http.Server{
         Handler: opt.Handler,
         // IdleTimeout: 120 * time.Second,
@@ -35,7 +35,7 @@ func NewServer(logger mrcore.Logger, opt ServerOptions) *serverAdapter {
         WriteTimeout: opt.WriteTimeout,
     }
 
-    return &serverAdapter{
+    return &ServerAdapter{
         server: httpServer,
         notifyChan: make(chan error, 1),
         shutdownTimeout: opt.ShutdownTimeout,
@@ -43,7 +43,7 @@ func NewServer(logger mrcore.Logger, opt ServerOptions) *serverAdapter {
     }
 }
 
-func (s *serverAdapter) Start(opt ListenOptions) error {
+func (s *ServerAdapter) Start(opt ListenOptions) error {
     listener, err := s.createListener(&opt)
 
     if err != nil {
@@ -58,11 +58,11 @@ func (s *serverAdapter) Start(opt ListenOptions) error {
     return nil
 }
 
-func (s *serverAdapter) Notify() <-chan error {
+func (s *ServerAdapter) Notify() <-chan error {
     return s.notifyChan
 }
 
-func (s *serverAdapter) Close() error {
+func (s *ServerAdapter) Close() error {
     ctx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
     defer cancel()
 

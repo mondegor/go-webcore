@@ -16,7 +16,7 @@ type (
 	clientContext struct {
         request *http.Request
         responseWriter http.ResponseWriter
-        requestPath *RequestPath
+        requestPath *requestPath
         validator mrcore.Validator
     }
 )
