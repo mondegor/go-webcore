@@ -4,6 +4,7 @@
 ## 2023-09-13
 ### Added
 - Добавлены пакеты mrserver и mrview;
+- Добавлен пример работы с logger;
 
 ### Changed
 - Хелперы перенесены в пакет mrtool из mrcore;

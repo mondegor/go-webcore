@@ -22,7 +22,7 @@ type (
     }
 )
 
-func NewLogger(prefix string, level string) (Logger, error) {
+func NewLogger(prefix string, level string) (*loggerAdapter, error) {
     lvl, err := ParseLogLevel(level)
 
     if err != nil {
@@ -32,7 +32,7 @@ func NewLogger(prefix string, level string) (Logger, error) {
     return newLogger(prefix, lvl), nil
 }
 
-func newLogger(prefix string, level LogLevel) Logger {
+func newLogger(prefix string, level LogLevel) *loggerAdapter {
     return &loggerAdapter {
         level: level,
         infoLog: log.New(os.Stdout, prefix, 0),

@@ -26,7 +26,7 @@ type (
 )
 
 var (
-	defaultLogger = newLogger("[mrcore] ", LogDebugLevel)
+	defaultLogger Logger = newLogger("[mrcore] ", LogDebugLevel)
 )
 
 // SetDefaultLogger - WARNING!!! only for main process
