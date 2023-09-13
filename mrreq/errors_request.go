@@ -3,15 +3,15 @@ package mrreq
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-    factoryErrHttpRequestPlatformValue = NewFactory(
+    FactoryErrHttpRequestPlatformValue = NewFactory(
         "errHttpRequestPlatformValue", ErrorKindInternal, "header 'Platform' contains incorrect value '{{ .value }}'")
 
-    factoryErrHttpRequestCorrelationID = NewFactory(
+    FactoryErrHttpRequestCorrelationID = NewFactory(
         "errHttpRequestCorrelationID", ErrorKindInternal, "header 'CorrelationID' contains incorrect value '{{ .value }}'")
 
-    factoryErrHttpRequestUserIP = NewFactory(
+    FactoryErrHttpRequestUserIP = NewFactory(
         "errHttpRequestUserIP", ErrorKindInternal, "UserIP '{{ .value }}' is not IP:port")
 
-    factoryErrHttpRequestParseUserIP = NewFactory(
+    FactoryErrHttpRequestParseUserIP = NewFactory(
         "errHttpRequestParseUserIP", ErrorKindInternal, "UserIP contains incorrect value '{{ .value }}'")
 )

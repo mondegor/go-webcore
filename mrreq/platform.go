@@ -21,5 +21,5 @@ func Platform(r *http.Request) (string, error) {
         return mrcore.PlatformMobile, nil
     }
 
-    return "", factoryErrHttpRequestPlatformValue.New(value)
+    return "", FactoryErrHttpRequestPlatformValue.New(value)
 }

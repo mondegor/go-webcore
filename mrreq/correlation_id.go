@@ -23,7 +23,7 @@ func CorrelationId(r *http.Request) (string, error) {
 
     if len(value) != correlationIdLen ||
        !regexpCorrelationId.MatchString(value) {
-        return "", factoryErrHttpRequestCorrelationID.New(value)
+        return "", FactoryErrHttpRequestCorrelationID.New(value)
     }
 
     return value, nil
