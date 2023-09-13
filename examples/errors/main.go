@@ -1,8 +1,6 @@
 package main
 
-import (
-    "github.com/mondegor/go-webcore/mrcore"
-)
+import "github.com/mondegor/go-webcore/mrcore"
 
 func main() {
     logger := mrcore.DefaultLogger()

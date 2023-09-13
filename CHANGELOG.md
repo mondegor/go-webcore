@@ -1,6 +1,13 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-09-13
+### Added
+- Добавлены пакеты mrserver и mrview;
+
+### Changed
+- Хелперы перенесены в пакет mrtool из mrcore;
+
 ## 2023-09-12
 ### Added
 - Добавлен метод mrcore.LogErr;

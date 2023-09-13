@@ -7,7 +7,7 @@ var (
         "errHttpRequestPlatformValue", ErrorKindInternal, "header 'Platform' contains incorrect value '{{ .value }}'")
 
     factoryErrHttpRequestCorrelationID = NewFactory(
-        "errHttpRequestCorrelationID", ErrorKindInternalNotice, "header 'CorrelationID' contains incorrect value '{{ .value }}'")
+        "errHttpRequestCorrelationID", ErrorKindInternal, "header 'CorrelationID' contains incorrect value '{{ .value }}'")
 
     factoryErrHttpRequestUserIP = NewFactory(
         "errHttpRequestUserIP", ErrorKindInternal, "UserIP '{{ .value }}' is not IP:port")

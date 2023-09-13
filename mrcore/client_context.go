@@ -8,9 +8,11 @@ import (
 type (
     ClientData interface {
         Request() *http.Request
+        RequestPath() RequestPath
+
         Context() context.Context
         WithContext(ctx context.Context) ClientData
-        RequestPath() RequestPath
+
         Writer() http.ResponseWriter
 
         Parse(structRequest any) error

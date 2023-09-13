@@ -4,11 +4,12 @@ import (
     "context"
 
     "github.com/mondegor/go-webcore/mrcore"
+    "github.com/mondegor/go-webcore/mrtool"
 )
 
 func main() {
     logger := mrcore.DefaultLogger().With("shutdown")
-    appHelper := mrcore.NewAppHelper(logger)
+    appHelper := mrtool.NewAppHelper(logger)
 
     ctx, cancel := context.WithCancel(context.Background())
     defer cancel()

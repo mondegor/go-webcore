@@ -15,8 +15,8 @@ const (
 
 type (
     loggerAdapter struct {
-        name string
-        level LogLevel
+        name    string
+        level   LogLevel
         infoLog *log.Logger
         errLog *log.Logger
     }
