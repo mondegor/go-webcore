@@ -31,7 +31,6 @@ func MiddlewareFirst(l mrcore.Logger) mrcore.HttpMiddleware {
             ctx := mrctx.WithCorrelationId(r.Context(), correlationId)
             ctx = mrctx.WithLogger(ctx, logger)
 
-            w.Header().Set("Content-Type", "application/json")
             next.ServeHTTP(w, r.WithContext(ctx))
         })
     })

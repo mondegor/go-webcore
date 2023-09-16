@@ -4,6 +4,7 @@ import (
     "context"
     "encoding/json"
     "fmt"
+    "io"
     "net/http"
     "time"
 
@@ -20,6 +21,9 @@ type (
         validator mrcore.Validator
     }
 )
+
+// Make sure the clientContext conforms with the mrcore.ClientData interface
+var _ mrcore.ClientData = (*clientContext)(nil)
 
 func (c *clientContext) Request() *http.Request {
     return c.request
@@ -84,6 +88,7 @@ func (c *clientContext) SendResponse(status int, structResponse any) error {
 }
 
 func (c *clientContext) sendResponse(status int, structResponse any) *mrerr.AppError {
+    c.responseWriter.Header().Set("Content-Type", "application/json")
     c.responseWriter.WriteHeader(status)
 
     bytes, err := json.Marshal(structResponse)
@@ -103,6 +108,19 @@ func (c *clientContext) sendResponse(status int, structResponse any) *mrerr.AppE
 
 func (c *clientContext) SendResponseNoContent() error {
     c.responseWriter.WriteHeader(http.StatusNoContent)
+
+    return nil
+}
+
+func (c *clientContext) SendFile(contentType string, file io.Reader) error {
+    c.responseWriter.Header().Set("Content-Type", contentType)
+    c.responseWriter.WriteHeader(http.StatusOK)
+
+    _, err := io.Copy(c.responseWriter, file)
+
+    if err != nil {
+        return err
+    }
 
     return nil
 }

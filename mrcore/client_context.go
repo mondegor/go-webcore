@@ -2,6 +2,7 @@ package mrcore
 
 import (
     "context"
+    "io"
     "net/http"
 )
 
@@ -21,6 +22,7 @@ type (
 
         SendResponse(status int, structResponse any) error
         SendResponseNoContent() error
+        SendFile(contentType string, file io.Reader) error
     }
 
     RequestPath interface {

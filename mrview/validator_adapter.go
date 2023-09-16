@@ -20,7 +20,7 @@ type (
     }
 )
 
-// Make sure the validatorAdapter conforms with the Validator interface
+// Make sure the validatorAdapter conforms with the mrcore.Validator interface
 var _ mrcore.Validator = (*validatorAdapter)(nil)
 
 func NewValidator() *validatorAdapter {

@@ -6,6 +6,7 @@ import (
     "os"
     "path/filepath"
     "runtime"
+    "strings"
     "time"
 )
 
@@ -14,7 +15,7 @@ const (
 )
 
 type (
-    loggerAdapter struct {
+    LoggerAdapter struct {
         name    string
         level   LogLevel
         infoLog *log.Logger
@@ -22,7 +23,13 @@ type (
     }
 )
 
-func NewLogger(prefix string, level string) (*loggerAdapter, error) {
+// Make sure the LoggerAdapter conforms with the Logger interface
+var _ Logger = (*LoggerAdapter)(nil)
+
+// Make sure the LoggerAdapter conforms with the EventBox interface
+var _ EventBox = (*LoggerAdapter)(nil)
+
+func NewLogger(prefix string, level string) (*LoggerAdapter, error) {
     lvl, err := ParseLogLevel(level)
 
     if err != nil {
@@ -32,20 +39,20 @@ func NewLogger(prefix string, level string) (*loggerAdapter, error) {
     return newLogger(prefix, lvl), nil
 }
 
-func newLogger(prefix string, level LogLevel) *loggerAdapter {
-    return &loggerAdapter {
+func newLogger(prefix string, level LogLevel) *LoggerAdapter {
+    return &LoggerAdapter{
         level: level,
         infoLog: log.New(os.Stdout, prefix, 0),
         errLog: log.New(os.Stderr, prefix, 0),
     }
 }
 
-func (l *loggerAdapter) With(name string) Logger {
+func (l *LoggerAdapter) With(name string) Logger {
     if l.name != "" {
         name = fmt.Sprintf("%s:%s", l.name, name)
     }
 
-    return &loggerAdapter {
+    return &LoggerAdapter{
         name: name,
         level: l.level,
         infoLog: l.infoLog,
@@ -53,62 +60,62 @@ func (l *loggerAdapter) With(name string) Logger {
     }
 }
 
-func (l *loggerAdapter) Error(message string, args ...any) {
+func (l *LoggerAdapter) Error(message string, args ...any) {
     l.logPrint(l.errLog, 3, "ERROR", message, args)
 }
 
-func (l *loggerAdapter) Err(e error) {
+func (l *LoggerAdapter) Err(e error) {
     l.logPrint(l.errLog, 3, "ERROR", e.Error(), []any{})
 }
 
-func (l *loggerAdapter) Warn(message string, args ...any) {
+func (l *LoggerAdapter) Warn(message string, args ...any) {
     if l.level >= LogWarnLevel {
         l.logPrint(l.infoLog, 3, "WARN", message, args)
     }
 }
 
-func (l *loggerAdapter) Info(message string, args ...any) {
+func (l *LoggerAdapter) Info(message string, args ...any) {
     if l.level >= LogInfoLevel {
         l.logPrint(l.infoLog, 0, "INFO", message, args)
     }
 }
 
-func (l *loggerAdapter) Debug(message string, args ...any) {
+func (l *LoggerAdapter) Debug(message string, args ...any) {
     if l.level >= LogDebugLevel {
         l.logPrint(l.infoLog, 0, "DEBUG", message, args)
     }
 }
 
-func (l *loggerAdapter) Emit(message string, args ...any) {
+func (l *LoggerAdapter) Emit(message string, args ...any) {
     l.logPrint(l.infoLog, 0, "EVENT", message, args)
 }
 
-func (l *loggerAdapter) logPrint(logger *log.Logger, callerSkip int, prefix string, message string, args []any) {
-    var buf []byte
+func (l *LoggerAdapter) logPrint(logger *log.Logger, callerSkip int, prefix string, message string, args []any) {
+    var buf strings.Builder
 
+    buf.Grow(len(message) + len(l.name) + len(prefix) + 5) // 5 - separated chars
     l.formatHeader(&buf, prefix, callerSkip)
-
-    buf = append(buf, message...)
+    buf.WriteString(message)
 
     if len(args) == 0 {
-        logger.Print(string(buf))
+        logger.Print(buf.String())
     } else {
-        logger.Printf(string(buf), args...)
+        logger.Printf(buf.String(), args...)
     }
 }
 
-func (l *loggerAdapter) formatHeader(buf *[]byte, prefix string, callerSkip int) {
-    *buf = append(*buf, time.Now().Format(datetime)...)
-    *buf = append(*buf, ' ')
+func (l *LoggerAdapter) formatHeader(buf *strings.Builder, prefix string, callerSkip int) {
+    buf.WriteString(time.Now().Format(datetime))
+    buf.WriteByte(' ')
 
     if l.name != "" {
-        *buf = append(*buf, '[')
-        *buf = append(*buf, l.name...)
-        *buf = append(*buf, ']', ' ')
+        buf.WriteByte('[')
+        buf.WriteString(l.name)
+        buf.Write([]byte{']', ' '})
     }
 
-    *buf = append(*buf, prefix...)
-    *buf = append(*buf, '\t')
+    buf.WriteString(prefix)
+    buf.WriteByte('\t')
 
     if callerSkip > 0 {
         _, file, line, ok := runtime.Caller(callerSkip)
@@ -118,6 +125,6 @@ func (l *loggerAdapter) formatHeader(buf *[]byte, prefix string, callerSkip int)
             line = 0
         }
 
-        *buf = append(*buf, fmt.Sprintf("%s:%d\t", filepath.Base(file), line)...)
+        buf.WriteString(fmt.Sprintf("%s:%d\t", filepath.Base(file), line))
     }
 }
