@@ -5,6 +5,10 @@ import (
     "time"
 )
 
+const (
+    LockerDefaultExpiry = time.Second
+)
+
 type (
     Locker interface {
         Lock(ctx context.Context, key string) (UnlockFunc, error)

@@ -5,6 +5,7 @@
 ### Added
 - В mrcore.ClientData добавился метод SendFile;
 - Добавлен интерфейс Locker для захвата общих ресурсов в разделяемой памяти сервисов;
+- Добавлена константа LockerDefaultExpiry;
 
 ### Changed
 - Сообщение в логгере теперь формируется с помощью strings.Builder;
