@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	ctxLocale struct{}
+    ctxLocale struct{}
 )
 
 func WithLocale(ctx context.Context, value *mrlang.Locale) context.Context {

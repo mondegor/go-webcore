@@ -1,6 +1,16 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-09-20
+### Added
+- Добавлены ошибки FactoryErrHttpRequestParamEmpty и FactoryErrServiceEmptyInputData;
+- Добавлен парсинг mrreq.Int64;
+
+### Changed
+- Переименовано FactoryErrServiceEntityTemporarilyUnavailable -> FactoryErrServiceTemporarilyUnavailable;
+- Заменены tabs на пробелы в коде;
+- При парсинге mrreq.Enum, если он пустой, возвращается ошибка;
+
 ## 2023-09-16
 ### Added
 - В mrcore.ClientData добавился метод SendFile;

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	datetime = "2006/01/02 15:04:05"
+    datetime = "2006/01/02 15:04:05"
 )
 
 type (
@@ -49,7 +49,7 @@ func newLogger(prefix string, level LogLevel) *LoggerAdapter {
 
 func (l *LoggerAdapter) With(name string) Logger {
     if l.name != "" {
-        name = fmt.Sprintf("%s:%s", l.name, name)
+        name = fmt.Sprintf("%s; %s", l.name, name)
     }
 
     return &LoggerAdapter{

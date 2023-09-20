@@ -6,7 +6,7 @@ require (
 	github.com/go-playground/validator/v10 v10.15.4
 	github.com/google/uuid v1.3.1
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-sysmess v0.3.2
+	github.com/mondegor/go-sysmess v0.3.3
 	github.com/rs/cors v1.10.0
 )
 

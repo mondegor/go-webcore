@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	ctxUserIP struct{}
+    ctxUserIP struct{}
 )
 
 func WithUserIp(ctx context.Context, value net.IP) context.Context {

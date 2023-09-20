@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	maxInt64ListLen = 256
+    maxInt64ListLen = 256
 )
 
 func Int64List(r *http.Request, key string) ([]int64, error) {

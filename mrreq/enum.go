@@ -9,18 +9,18 @@ import (
 )
 
 const (
-	maxEnumLen = 32
+    maxEnumLen = 64
 )
 
 var (
-	regexpEnum = regexp.MustCompile(`^[A-Z]([A-Z0-9_]+)?[A-Z0-9]$`)
+    regexpEnum = regexp.MustCompile(`^[A-Z]([A-Z0-9_]+)?[A-Z0-9]$`)
 )
 
 func Enum(r *http.Request, key string) (string, error) {
     value := r.URL.Query().Get(key)
 
     if value == "" {
-        return "", nil
+        return "", mrcore.FactoryErrHttpRequestParamEmpty.New(key)
     }
 
     if len(value) > maxEnumLen {

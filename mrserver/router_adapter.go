@@ -15,7 +15,7 @@ import (
 var _ mrcore.HttpRouter = (*routerAdapter)(nil)
 
 type (
-	routerAdapter struct {
+    routerAdapter struct {
         router *httprouter.Router
         generalHandler http.Handler
         handlerAdapterFunc mrcore.HttpHandlerAdapterFunc

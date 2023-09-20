@@ -9,7 +9,7 @@ import (
 // go get -u github.com/rs/cors
 
 type (
-	corsAdapter struct {
+    corsAdapter struct {
         cors *cors.Cors
     }
 

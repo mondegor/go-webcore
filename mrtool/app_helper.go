@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	AppHelper struct {
+    AppHelper struct {
         Logger mrcore.Logger
     }
 )
@@ -27,7 +27,7 @@ func (h *AppHelper) Close(c io.Closer) {
     err := c.Close()
 
     if err != nil {
-        h.Logger.Err(mrcore.FactoryErrInternalFailedToClose.Caller(1).Wrap(err, fmt.Sprintf("%v", c)))
+        h.Logger.Err(mrcore.FactoryErrInternalFailedToClose.Caller(1).Wrap(err, fmt.Sprintf("%#v", c)))
     }
 }
 

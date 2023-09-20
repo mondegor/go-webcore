@@ -3,6 +3,9 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
+    FactoryErrHttpRequestParamEmpty = NewFactory(
+        "errHttpRequestParamEmpty", ErrorKindUser, "request param with key '{{ .key }}' is empty'")
+
     FactoryErrHttpRequestParamLen = NewFactory(
         "errHttpRequestParamLen", ErrorKindUser, "request param with key '{{ .key }}' has value length greater then max '{{ .maxLength }}'")
 

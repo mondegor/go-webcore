@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	maxEnumListLen = 256
+    maxEnumListLen = 256
 )
 
 func EnumList(r *http.Request, key string) ([]string, error) {

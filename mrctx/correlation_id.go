@@ -6,8 +6,10 @@ import (
     "github.com/google/uuid"
 )
 
+// https://www.rapid7.com/blog/post/2016/12/23/the-value-of-correlation-ids/
+
 type (
-	ctxCorrelationId struct{}
+    ctxCorrelationId struct{}
 )
 
 func WithCorrelationId(ctx context.Context, value string) context.Context {

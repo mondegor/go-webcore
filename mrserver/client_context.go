@@ -14,7 +14,7 @@ import (
 )
 
 type (
-	clientContext struct {
+    clientContext struct {
         request *http.Request
         responseWriter http.ResponseWriter
         requestPath *requestPath
@@ -222,7 +222,7 @@ func (c *clientContext) wrapErrorFunc(err *mrerr.AppError) (int, *mrerr.AppError
     if mrcore.FactoryErrServiceEntityNotFound.Is(err) {
         status = http.StatusNotFound
         err = mrcore.FactoryErrHttpResourceNotFound.Wrap(err)
-    } else if mrcore.FactoryErrServiceEntityTemporarilyUnavailable.Is(err) {
+    } else if mrcore.FactoryErrServiceTemporarilyUnavailable.Is(err) {
         err = mrcore.FactoryErrHttpResponseSystemTemporarilyUnableToProcess.Wrap(err)
     } else if err.Id() == mrerr.ErrorIdInternal {
         status = http.StatusTeapot

@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	ctxLogger struct{}
+    ctxLogger struct{}
 )
 
 func WithLogger(ctx context.Context, value mrcore.Logger) context.Context {

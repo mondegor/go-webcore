@@ -15,7 +15,7 @@ func (h *ServiceHelper) WrapErrorForSelect(err error, entityName string) error {
         return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, entityName)
     }
 
-    return mrcore.FactoryErrServiceEntityTemporarilyUnavailable.Caller(1).Wrap(err, entityName)
+    return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(1).Wrap(err, entityName)
 }
 
 func (h *ServiceHelper) WrapErrorForUpdate(err error, entityName string) error {
@@ -40,7 +40,7 @@ func (h *ServiceHelper) ReturnErrorIfItemNotFound(err error, entityName string) 
             return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, entityName)
         }
 
-        return mrcore.FactoryErrServiceEntityTemporarilyUnavailable.Caller(1).Wrap(err, entityName)
+        return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(1).Wrap(err, entityName)
     }
 
     return nil

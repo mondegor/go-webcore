@@ -3,11 +3,14 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
+    FactoryErrServiceEmptyInputData = NewFactory(
+        "errServiceEmptyData", ErrorKindInternal, "{{ .name }} is empty")
+
     FactoryErrServiceIncorrectInputData = NewFactory(
         "errServiceIncorrectData", ErrorKindInternal, "data '{{ .data }}' is incorrect")
 
-    FactoryErrServiceEntityTemporarilyUnavailable = NewFactory(
-        "errServiceEntityTemporarilyUnavailable", ErrorKindSystem, "entity '{{ .name }}' is temporarily unavailable")
+    FactoryErrServiceTemporarilyUnavailable = NewFactory(
+        "errServiceTemporarilyUnavailable", ErrorKindSystem, "resource '{{ .name }}' is temporarily unavailable")
 
     FactoryErrServiceEntityNotFound = NewFactory(
         "errServiceEntityNotFound", ErrorKindInternalNotice, "entity '{{ .name }}' is not found")
