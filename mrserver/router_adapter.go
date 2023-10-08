@@ -23,7 +23,10 @@ type (
     }
 )
 
-func NewRouter(logger mrcore.Logger, handlerAdapterFunc mrcore.HttpHandlerAdapterFunc) *routerAdapter {
+func NewRouter(
+    logger mrcore.Logger,
+    handlerAdapterFunc mrcore.HttpHandlerAdapterFunc,
+) *routerAdapter {
     router := httprouter.New()
 
     // r.GlobalOPTIONS

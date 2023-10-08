@@ -19,9 +19,7 @@ func HandlerAdapter(validator mrcore.Validator) mrcore.HttpHandlerAdapterFunc {
                 validator: validator,
             }
 
-            err := next(&c)
-
-            if err != nil {
+            if err := next(&c); err != nil {
                 c.sendErrorResponse(err)
             }
         }

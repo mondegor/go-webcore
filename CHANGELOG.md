@@ -1,6 +1,14 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-10-08
+### Added
+- В пакет mrcrypto добавлены функции GenPassword и PasswordStrength;
+
+### Changed
+- Обновлены зависимости библиотеки;
+- Обработка ошибок приведена к более компактному виду;
+
 ## 2023-09-20
 ### Added
 - Добавлены ошибки FactoryErrHttpRequestParamEmpty и FactoryErrServiceEmptyInputData;

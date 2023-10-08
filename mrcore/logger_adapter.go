@@ -70,7 +70,7 @@ func (l *LoggerAdapter) Err(e error) {
 
 func (l *LoggerAdapter) Warn(message string, args ...any) {
     if l.level >= LogWarnLevel {
-        l.logPrint(l.infoLog, 3, "WARN", message, args)
+        l.logPrint(l.errLog, 3, "WARN", message, args)
     }
 }
 

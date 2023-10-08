@@ -24,9 +24,7 @@ func NewAppHelper(logger mrcore.Logger) *AppHelper {
 }
 
 func (h *AppHelper) Close(c io.Closer) {
-    err := c.Close()
-
-    if err != nil {
+    if err := c.Close(); err != nil {
         h.Logger.Err(mrcore.FactoryErrInternalFailedToClose.Caller(1).Wrap(err, fmt.Sprintf("%#v", c)))
     }
 }

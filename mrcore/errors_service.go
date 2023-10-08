@@ -25,5 +25,5 @@ var (
         "errServiceEntityNotRemoved", ErrorKindSystem, "entity '{{ .name }}' is not removed")
 
     FactoryErrServiceIncorrectSwitchStatus = NewFactory(
-        "errServiceIncorrectSwitchStatus", ErrorKindInternal, "incorrect switch status: '{{ .currentStatus }}' -> '{{ .statusTo }}' for entity '{{ .name }}(ID={{ .id }})'")
+        "errServiceIncorrectSwitchStatus", ErrorKindInternalNotice, "incorrect switch status: '{{ .currentStatus }}' -> '{{ .statusTo }}' for entity '{{ .name }}(ID={{ .id }})'")
 )

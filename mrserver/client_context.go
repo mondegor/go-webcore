@@ -54,9 +54,8 @@ func (c *clientContext) Writer() http.ResponseWriter {
 func (c *clientContext) Parse(structRequest any) error {
     dec := json.NewDecoder(c.request.Body)
     dec.DisallowUnknownFields()
-    err := dec.Decode(&structRequest)
 
-    if err != nil {
+    if err := dec.Decode(&structRequest); err != nil {
         return mrcore.FactoryErrHttpRequestParseData.Wrap(err)
     }
 
@@ -68,9 +67,7 @@ func (c *clientContext) Validate(structRequest any) error {
 }
 
 func (c *clientContext) ParseAndValidate(structRequest any) error {
-    err := c.Parse(structRequest)
-
-    if err != nil {
+    if err := c.Parse(structRequest); err != nil {
         return err
     }
 
