@@ -16,6 +16,6 @@ func main() {
 
     mrcore.SetDefaultLogger(logger)
 
-    mrcore.DefaultLogger().Info("Logger info message - OK!")
-    mrcore.DefaultLogger().Debug("Logger debug message skipped")
+    mrcore.LogInfo("Logger info message - OK!")
+    mrcore.LogDebug("Logger debug message skipped")
 }

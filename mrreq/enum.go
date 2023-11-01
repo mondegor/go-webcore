@@ -16,21 +16,25 @@ var (
     regexpEnum = regexp.MustCompile(`^[A-Z]([A-Z0-9_]+)?[A-Z0-9]$`)
 )
 
-func Enum(r *http.Request, key string) (string, error) {
+func ParseEnum(r *http.Request, key string, required bool) (string, error) {
     value := r.URL.Query().Get(key)
 
     if value == "" {
-        return "", mrcore.FactoryErrHttpRequestParamEmpty.New(key)
+        if required {
+            return "", mrcore.FactoryErrHttpRequestParamEmpty.New(key)
+        }
+
+        return "", nil
     }
 
     if len(value) > maxEnumLen {
-        return "", mrcore.FactoryErrHttpRequestParamLen.New(key, maxEnumLen)
+        return "", mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxEnumLen)
     }
 
     value = strings.ToUpper(strings.TrimSpace(value))
 
     if !regexpEnum.MatchString(value) {
-        return "", mrcore.FactoryErrHttpRequestParseParam.New("enum", key, value)
+        return "", mrcore.FactoryErrHttpRequestParseParam.New("Enum", key, value)
     }
 
     return value, nil

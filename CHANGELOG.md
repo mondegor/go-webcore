@@ -1,6 +1,28 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-11-01
+### Added
+- Добавлена новая ошибка mrcore.FactoryErrHttpRequestParamMax;
+- Добавлены короткие функции логирования mrcore.LogWarn, LogInfo, LogDebug;
+- Добавлен парсинг строковых параметров из запроса: mrreq.ParseStr, mrreq.ParseStrList;
+
+### Changed
+- Оптимизирована работа с некоторыми структурами данных;
+- Обновлены зависимости библиотеки;
+- Добавлен пакет mrperms для работы с пользовательскими разрешениями и привилегиями. Основные сущности: ClientSection, ModulesAccess, RoleGroup;
+- Переименованы следующие функции:
+    - mrcore.FactoryErrHttpRequestParamLen -> mrcore.FactoryErrHttpRequestParamLenMax;
+    - mrreq.CorrelationId -> ParseCorrelationId;
+    - mrreq.Enum -> ParseEnum;
+    - mrreq.EnumList -> ParseEnumList;
+    - mrreq.Int64 -> ParseInt64;
+    - mrreq.Int64List -> ParseInt64List;
+- Перенесен mrenum.ItemStatus из библиотеки go-components;
+
+### Removed
+- Удалена сущность Platform, реализации достаточно в рамках проекта;
+
 ## 2023-10-08
 ### Added
 - В пакет mrcrypto добавлены функции GenPassword и PasswordStrength;

@@ -124,10 +124,12 @@ func (e *eventPool) Wait() {
 }
 
 func (e *eventPool) list() []string {
-    list := make([]string, 0, len(e.subscribers))
+    list := make([]string, len(e.subscribers))
+    i := 0
 
     for eventName := range e.subscribers {
-        list = append(list, eventName)
+        list[i] = eventName
+        i++
     }
 
     return list

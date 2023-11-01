@@ -54,8 +54,8 @@ func (rt *routerAdapter) RegisterMiddleware(handlers ...mrcore.HttpMiddleware) {
 }
 
 func (rt *routerAdapter) Register(controllers ...mrcore.HttpController) {
-    for _, controller := range controllers {
-        controller.AddHandlers(rt)
+    for i := range controllers {
+        controllers[i].AddHandlers(rt)
     }
 }
 

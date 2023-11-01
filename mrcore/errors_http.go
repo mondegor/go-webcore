@@ -6,8 +6,11 @@ var (
     FactoryErrHttpRequestParamEmpty = NewFactory(
         "errHttpRequestParamEmpty", ErrorKindUser, "request param with key '{{ .key }}' is empty'")
 
-    FactoryErrHttpRequestParamLen = NewFactory(
-        "errHttpRequestParamLen", ErrorKindUser, "request param with key '{{ .key }}' has value length greater then max '{{ .maxLength }}'")
+    FactoryErrHttpRequestParamMax = NewFactory(
+        "errHttpRequestParamMax", ErrorKindUser, "request param with key '{{ .key }}' has value greater then max '{{ .max }}'")
+
+    FactoryErrHttpRequestParamLenMax = NewFactory(
+        "errHttpRequestParamLenMax", ErrorKindUser, "request param with key '{{ .key }}' has value length greater then max '{{ .maxLength }}'")
 
     FactoryErrHttpRequestParseParam = NewFactory(
         "errHttpRequestParseParam", ErrorKindUser, "request param of type '{{ .type }}' with key '{{ .key }}' contains incorrect value '{{ .value }}'")

@@ -54,6 +54,30 @@ func LogErr(e error) {
     defaultLogger.Err(e)
 }
 
+func LogWarn(message string, args ...any) {
+    if defaultLogger == nil {
+        return
+    }
+
+    defaultLogger.Warn(message, args...)
+}
+
+func LogInfo(message string, args ...any) {
+    if defaultLogger == nil {
+        return
+    }
+
+    defaultLogger.Info(message, args...)
+}
+
+func LogDebug(message string, args ...any) {
+    if defaultLogger == nil {
+        return
+    }
+
+    defaultLogger.Debug(message, args...)
+}
+
 func ParseLogLevel(level string) (LogLevel, error) {
     switch strings.ToLower(level) {
     case "error":

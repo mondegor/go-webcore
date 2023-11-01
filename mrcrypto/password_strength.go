@@ -45,7 +45,7 @@ func PasswordStrength(value string) PassStrength {
     }
 
     uniqChars := make(map[byte]bool, length)
-    uniqTypeChars := make(map[passTypeChars]int, 4)
+    uniqTypeChars := make(map[passTypeChars]int)
 
     for i := 0; i < length; i++ {
         uniqChars[value[i]] = true
@@ -63,8 +63,8 @@ func PasswordStrength(value string) PassStrength {
 
     var totalLen int
 
-    for _, charSetLen := range uniqTypeChars {
-        totalLen += charSetLen
+    for i := range uniqTypeChars {
+        totalLen += uniqTypeChars[i]
     }
 
     if len(uniqTypeChars) > 1 { // минимально два набора символов должно использоваться

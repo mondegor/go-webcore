@@ -11,7 +11,4 @@ var (
 
     FactoryErrHttpRequestParseUserIP = NewFactory(
         "errHttpRequestParseUserIP", ErrorKindInternal, "UserIP contains incorrect value '{{ .value }}'")
-
-    FactoryErrHttpRequestPlatformValue = NewFactory(
-        "errHttpRequestPlatformValue", ErrorKindInternal, "header 'Platform' contains incorrect value '{{ .value }}'")
 )

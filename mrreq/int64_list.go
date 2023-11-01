@@ -12,7 +12,7 @@ const (
     maxInt64ListLen = 256
 )
 
-func Int64List(r *http.Request, key string) ([]int64, error) {
+func ParseInt64List(r *http.Request, key string) ([]int64, error) {
     value := r.URL.Query().Get(key)
 
     if value == "" {
@@ -20,21 +20,20 @@ func Int64List(r *http.Request, key string) ([]int64, error) {
     }
 
     if len(value) > maxInt64ListLen {
-        return nil, mrcore.FactoryErrHttpRequestParamLen.New(key, maxEnumListLen)
+        return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxEnumListLen)
     }
 
-    var items []int64
+    itemsTmp := strings.Split(value, ",")
+    items := make([]int64, len(itemsTmp))
 
-    for _, item := range strings.Split(value, ",") {
-        item = strings.TrimSpace(item)
-
-        i, err := strconv.ParseInt(item, 10, 64)
+    for i, item := range itemsTmp {
+        itemN, err := strconv.ParseInt(strings.TrimSpace(item), 10, 64)
 
         if err != nil {
-            return nil, mrcore.FactoryErrHttpRequestParseParam.New("int64", key, value)
+            return nil, mrcore.FactoryErrHttpRequestParseParam.New("Int64", key, value)
         }
 
-        items = append(items, i)
+        items[i] = itemN
     }
 
     return items, nil

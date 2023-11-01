@@ -29,10 +29,10 @@ func GenTokenHexWithDelimiter(length int, repeat int) string {
         repeat = 16
     }
 
-    var s []string
+    s := make([]string, repeat)
 
     for i := 0; i < repeat; i++ {
-        s = append(s, hex.EncodeToString(GenToken(length)))
+        s[i] = hex.EncodeToString(GenToken(length))
     }
 
     return strings.Join(s, "-")

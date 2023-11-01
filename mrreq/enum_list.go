@@ -11,7 +11,7 @@ const (
     maxEnumListLen = 256
 )
 
-func EnumList(r *http.Request, key string) ([]string, error) {
+func ParseEnumList(r *http.Request, key string) ([]string, error) {
     value := r.URL.Query().Get(key)
 
     if value == "" {
@@ -19,19 +19,19 @@ func EnumList(r *http.Request, key string) ([]string, error) {
     }
 
     if len(value) > maxEnumListLen {
-        return nil, mrcore.FactoryErrHttpRequestParamLen.New(key, maxEnumListLen)
+        return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxEnumListLen)
     }
 
-    var items []string
+    items := strings.Split(strings.ToUpper(value), ",")
 
-    for _, item := range strings.Split(strings.ToUpper(value), ",") {
+    for i, item := range items {
         item = strings.TrimSpace(item)
 
         if !regexpEnum.MatchString(item) {
-            return nil, mrcore.FactoryErrHttpRequestParseParam.New("enum", key, value)
+            return nil, mrcore.FactoryErrHttpRequestParseParam.New("Enum", key, value)
         }
 
-        items = append(items, item)
+        items[i] = item
     }
 
     return items, nil

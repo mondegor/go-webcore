@@ -6,8 +6,12 @@ import (
     "github.com/mondegor/go-sysmess/mrlang"
 )
 
-func Language(r *http.Request) []string {
-    acceptLanguage := r.Header.Get("Accept-Language")
+const (
+    headerKeyAcceptLanguage = "Accept-Language"
+)
+
+func ParseLanguage(r *http.Request) []string {
+    acceptLanguage := r.Header.Get(headerKeyAcceptLanguage)
 
     return mrlang.ParseAcceptLanguage(acceptLanguage)
 }

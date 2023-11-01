@@ -5,7 +5,7 @@ import (
     "net/http"
 )
 
-func UserIp(r *http.Request) (net.IP, error) {
+func ParseUserIp(r *http.Request) (net.IP, error) {
     ip, _, err := net.SplitHostPort(r.RemoteAddr)
 
     if err != nil {
