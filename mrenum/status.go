@@ -1,7 +1,7 @@
 package mrenum
 
 type (
-    Status interface {
-        String() string
-    }
+	Status interface {
+		String() string
+	}
 )

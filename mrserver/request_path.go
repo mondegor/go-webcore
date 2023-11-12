@@ -1,44 +1,44 @@
 package mrserver
 
 import (
-    "net/http"
-    "strconv"
+	"net/http"
+	"strconv"
 
-    "github.com/julienschmidt/httprouter"
+	"github.com/julienschmidt/httprouter"
 )
 
 type (
-    requestPath struct {
-        params httprouter.Params
-    }
+	requestPath struct {
+		params httprouter.Params
+	}
 )
 
 func newRequestPath(r *http.Request) *requestPath {
-    params, ok := r.Context().Value(httprouter.ParamsKey).(httprouter.Params)
+	params, ok := r.Context().Value(httprouter.ParamsKey).(httprouter.Params)
 
-    if !ok {
-        params = nil
-    }
+	if !ok {
+		params = nil
+	}
 
-    return &requestPath{
-        params: params,
-    }
+	return &requestPath{
+		params: params,
+	}
 }
 
 func (r *requestPath) Get(name string) string {
-    if r.params == nil {
-        return ""
-    }
+	if r.params == nil {
+		return ""
+	}
 
-    return r.params.ByName(name)
+	return r.params.ByName(name)
 }
 
 func (r *requestPath) GetInt64(name string) int64 {
-    value, err := strconv.ParseInt(r.Get(name), 10, 64)
+	value, err := strconv.ParseInt(r.Get(name), 10, 64)
 
-    if err != nil {
-        return 0
-    }
+	if err != nil {
+		return 0
+	}
 
-    return value
+	return value
 }

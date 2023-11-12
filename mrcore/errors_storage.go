@@ -3,27 +3,27 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-    FactoryErrStorageConnectionIsAlreadyCreated = NewFactory(
-        "errStorageConnectionIsAlreadyCreated", ErrorKindInternal, "connection '{{ .name }}' is already created")
+	FactoryErrStorageConnectionIsAlreadyCreated = NewFactory(
+		"errStorageConnectionIsAlreadyCreated", ErrorKindInternal, "connection '{{ .name }}' is already created")
 
-    FactoryErrStorageConnectionIsNotOpened = NewFactory(
-        "errStorageConnectionIsNotOpened", ErrorKindInternal, "connection '{{ .name }}' is not opened")
+	FactoryErrStorageConnectionIsNotOpened = NewFactory(
+		"errStorageConnectionIsNotOpened", ErrorKindInternal, "connection '{{ .name }}' is not opened")
 
-    FactoryErrStorageConnectionFailed = NewFactory(
-        "errStorageConnectionFailed", ErrorKindSystem, "connection '{{ .name }}' is failed")
+	FactoryErrStorageConnectionFailed = NewFactory(
+		"errStorageConnectionFailed", ErrorKindSystem, "connection '{{ .name }}' is failed")
 
-    FactoryErrStorageQueryFailed = NewFactory(
-        "errStorageQueryFailed", ErrorKindInternal, "query is failed")
+	FactoryErrStorageQueryFailed = NewFactory(
+		"errStorageQueryFailed", ErrorKindInternal, "query is failed")
 
-    FactoryErrStorageFetchDataFailed = NewFactory(
-        "errStorageFetchDataFailed", ErrorKindInternal, "fetching data is failed")
+	FactoryErrStorageFetchDataFailed = NewFactory(
+		"errStorageFetchDataFailed", ErrorKindInternal, "fetching data is failed")
 
-    FactoryErrStorageFetchedInvalidData = NewFactory(
-        "errStorageFetchedInvalidData", ErrorKindInternal, "fetched data '{{ .value }}' is invalid")
+	FactoryErrStorageFetchedInvalidData = NewFactory(
+		"errStorageFetchedInvalidData", ErrorKindInternal, "fetched data '{{ .value }}' is invalid")
 
-    FactoryErrStorageNoRowFound = NewFactory(
-        "errStorageNoRowFound", ErrorKindInternalNotice, "no row found")
+	FactoryErrStorageNoRowFound = NewFactory(
+		"errStorageNoRowFound", ErrorKindInternalNotice, "no row found")
 
-    FactoryErrStorageRowsNotAffected = NewFactory(
-        "errStorageRowsNotAffected", ErrorKindInternalNotice, "rows not affected")
+	FactoryErrStorageRowsNotAffected = NewFactory(
+		"errStorageRowsNotAffected", ErrorKindInternalNotice, "rows not affected")
 )

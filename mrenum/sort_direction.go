@@ -1,41 +1,41 @@
 package mrenum
 
 import (
-    "fmt"
+	"fmt"
 )
 
 const (
-    SortDirectionASC SortDirection = iota
-    SortDirectionDESC
+	SortDirectionASC SortDirection = iota
+	SortDirectionDESC
 
-    enumNameSortDirection = "SortDirection"
+	enumNameSortDirection = "SortDirection"
 )
 
 type (
-    SortDirection uint8
+	SortDirection uint8
 )
 
 var (
-    sortDirectionName = map[SortDirection]string{
-        SortDirectionASC: "ASC",
-        SortDirectionDESC: "DESC",
-    }
+	sortDirectionName = map[SortDirection]string{
+		SortDirectionASC: "ASC",
+		SortDirectionDESC: "DESC",
+	}
 
-    sortDirectionValue = map[string]SortDirection{
-        "ASC": SortDirectionASC,
-        "DESC": SortDirectionDESC,
-    }
+	sortDirectionValue = map[string]SortDirection{
+		"ASC": SortDirectionASC,
+		"DESC": SortDirectionDESC,
+	}
 )
 
 func (e *SortDirection) ParseAndSet(value string) error {
-    if parsedValue, ok := sortDirectionValue[value]; ok {
-        *e = parsedValue
-        return nil
-    }
+	if parsedValue, ok := sortDirectionValue[value]; ok {
+		*e = parsedValue
+		return nil
+	}
 
-    return fmt.Errorf("'%s' is not found in map %s", value, enumNameSortDirection)
+	return fmt.Errorf("'%s' is not found in map %s", value, enumNameSortDirection)
 }
 
 func (e SortDirection) String() string {
-    return sortDirectionName[e]
+	return sortDirectionName[e]
 }

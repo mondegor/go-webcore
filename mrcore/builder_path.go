@@ -1,7 +1,7 @@
 package mrcore
 
 type (
-    BuilderPath interface {
-        FullPath(path string) string
-    }
+	BuilderPath interface {
+		FullPath(path string) string
+	}
 )

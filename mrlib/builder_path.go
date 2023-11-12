@@ -1,54 +1,54 @@
 package mrlib
 
 import (
-    "strings"
+	"strings"
 )
 
 type (
-    BuilderPath struct {
-        basePath string
-        postfix string
-    }
+	BuilderPath struct {
+		basePath string
+		postfix string
+	}
 )
 
 func NewBuilderPath(basePath string) *BuilderPath {
-    basePath = strings.TrimRight(basePath, "/")
+	basePath = strings.TrimRight(basePath, "/")
 
-    i := strings.Index(basePath, ":path:")
+	i := strings.Index(basePath, ":path:")
 
-    if i > 0 {
-        return &BuilderPath{
-            basePath: basePath[0:i],
-            postfix: basePath[i + 6:],
-        }
-    }
+	if i > 0 {
+		return &BuilderPath{
+			basePath: basePath[0:i],
+			postfix: basePath[i + 6:],
+		}
+	}
 
-    return &BuilderPath{
-        basePath: basePath,
-    }
+	return &BuilderPath{
+		basePath: basePath,
+	}
 }
 
 func (p *BuilderPath) FullPath(path string) string {
-    if path == "" {
-        return ""
-    }
+	if path == "" {
+		return ""
+	}
 
-    if p.postfix == "" {
-        return strings.Join(
-            []string{
-                p.basePath,
-                strings.TrimLeft(path, "/"),
-            },
-            "/",
-        )
-    }
+	if p.postfix == "" {
+		return strings.Join(
+			[]string{
+				p.basePath,
+				strings.TrimLeft(path, "/"),
+			},
+			"/",
+		)
+	}
 
-    return strings.Join(
-        []string{
-            p.basePath,
-            strings.Trim(path, "/"),
-            p.postfix,
-        },
-        "/",
-    )
+	return strings.Join(
+		[]string{
+			p.basePath,
+			strings.Trim(path, "/"),
+			p.postfix,
+		},
+		"/",
+	)
 }

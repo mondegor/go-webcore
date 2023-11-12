@@ -1,23 +1,23 @@
 package main
 
 import (
-    "context"
+	"context"
 
-    "github.com/mondegor/go-webcore/mrcore"
-    "github.com/mondegor/go-webcore/mrtool"
+	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrtool"
 )
 
 func main() {
-    logger := mrcore.Log().With("shutdown")
-    appHelper := mrtool.NewAppHelper(logger)
+	logger := mrcore.Log().With("shutdown")
+	appHelper := mrtool.NewAppHelper(logger)
 
-    ctx, cancel := context.WithCancel(context.Background())
-    defer cancel()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-    go appHelper.GracefulShutdown(cancel)
+	go appHelper.GracefulShutdown(cancel)
 
-    logger.Info("Waiting for command. To exit press CTRL+C")
+	logger.Info("Waiting for command. To exit press CTRL+C")
 
-    <-ctx.Done()
-    logger.Info("Application stopped")
+	<-ctx.Done()
+	logger.Info("Application stopped")
 }
