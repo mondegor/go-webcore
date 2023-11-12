@@ -8,13 +8,13 @@ import (
 )
 
 const (
-	PassVowels PassCharsKinds = 1
-	PassConsonants = 2
-	PassNumerals = 4
-	PassSigns = 8
-	PassAbc = 3 // PassVowels + PassConsonants
-	PassAbcNumerals = 7 // PassVowels + PassConsonants + PassNumerals
-	PassAll = 15 // PassVowels + PassConsonants + PassNumerals + PassSigns
+	PassVowels      PassCharsKinds = 1
+	PassConsonants                 = 2
+	PassNumerals                   = 4
+	PassSigns                      = 8
+	PassAbc                        = 3  // PassVowels + PassConsonants
+	PassAbcNumerals                = 7  // PassVowels + PassConsonants + PassNumerals
+	PassAll                        = 15 // PassVowels + PassConsonants + PassNumerals + PassSigns
 
 	pwCharSetLen = 4
 )
@@ -23,11 +23,11 @@ type (
 	PassCharsKinds uint8
 
 	pwCharSet struct {
-		kind PassCharsKinds
+		kind            PassCharsKinds
 		successivelyMax int
-		firstOrLast bool
-		lettersLen int
-		letters []byte
+		firstOrLast     bool
+		lettersLen      int
+		letters         []byte
 	}
 )
 
@@ -59,7 +59,7 @@ func GenPassword(length int, charsKinds PassCharsKinds) string {
 	var abc [pwCharSetLen]pwCharSet
 	var abcLen int
 
-	for i := 0 ; i < pwCharSetLen; i++  {
+	for i := 0; i < pwCharSetLen; i++ {
 		if (pwCharSets[abcLen].kind & charsKinds) > 0 {
 			abc[abcLen] = pwCharSets[i]
 			abcLen++
@@ -69,13 +69,13 @@ func GenPassword(length int, charsKinds PassCharsKinds) string {
 	// если указан только один набор символов
 	if abcLen == 1 {
 		abc[0].successivelyMax = length // максимальная длина совпадает с длиной пароля
-		abc[0].firstOrLast = true // первый и последний символ не проверяется
+		abc[0].firstOrLast = true       // первый и последний символ не проверяется
 	}
 
 	result := make([]byte, length)
 
 	lastAbc := struct {
-		charSetIndex		   int
+		charSetIndex           int
 		countSuccessivelySigns int
 	}{}
 
@@ -87,7 +87,7 @@ func GenPassword(length int, charsKinds PassCharsKinds) string {
 
 			// если выбранный тип можно использовать для генерации первого и последнего символа
 			// или если символ не первый и не последний
-			if abc[abcIndex].firstOrLast || (i != 0 && i != (length - 1)) {
+			if abc[abcIndex].firstOrLast || (i != 0 && i != (length-1)) {
 				// если предыдущий символ такого же типа
 				if abcIndex == lastAbc.charSetIndex {
 					// если подряд идущих символов не превышает

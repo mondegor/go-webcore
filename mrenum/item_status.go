@@ -22,14 +22,14 @@ type (
 
 var (
 	itemStatusName = map[ItemStatus]string{
-		ItemStatusDraft:	"DRAFT",
+		ItemStatusDraft:    "DRAFT",
 		ItemStatusEnabled:  "ENABLED",
 		ItemStatusDisabled: "DISABLED",
 		ItemStatusRemoved:  "REMOVED",
 	}
 
 	itemStatusValue = map[string]ItemStatus{
-		"DRAFT":	ItemStatusDraft,
+		"DRAFT":    ItemStatusDraft,
 		"ENABLED":  ItemStatusEnabled,
 		"DISABLED": ItemStatusDisabled,
 		"REMOVED":  ItemStatusRemoved,

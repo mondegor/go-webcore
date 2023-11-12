@@ -11,14 +11,14 @@ import (
 type (
 	// eventPool - thread safe structure stores events, their handlers and functions for management
 	eventPool struct {
-		mutex	   sync.RWMutex
+		mutex       sync.RWMutex
 		waitGroup   sync.WaitGroup
 		subscribers map[string][]chan eventArgsWithContext
 		bufferSize  uint32
 	}
 
 	eventArgsWithContext struct {
-		ctx context.Context
+		ctx  context.Context
 		args mrcore.EventArgs
 	}
 )
@@ -29,7 +29,7 @@ var _ mrcore.EventPool = (*eventPool)(nil)
 func NewEventPool(bufferSize uint32) *eventPool {
 	return &eventPool{
 		subscribers: map[string][]chan eventArgsWithContext{},
-		bufferSize: bufferSize,
+		bufferSize:  bufferSize,
 	}
 }
 

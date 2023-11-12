@@ -3,14 +3,14 @@ package mrperms
 type (
 	RoleGroup struct {
 		roleIDs []int32
-		access *ModulesAccess
+		access  *ModulesAccess
 	}
 )
 
 func newRoleGroup(access *ModulesAccess, roles []string) *RoleGroup {
 	return &RoleGroup{
 		roleIDs: access.roleNamesToIDs(roles),
-		access: access,
+		access:  access,
 	}
 }
 

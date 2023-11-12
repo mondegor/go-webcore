@@ -11,16 +11,16 @@ import (
 
 type (
 	ServerAdapter struct {
-		server *http.Server
-		notifyChan chan error
+		server          *http.Server
+		notifyChan      chan error
 		shutdownTimeout time.Duration
-		logger mrcore.Logger
+		logger          mrcore.Logger
 	}
 
 	ServerOptions struct {
-		Handler http.Handler
-		ReadTimeout time.Duration
-		WriteTimeout time.Duration
+		Handler         http.Handler
+		ReadTimeout     time.Duration
+		WriteTimeout    time.Duration
 		ShutdownTimeout time.Duration
 	}
 )
@@ -31,15 +31,15 @@ func NewServer(logger mrcore.Logger, opt ServerOptions) *ServerAdapter {
 		// IdleTimeout: 120 * time.Second,
 		// MaxHeaderBytes: 16 * 1024,
 		// ReadHeaderTimeout: 10 * time.Second,
-		ReadTimeout: opt.ReadTimeout,
+		ReadTimeout:  opt.ReadTimeout,
 		WriteTimeout: opt.WriteTimeout,
 	}
 
 	return &ServerAdapter{
-		server: httpServer,
-		notifyChan: make(chan error, 1),
+		server:          httpServer,
+		notifyChan:      make(chan error, 1),
 		shutdownTimeout: opt.ShutdownTimeout,
-		logger: logger,
+		logger:          logger,
 	}
 }
 

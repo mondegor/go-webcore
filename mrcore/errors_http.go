@@ -25,7 +25,7 @@ var (
 		"errHttpResponseSendData", ErrorKindInternal, "response data is not send")
 
 	FactoryErrHttpResponseSystemTemporarilyUnableToProcess = NewFactory(
-	   "errHttpResponseSystemTemporarilyUnableToProcess", ErrorKindUser, "the system is temporarily unable to process your request. please try again")
+		"errHttpResponseSystemTemporarilyUnableToProcess", ErrorKindUser, "the system is temporarily unable to process your request. please try again")
 
 	FactoryErrHttpResourceNotFound = NewFactory(
 		"errHttpResourceNotFound", ErrorKindUser, "resource not found")

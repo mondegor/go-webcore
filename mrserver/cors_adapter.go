@@ -14,12 +14,12 @@ type (
 	}
 
 	CorsOptions struct {
-		AllowedOrigins []string
-		AllowedMethods []string
-		AllowedHeaders []string
-		ExposedHeaders []string
+		AllowedOrigins   []string
+		AllowedMethods   []string
+		AllowedHeaders   []string
+		ExposedHeaders   []string
 		AllowCredentials bool
-		Debug bool
+		Debug            bool
 	}
 )
 
@@ -31,7 +31,7 @@ func NewCors(opt CorsOptions) *corsAdapter {
 			AllowedHeaders:   opt.ExposedHeaders,
 			ExposedHeaders:   opt.ExposedHeaders,
 			AllowCredentials: opt.AllowCredentials,
-			Debug:			opt.Debug,
+			Debug:            opt.Debug,
 		})}
 }
 

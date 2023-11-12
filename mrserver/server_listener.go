@@ -14,11 +14,11 @@ const (
 
 type (
 	ListenOptions struct {
-		AppPath string
-		Type string
+		AppPath  string
+		Type     string
 		SockName string
-		BindIP string
-		Port string
+		BindIP   string
+		Port     string
 	}
 )
 
@@ -39,7 +39,7 @@ func (s *ServerAdapter) createListener(opt *ListenOptions) (net.Listener, error)
 
 		listener, listenErr = net.Listen("unix", socketPath)
 		s.logger.Info("Server is listening unix socket: %s", socketPath)
-	} else if opt.Type == ListenTypePort  {
+	} else if opt.Type == ListenTypePort {
 		addr := fmt.Sprintf("%s:%s", opt.BindIP, opt.Port)
 		s.logger.Info("Listen to tcp: %s", addr)
 

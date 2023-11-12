@@ -2,7 +2,7 @@ package mrtype
 
 var (
 	boolFalse = newFalse()
-	boolTrue = newTrue()
+	boolTrue  = newTrue()
 )
 
 func newFalse() *bool {

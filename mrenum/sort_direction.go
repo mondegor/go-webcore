@@ -17,12 +17,12 @@ type (
 
 var (
 	sortDirectionName = map[SortDirection]string{
-		SortDirectionASC: "ASC",
+		SortDirectionASC:  "ASC",
 		SortDirectionDESC: "DESC",
 	}
 
 	sortDirectionValue = map[string]SortDirection{
-		"ASC": SortDirectionASC,
+		"ASC":  SortDirectionASC,
 		"DESC": SortDirectionDESC,
 	}
 )

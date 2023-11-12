@@ -1,9 +1,9 @@
 package mrtype
 
 const (
-	NullableBoolNull NullableBool = -1
-	NullableBoolTrue = 1
-	NullableBoolFalse = 0
+	NullableBoolNull  NullableBool = -1
+	NullableBoolTrue               = 1
+	NullableBoolFalse              = 0
 )
 
 type (

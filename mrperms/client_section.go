@@ -10,10 +10,10 @@ import (
 
 type (
 	ClientSection struct {
-		caption string
-		rootPath string
+		caption   string
+		rootPath  string
 		privilege string
-		access *ModulesAccess
+		access    *ModulesAccess
 	}
 )
 
@@ -26,10 +26,10 @@ func NewClientSection(caption, rootPath, priv string, access *ModulesAccess) *Cl
 	}
 
 	return &ClientSection{
-		caption: caption,
-		rootPath: strings.Trim(rootPath, "/"),
+		caption:   caption,
+		rootPath:  strings.Trim(rootPath, "/"),
 		privilege: priv,
-		access: access,
+		access:    access,
 	}
 }
 

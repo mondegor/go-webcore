@@ -16,10 +16,10 @@ var _ mrcore.HttpRouter = (*routerAdapter)(nil)
 
 type (
 	routerAdapter struct {
-		router *httprouter.Router
-		generalHandler http.Handler
+		router             *httprouter.Router
+		generalHandler     http.Handler
 		handlerAdapterFunc mrcore.HttpHandlerAdapterFunc
-		logger mrcore.Logger
+		logger             mrcore.Logger
 	}
 )
 
@@ -34,10 +34,10 @@ func NewRouter(
 	// rt.router.NotFound
 
 	return &routerAdapter{
-		router: router,
-		generalHandler: router,
+		router:             router,
+		generalHandler:     router,
 		handlerAdapterFunc: handlerAdapterFunc,
-		logger: logger,
+		logger:             logger,
 	}
 }
 

@@ -19,15 +19,15 @@ func GenDigitCode(length int) string {
 		length = 19
 	}
 
-	min := pow(10, length - 1)
-	value, err := rand.Int(rand.Reader, big.NewInt(min * 9))
+	min := pow(10, length-1)
+	value, err := rand.Int(rand.Reader, big.NewInt(min*9))
 
 	if err != nil {
 		mrcore.LogErr(err)
 		value = big.NewInt(min * 9)
 	}
 
-	return fmt.Sprintf("%d", value.Int64() + min)
+	return fmt.Sprintf("%d", value.Int64()+min)
 }
 
 func pow(num int64, exponent int) int64 {
@@ -35,9 +35,9 @@ func pow(num int64, exponent int) int64 {
 		return 1
 	}
 
-	t := pow(num, exponent / 2)
+	t := pow(num, exponent/2)
 
-	if exponent % 2 == 0 {
+	if exponent%2 == 0 {
 		return t * t
 	}
 

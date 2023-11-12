@@ -7,7 +7,7 @@ import (
 type (
 	BuilderPath struct {
 		basePath string
-		postfix string
+		postfix  string
 	}
 )
 
@@ -19,7 +19,7 @@ func NewBuilderPath(basePath string) *BuilderPath {
 	if i > 0 {
 		return &BuilderPath{
 			basePath: basePath[0:i],
-			postfix: basePath[i + 6:],
+			postfix:  basePath[i+6:],
 		}
 	}
 

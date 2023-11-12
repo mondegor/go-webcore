@@ -15,12 +15,12 @@ const (
 
 type (
 	LoggerAdapter struct {
-		name	string
-		level   LogLevel
-		callerSkip int
+		name            string
+		level           LogLevel
+		callerSkip      int
 		enabledFileLine bool
-		infoLog *log.Logger
-		errLog *log.Logger
+		infoLog         *log.Logger
+		errLog          *log.Logger
 	}
 )
 
@@ -42,11 +42,11 @@ func NewLogger(prefix, level string) (*LoggerAdapter, error) {
 
 func newLogger(prefix string, level LogLevel) *LoggerAdapter {
 	return &LoggerAdapter{
-		level: level,
-		callerSkip: 4, // to parent function
+		level:           level,
+		callerSkip:      4, // to parent function
 		enabledFileLine: true,
-		infoLog: log.New(os.Stdout, prefix, 0),
-		errLog: log.New(os.Stderr, prefix, 0),
+		infoLog:         log.New(os.Stdout, prefix, 0),
+		errLog:          log.New(os.Stderr, prefix, 0),
 	}
 }
 

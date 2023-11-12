@@ -5,25 +5,25 @@ import (
 )
 
 type (
-	roleMap map[string]int32
-	privilegeMap map[string][]int32
+	roleMap       map[string]int32
+	privilegeMap  map[string][]int32
 	permissionMap map[string][]int32
 
 	ModulesAccess struct {
-		roles roleMap // map to rolesIDs
-		privileges privilegeMap // map to roles
-		permissions permissionMap // map to roles
-		defaultRole string
+		roles         roleMap       // map to rolesIDs
+		privileges    privilegeMap  // map to roles
+		permissions   permissionMap // map to roles
+		defaultRole   string
 		defaultRoleID int32
 	}
 
 	ModulesAccessOptions struct {
-		RolesDirPath string
+		RolesDirPath  string
 		RolesFileType string
-		Roles []string
-		Privileges []string
-		Permissions []string
-		DefaultRole string // optional
+		Roles         []string
+		Privileges    []string
+		Permissions   []string
+		DefaultRole   string // optional
 	}
 )
 
@@ -39,8 +39,8 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
 	}
 
 	ma := ModulesAccess{
-		roles: make(roleMap, len(opt.Roles)),
-		privileges: make(privilegeMap, 0),
+		roles:       make(roleMap, len(opt.Roles)),
+		privileges:  make(privilegeMap, 0),
 		permissions: make(permissionMap, 0),
 	}
 
@@ -48,7 +48,7 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
 
 	for pos, roleName := range opt.Roles {
 		if _, ok := ma.roles[roleName]; ok {
-			return nil, fmt.Errorf("duplicate role %s detected (pos: %d)", roleName, pos + 1)
+			return nil, fmt.Errorf("duplicate role %s detected (pos: %d)", roleName, pos+1)
 		}
 
 		roleID++

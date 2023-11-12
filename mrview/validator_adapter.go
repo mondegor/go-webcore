@@ -36,7 +36,7 @@ func NewValidator() *validatorAdapter {
 		return name
 	})
 
-	return &validatorAdapter {
+	return &validatorAdapter{
 		validate: validate,
 	}
 }
@@ -44,7 +44,7 @@ func NewValidator() *validatorAdapter {
 func (v *validatorAdapter) Register(tagName string, fn mrcore.ValidatorTagNameFunc) error {
 	return v.validate.RegisterValidation(
 		tagName,
-		func (fl validator.FieldLevel) bool {
+		func(fl validator.FieldLevel) bool {
 			return fn(fl.Field().String())
 		},
 	)

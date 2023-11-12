@@ -7,11 +7,11 @@ import (
 
 type (
 	FileInfo struct {
-		ContentType  string	`json:"contentType,omitempty"`
-		OriginalName string	`json:"originalName,omitempty"`
-		Name		 string	`json:"name"`
+		ContentType  string    `json:"contentType,omitempty"`
+		OriginalName string    `json:"originalName,omitempty"`
+		Name         string    `json:"name"`
 		LastModified time.Time `json:"-"`
-		Size		 int64	 `json:"size"`
+		Size         int64     `json:"size"`
 	}
 
 	File struct {

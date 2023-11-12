@@ -6,20 +6,20 @@ import (
 
 const (
 	PassStrengthNotRated PassStrength = iota // not rated
-	PassStrengthWeak   // weak
-	PassStrengthMedium // middle
-	PassStrengthStrong // strong
-	PassStrengthBest   // the best
+	PassStrengthWeak                         // weak
+	PassStrengthMedium                       // middle
+	PassStrengthStrong                       // strong
+	PassStrengthBest                         // the best
 
 	passTypeSmallABC passTypeChars = iota
 	passTypeBigABC
 	passTypeNumeral
 	passTypeSign
 
-	passTypeNumeralLen = 10
-	passTypeBigABCLen = 26
+	passTypeNumeralLen  = 10
+	passTypeBigABCLen   = 26
 	passTypeSmallABCLen = 26
-	passTypeSignLen = 20
+	passTypeSignLen     = 20
 )
 
 type (
@@ -30,10 +30,10 @@ type (
 var (
 	passStrengthName = map[PassStrength]string{
 		PassStrengthNotRated: "NOT_RATED",
-		PassStrengthWeak: "WEAK",
-		PassStrengthMedium: "MIDDLE",
-		PassStrengthStrong: "STRONG",
-		PassStrengthBest: "THE_BEST",
+		PassStrengthWeak:     "WEAK",
+		PassStrengthMedium:   "MIDDLE",
+		PassStrengthStrong:   "STRONG",
+		PassStrengthBest:     "THE_BEST",
 	}
 )
 

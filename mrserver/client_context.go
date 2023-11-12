@@ -17,10 +17,10 @@ import (
 
 type (
 	clientContext struct {
-		request *http.Request
+		request        *http.Request
 		responseWriter http.ResponseWriter
-		requestPath *requestPath
-		validator mrcore.Validator
+		requestPath    *requestPath
+		validator      mrcore.Validator
 	}
 )
 
@@ -189,7 +189,7 @@ func (c *clientContext) sendUserErrorResponse(appError *mrerr.AppError) *mrerr.A
 		http.StatusBadRequest,
 		AppErrorListResponse{
 			AppErrorAttribute{
-				ID: AppErrorAttributeNameSystem,
+				ID:    AppErrorAttributeNameSystem,
 				Value: appError.Translate(locale).Reason,
 			},
 		},
@@ -203,10 +203,10 @@ func (c *clientContext) sendAppErrorResponse(status int, appError *mrerr.AppErro
 	locale := mrctx.Locale(c.Context())
 	errMessage := appError.Translate(locale)
 	errorResponse := AppErrorResponse{
-		Title: errMessage.Reason,
-		Details: errMessage.DetailsToString(),
-		Request: c.request.URL.Path,
-		Time: time.Now().Format(time.RFC3339),
+		Title:        errMessage.Reason,
+		Details:      errMessage.DetailsToString(),
+		Request:      c.request.URL.Path,
+		Time:         time.Now().Format(time.RFC3339),
 		ErrorTraceID: c.getErrorTraceID(appError),
 	}
 

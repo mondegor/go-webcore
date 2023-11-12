@@ -7,7 +7,7 @@ import (
 )
 
 func ParseItemStatusList(r *http.Request, key string, defaultItem mrenum.ItemStatus) ([]mrenum.ItemStatus, error) {
-	def := func (defaultItem mrenum.ItemStatus) []mrenum.ItemStatus {
+	def := func(defaultItem mrenum.ItemStatus) []mrenum.ItemStatus {
 		if defaultItem == 0 {
 			return []mrenum.ItemStatus{}
 		}

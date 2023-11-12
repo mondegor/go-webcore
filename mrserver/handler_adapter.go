@@ -14,9 +14,9 @@ func HandlerAdapter(validator mrcore.Validator) mrcore.HttpHandlerAdapterFunc {
 			logger.Debug("Exec HandlerAdapter")
 
 			c := clientContext{
-				request: r,
+				request:        r,
 				responseWriter: w,
-				validator: validator,
+				validator:      validator,
 			}
 
 			if err := next(&c); err != nil {

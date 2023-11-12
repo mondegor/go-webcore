@@ -8,7 +8,7 @@ import (
 
 const (
 	// f7479171-83d2-4f64-84ac-892f8c0aaf48
-	lenCorrelationID = 36
+	lenCorrelationID       = 36
 	headerKeyCorrelationID = "CorrelationID"
 )
 
@@ -24,7 +24,7 @@ func ParseCorrelationID(r *http.Request) (string, error) {
 	}
 
 	if len(value) != lenCorrelationID ||
-	   !regexpCorrelationID.MatchString(value) {
+		!regexpCorrelationID.MatchString(value) {
 		return "", FactoryErrHttpRequestCorrelationID.New(value)
 	}
 

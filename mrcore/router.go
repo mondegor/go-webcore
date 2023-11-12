@@ -21,7 +21,7 @@ type (
 		AddHandlers(router HttpRouter)
 	}
 
-	HttpHandlerFunc func(c ClientData) error
+	HttpHandlerFunc        func(c ClientData) error
 	HttpHandlerAdapterFunc func(next HttpHandlerFunc) http.HandlerFunc
 )
 

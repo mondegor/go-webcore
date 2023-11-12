@@ -3,8 +3,8 @@ package mrtype
 import "github.com/mondegor/go-webcore/mrenum"
 
 type (
-	KeyInt32 int32
-	KeyInt64 int64
+	KeyInt32  int32
+	KeyInt64  int64
 	KeyString string
 
 	RangeInt64 struct {
@@ -18,7 +18,7 @@ type (
 	}
 
 	SortParams struct {
-		FieldName string // sortField
+		FieldName string               // sortField
 		Direction mrenum.SortDirection // sortDirection
 	}
 )

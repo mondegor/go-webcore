@@ -9,10 +9,10 @@ const (
 type (
 	// AppErrorResponse - application/problem+json:
 	AppErrorResponse struct {
-		Title string `json:"title"`
-		Details string `json:"details"`
-		Request string `json:"request"`
-		Time string `json:"time"`
+		Title        string `json:"title"`
+		Details      string `json:"details"`
+		Request      string `json:"request"`
+		Time         string `json:"time"`
 		ErrorTraceID string `json:"errorTraceId,omitempty"`
 	}
 
@@ -20,7 +20,7 @@ type (
 	AppErrorListResponse []AppErrorAttribute
 
 	AppErrorAttribute struct {
-		ID string `json:"id"`
+		ID    string `json:"id"`
 		Value string `json:"value"`
 	}
 )

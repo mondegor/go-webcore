@@ -12,7 +12,7 @@ const (
 
 type (
 	roleConfig struct {
-		Privileges []string `yaml:"privileges"`
+		Privileges  []string `yaml:"privileges"`
 		Permissions []string `yaml:"permissions"`
 	}
 )
