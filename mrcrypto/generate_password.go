@@ -42,17 +42,17 @@ var (
 
 func GenPassword(length int, charsKinds PassCharsKinds) string {
     if length < 1 {
-        mrcore.LogError("param 'length': %d < 1", length)
+        mrcore.LogWarning("param 'length': %d < 1", length)
         length = 1
     }
 
     if length > 128 {
-        mrcore.LogError("param 'length': %d > 128", length)
+        mrcore.LogWarning("param 'length': %d > 128", length)
         length = 128
     }
 
     if charsKinds == 0 {
-        mrcore.LogError("param 'charsKinds' is zero", length)
+        mrcore.LogWarning("param 'charsKinds' is zero", length)
         charsKinds = PassAll
     }
 

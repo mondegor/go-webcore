@@ -3,8 +3,7 @@ package mrenum
 import (
     "database/sql/driver"
     "encoding/json"
-
-    "github.com/mondegor/go-webcore/mrcore"
+    "fmt"
 )
 
 const (
@@ -23,17 +22,17 @@ type (
 
 var (
     itemStatusName = map[ItemStatus]string{
-        ItemStatusDraft: "DRAFT",
-        ItemStatusEnabled: "ENABLED",
+        ItemStatusDraft:    "DRAFT",
+        ItemStatusEnabled:  "ENABLED",
         ItemStatusDisabled: "DISABLED",
-        ItemStatusRemoved: "REMOVED",
+        ItemStatusRemoved:  "REMOVED",
     }
 
     itemStatusValue = map[string]ItemStatus{
-        "DRAFT": ItemStatusDraft,
-        "ENABLED": ItemStatusEnabled,
+        "DRAFT":    ItemStatusDraft,
+        "ENABLED":  ItemStatusEnabled,
         "DISABLED": ItemStatusDisabled,
-        "REMOVED": ItemStatusRemoved,
+        "REMOVED":  ItemStatusRemoved,
     }
 
     ItemStatusFlow = StatusFlow{
@@ -60,7 +59,7 @@ func (e *ItemStatus) ParseAndSet(value string) error {
         return nil
     }
 
-    return mrcore.FactoryErrInternalMapValueNotFound.New(value, enumNameItemStatus)
+    return fmt.Errorf("'%s' is not found in map %s", value, enumNameItemStatus)
 }
 
 func (e ItemStatus) String() string {
@@ -87,7 +86,7 @@ func (e *ItemStatus) Scan(value any) error {
         return e.ParseAndSet(val)
     }
 
-    return mrcore.FactoryErrInternalTypeAssertion.New(enumNameItemStatus, value)
+    return fmt.Errorf("invalid type '%s' assertion (value: %s)", enumNameItemStatus, value)
 }
 
 func (e ItemStatus) Value() (driver.Value, error) {

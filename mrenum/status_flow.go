@@ -2,10 +2,6 @@ package mrenum
 
 type (
     StatusFlow map[Status][]Status
-
-    Status interface {
-        String() string
-    }
 )
 
 // Exists - проверяет, что данный статус имеется в карте статусов

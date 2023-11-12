@@ -13,7 +13,4 @@ func main() {
 
     fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusEnabled, mrenum.ItemStatusDisabled))
     fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusRemoved, mrenum.ItemStatusDisabled))
-
-    fmt.Printf("check: %#v\n", mrenum.OnlyRemoveStatusFlow.Check(mrenum.OnlyRemoveStatusEnabled, mrenum.OnlyRemoveStatusRemoved))
-    fmt.Printf("check: %#v\n", mrenum.OnlyRemoveStatusFlow.Check(mrenum.OnlyRemoveStatusRemoved, mrenum.OnlyRemoveStatusEnabled))
 }

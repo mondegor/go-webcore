@@ -9,7 +9,7 @@ import (
 )
 
 const (
-    maxEnumLen = 64
+    maxLenEnum = 64
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 )
 
 func ParseEnum(r *http.Request, key string, required bool) (string, error) {
-    value := r.URL.Query().Get(key)
+    value := strings.TrimSpace(r.URL.Query().Get(key))
 
     if value == "" {
         if required {
@@ -27,11 +27,11 @@ func ParseEnum(r *http.Request, key string, required bool) (string, error) {
         return "", nil
     }
 
-    if len(value) > maxEnumLen {
-        return "", mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxEnumLen)
+    if len(value) > maxLenEnum {
+        return "", mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenEnum)
     }
 
-    value = strings.ToUpper(strings.TrimSpace(value))
+    value = strings.ToUpper(value)
 
     if !regexpEnum.MatchString(value) {
         return "", mrcore.FactoryErrHttpRequestParseParam.New("Enum", key, value)

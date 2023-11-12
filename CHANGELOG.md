@@ -1,6 +1,24 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-11-13
+### Added
+- Добавлены новые типы в пакет `mrtype`: `FileInfo`, `File`, `SortParams`, `PageParams`, `NullableBool`;
+- Добавлены парсеры для новых типов, такие как: `ParseRequiredBool`, `ParseNullableBool`, `ParseSortParams`, и т.д.;
+- В логгер добавлены новые методы Caller, Warning и DisableFileLine (последний для отключения вывода информации о местоположения вызова лога);
+- В `ServiceHelper` добавлен метод `Caller`;
+- Добавлен интерфейс `BuilderPath` и его реализация для построения путей к файлам и URL к ресурсам;
+- Добавлен интерфейс `ListSorter` для проверки существования сортируемого поля и получения поля для сортировки по умолчанию;
+
+### Changed
+- В логгере изменён `callerSkip` с 3 на 4, для того чтобы в логах выводить путь к родительской функции, откуда этот лог был вызван;
+- Переименованы некоторые переменные и функции (типа Id -> ID) в соответствии с code style языка go;
+- Переименовано: `mrcore.DefaultLogger()` -> `mrcore.Log()`
+- Часть простых типов переехала из библиотеки `mrstorage` пакета `mrentity` в пакет `mrtype` ядра;
+- В `RequestPath` переименован метод `GetInt` -> `GetInt64`;
+- Удалены зависимости пакета `mrenum` от пакета `mrcore`;
+- Доработана отправка файла, добавлены заголовки `Content-Length`, `Content-Disposition`;
+
 ## 2023-11-01
 ### Added
 - Добавлена новая ошибка mrcore.FactoryErrHttpRequestParamMax;

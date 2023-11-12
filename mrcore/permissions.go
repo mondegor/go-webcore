@@ -2,6 +2,7 @@ package mrcore
 
 type (
     ClientSection interface {
+        Caption() string
         Path(actionPath string) string
         MiddlewareWithPermission(name string, next HttpHandlerFunc) HttpHandlerFunc
     }

@@ -8,11 +8,11 @@ import (
 )
 
 const (
-    maxStringLen = 128
+    maxLenString = 128
 )
 
 func ParseStr(r *http.Request, key string, required bool) (string, error) {
-    value := r.URL.Query().Get(key)
+    value := strings.TrimSpace(r.URL.Query().Get(key))
 
     if value == "" {
         if required {
@@ -22,9 +22,9 @@ func ParseStr(r *http.Request, key string, required bool) (string, error) {
         return "", nil
     }
 
-    if len(value) > maxStringLen {
-        return "", mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxStringLen)
+    if len(value) > maxLenString {
+        return "", mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenString)
     }
 
-    return strings.ToUpper(strings.TrimSpace(value)), nil
+    return value, nil
 }

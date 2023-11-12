@@ -6,11 +6,13 @@ import (
     "fmt"
     "io"
     "net/http"
+    "strconv"
     "time"
 
     "github.com/mondegor/go-sysmess/mrerr"
     "github.com/mondegor/go-webcore/mrcore"
     "github.com/mondegor/go-webcore/mrctx"
+    "github.com/mondegor/go-webcore/mrtype"
 )
 
 type (
@@ -85,7 +87,7 @@ func (c *clientContext) SendResponse(status int, structResponse any) error {
 }
 
 func (c *clientContext) sendResponse(status int, structResponse any) *mrerr.AppError {
-    c.responseWriter.Header().Set("Content-Type", "application/json")
+    c.responseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
     c.responseWriter.WriteHeader(status)
 
     bytes, err := json.Marshal(structResponse)
@@ -109,8 +111,18 @@ func (c *clientContext) SendResponseNoContent() error {
     return nil
 }
 
-func (c *clientContext) SendFile(contentType string, file io.Reader) error {
-    c.responseWriter.Header().Set("Content-Type", contentType)
+func (c *clientContext) SendFile(info mrtype.FileInfo, attachmentName string, file io.Reader) error {
+    c.responseWriter.Header().Set("Content-Type", info.ContentType)
+
+    if info.Size > 0 {
+        c.responseWriter.Header().Set("Content-Length", strconv.FormatInt(info.Size, 10))
+    }
+
+    if attachmentName != "" {
+        c.responseWriter.Header().Set("Cache-control", "private")
+        c.responseWriter.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", attachmentName)) // :TODO: escape
+    }
+
     c.responseWriter.WriteHeader(http.StatusOK)
 
     _, err := io.Copy(c.responseWriter, file)
@@ -146,7 +158,7 @@ func (c *clientContext) sendErrorResponse(err error) {
     }
 
     if appError != nil {
-        mrctx.Logger(c.Context()).Err(appError)
+        mrctx.Logger(c.Context()).DisableFileLine().Err(appError)
         c.sendAppErrorResponse(c.wrapErrorFunc(appError))
     }
 }
@@ -162,7 +174,7 @@ func (c *clientContext) sendUserErrorListResponse(list *mrerr.FieldErrorList) *m
         }
 
         errorResponseList.Add(
-            userError.Id,
+            userError.ID,
             userError.Err.Translate(locale).Reason,
         )
     }
@@ -177,7 +189,7 @@ func (c *clientContext) sendUserErrorResponse(appError *mrerr.AppError) *mrerr.A
         http.StatusBadRequest,
         AppErrorListResponse{
             AppErrorAttribute{
-                Id: AppErrorAttributeNameSystem,
+                ID: AppErrorAttributeNameSystem,
                 Value: appError.Translate(locale).Reason,
             },
         },
@@ -195,21 +207,21 @@ func (c *clientContext) sendAppErrorResponse(status int, appError *mrerr.AppErro
         Details: errMessage.DetailsToString(),
         Request: c.request.URL.Path,
         Time: time.Now().Format(time.RFC3339),
-        ErrorTraceId: c.getErrorTraceId(appError),
+        ErrorTraceID: c.getErrorTraceID(appError),
     }
 
     c.responseWriter.Write(errorResponse.Marshal())
 }
 
-func (c *clientContext) getErrorTraceId(err *mrerr.AppError) string {
-    errorTraceId := err.TraceId()
-    correlationId := mrctx.CorrelationId(c.Context())
+func (c *clientContext) getErrorTraceID(err *mrerr.AppError) string {
+    errorTraceID := err.TraceID()
+    correlationID := mrctx.CorrelationID(c.Context())
 
-    if errorTraceId == "" {
-        return correlationId
+    if errorTraceID == "" {
+        return correlationID
     }
 
-    return fmt.Sprintf("%s, %s", correlationId, errorTraceId)
+    return fmt.Sprintf("%s, %s", correlationID, errorTraceID)
 }
 
 // :TODO: move to package internal
@@ -221,7 +233,7 @@ func (c *clientContext) wrapErrorFunc(err *mrerr.AppError) (int, *mrerr.AppError
         err = mrcore.FactoryErrHttpResourceNotFound.Wrap(err)
     } else if mrcore.FactoryErrServiceTemporarilyUnavailable.Is(err) {
         err = mrcore.FactoryErrHttpResponseSystemTemporarilyUnableToProcess.Wrap(err)
-    } else if err.Id() == mrerr.ErrorIdInternal {
+    } else if err.ID() == mrerr.ErrorInternalID {
         status = http.StatusTeapot
     }
 

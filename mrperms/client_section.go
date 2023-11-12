@@ -10,28 +10,35 @@ import (
 
 type (
     ClientSection struct {
-        Caption string
-        name string
+        caption string
+        rootPath string
         privilege string
         access *ModulesAccess
     }
 )
 
-func NewClientSection(name string, caption string, priv string, access *ModulesAccess) *ClientSection {
+func NewClientSection(caption, rootPath, priv string, access *ModulesAccess) *ClientSection {
     if _, ok := access.privileges[priv]; !ok {
-        mrcore.LogWarn("privilege '%s' is not registered in ModulesAccess.privileges, perhaps, it is not related to any role", priv)
+        mrcore.LogWarning(
+            "privilege '%s' is not registered in ModulesAccess.privileges, perhaps, it is not related to any role",
+            priv,
+        )
     }
 
     return &ClientSection{
-        Caption: caption,
-        name: strings.Trim(name, "/"),
+        caption: caption,
+        rootPath: strings.Trim(rootPath, "/"),
         privilege: priv,
         access: access,
     }
 }
 
+func (s *ClientSection) Caption() string {
+    return s.caption
+}
+
 func (s *ClientSection) Path(actionPath string) string {
-    return fmt.Sprintf("/%s/%s", s.name, strings.TrimLeft(actionPath, "/"))
+    return fmt.Sprintf("/%s/%s", s.rootPath, strings.TrimLeft(actionPath, "/"))
 }
 
 func (s *ClientSection) MiddlewareWithPermission(name string, next mrcore.HttpHandlerFunc) mrcore.HttpHandlerFunc {

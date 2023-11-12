@@ -10,12 +10,12 @@ import (
 
 func GenDigitCode(length int) string {
     if length < 1 {
-        mrcore.LogError("param 'length': %d < 1", length)
+        mrcore.LogWarning("param 'length': %d < 1", length)
         length = 1
     }
 
     if length > 19 {
-        mrcore.LogError("param 'length': %d > 19", length)
+        mrcore.LogWarning("param 'length': %d > 19", length)
         length = 19
     }
 

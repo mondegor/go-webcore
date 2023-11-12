@@ -8,18 +8,18 @@ import (
 )
 
 const (
-    maxEnumListLen = 256
+    maxLenEnumList = 256
 )
 
 func ParseEnumList(r *http.Request, key string) ([]string, error) {
-    value := r.URL.Query().Get(key)
+    value := strings.TrimSpace(r.URL.Query().Get(key))
 
     if value == "" {
         return []string{}, nil
     }
 
-    if len(value) > maxEnumListLen {
-        return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxEnumListLen)
+    if len(value) > maxLenEnumList {
+        return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenEnumList)
     }
 
     items := strings.Split(strings.ToUpper(value), ",")

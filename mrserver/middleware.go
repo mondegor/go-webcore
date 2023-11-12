@@ -12,22 +12,23 @@ import (
 func MiddlewareFirst(l mrcore.Logger) mrcore.HttpMiddleware {
     return mrcore.HttpMiddlewareFunc(func(next http.Handler) http.Handler {
         return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-            correlationId, err := mrreq.ParseCorrelationId(r)
+            correlationID, err := mrreq.ParseCorrelationID(r)
 
             if err != nil {
-                l.Warn(err.Error())
+                l.Warn(err)
             }
 
-            if correlationId == "" {
-                correlationId = mrctx.GenCorrelationId()
+            if correlationID == "" {
+                correlationID = mrctx.GenCorrelationID()
             }
 
-            logger := l.With(correlationId)
+            logger := l.With(correlationID)
 
             logger.Debug("Exec MiddlewareFirst")
-            logger.Info("CorrelationID: %s", correlationId)
+            logger.Debug("%s %s", r.Method, r.RequestURI)
+            logger.Debug("CorrelationID: %s", correlationID)
 
-            ctx := mrctx.WithCorrelationId(r.Context(), correlationId)
+            ctx := mrctx.WithCorrelationID(r.Context(), correlationID)
             ctx = mrctx.WithLogger(ctx, logger)
 
             next.ServeHTTP(w, r.WithContext(ctx))
@@ -44,7 +45,7 @@ func MiddlewareAcceptLanguage(translator *mrlang.Translator) mrcore.HttpMiddlewa
             acceptLanguages := mrreq.ParseLanguage(r)
             locale := translator.FindFirstLocale(acceptLanguages...)
 
-            logger.Info("Accept-Language: %v; Set-Language: %s", acceptLanguages, locale.LangCode())
+            logger.Debug("Accept-Language: %v; Set-Language: %s", acceptLanguages, locale.LangCode())
             ctx := mrctx.WithLocale(r.Context(), locale)
 
             next.ServeHTTP(w, r.WithContext(ctx))

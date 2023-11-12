@@ -17,9 +17,12 @@ type (
 
     Logger interface {
         With(name string) Logger
+        Caller(skip int) Logger
+        DisableFileLine() Logger
         Error(message string, args ...any)
         Err(err error)
-        Warn(message string, args ...any)
+        Warning(message string, args ...any)
+        Warn(err error)
         Info(message string, args ...any)
         Debug(message string, args ...any)
     }
@@ -29,12 +32,12 @@ var (
     defaultLogger Logger = newLogger("[mrcore] ", LogDebugLevel)
 )
 
-// SetDefaultLogger - WARNING!!! only for main process
+// SetDefaultLogger - WARNING: use only when starting the main process
 func SetDefaultLogger(logger Logger) {
     defaultLogger = logger
 }
 
-func DefaultLogger() Logger {
+func Log() Logger {
     return defaultLogger
 }
 
@@ -43,7 +46,7 @@ func LogError(message string, args ...any) {
         return
     }
 
-    defaultLogger.Error(message, args...)
+    defaultLogger.Caller(1).Error(message, args...)
 }
 
 func LogErr(e error) {
@@ -51,15 +54,23 @@ func LogErr(e error) {
         return
     }
 
-    defaultLogger.Err(e)
+    defaultLogger.Caller(1).Err(e)
 }
 
-func LogWarn(message string, args ...any) {
+func LogWarning(message string, args ...any) {
     if defaultLogger == nil {
         return
     }
 
-    defaultLogger.Warn(message, args...)
+    defaultLogger.Caller(1).Warning(message, args...)
+}
+
+func LogWarn(e error) {
+    if defaultLogger == nil {
+        return
+    }
+
+    defaultLogger.Caller(1).Warn(e)
 }
 
 func LogInfo(message string, args ...any) {

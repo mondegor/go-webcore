@@ -13,14 +13,14 @@ type (
         Details string `json:"details"`
         Request string `json:"request"`
         Time string `json:"time"`
-        ErrorTraceId string `json:"errorTraceId,omitempty"`
+        ErrorTraceID string `json:"errorTraceId,omitempty"`
     }
 
     // AppErrorListResponse - application/json:
     AppErrorListResponse []AppErrorAttribute
 
     AppErrorAttribute struct {
-        Id string `json:"id"`
+        ID string `json:"id"`
         Value string `json:"value"`
     }
 )
@@ -35,6 +35,6 @@ func (ar *AppErrorResponse) Marshal() []byte {
     return bytes
 }
 
-func (a *AppErrorListResponse) Add(id string, value string) {
-    *a = append(*a, AppErrorAttribute{Id: id, Value: value})
+func (a *AppErrorListResponse) Add(id, value string) {
+    *a = append(*a, AppErrorAttribute{ID: id, Value: value})
 }

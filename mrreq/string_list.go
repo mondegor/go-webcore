@@ -8,21 +8,21 @@ import (
 )
 
 const (
-    maxStringsListLen = 1024
+    maxLenStringsList = 1024
 )
 
 func ParseStrList(r *http.Request, key string) ([]string, error) {
-    value := r.URL.Query().Get(key)
+    value := strings.TrimSpace(r.URL.Query().Get(key))
 
     if value == "" {
         return []string{}, nil
     }
 
-    if len(value) > maxStringsListLen {
-        return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxStringsListLen)
+    if len(value) > maxLenStringsList {
+        return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenStringsList)
     }
 
-    items := strings.Split(strings.ToUpper(value), ",")
+    items := strings.Split(value, ",")
 
     for i, item := range items {
         items[i] = strings.TrimSpace(item)

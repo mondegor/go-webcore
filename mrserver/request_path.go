@@ -33,7 +33,7 @@ func (r *requestPath) Get(name string) string {
     return r.params.ByName(name)
 }
 
-func (r *requestPath) GetInt(name string) int64 {
+func (r *requestPath) GetInt64(name string) int64 {
     value, err := strconv.ParseInt(r.Get(name), 10, 64)
 
     if err != nil {

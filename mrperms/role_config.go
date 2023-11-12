@@ -17,7 +17,7 @@ type (
     }
 )
 
-func loadRoleConfig(roleName string, dirPath string, fileType string) (*roleConfig, error) {
+func loadRoleConfig(roleName, dirPath, fileType string) (*roleConfig, error) {
     cfg := roleConfig{}
     filePath := fmt.Sprintf(rolesPathPattern, dirPath, roleName, fileType)
 

@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-    logger := mrcore.DefaultLogger()
+    logger := mrcore.Log()
 
     logger.Info("GenDigitCode: %s", mrcrypto.GenDigitCode(16))
     logger.Info("GenTokenBase64: %s", mrcrypto.GenTokenBase64(16))

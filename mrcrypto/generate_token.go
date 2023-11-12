@@ -18,14 +18,14 @@ func GenTokenHex(length int) string {
     return hex.EncodeToString(GenToken(length))
 }
 
-func GenTokenHexWithDelimiter(length int, repeat int) string {
+func GenTokenHexWithDelimiter(length, repeat int) string {
     if repeat < 1 {
-        mrcore.LogError("param 'repeat': %d < 1", repeat)
+        mrcore.LogWarning("param 'repeat': %d < 1", repeat)
         repeat = 1
     }
 
     if repeat > 16 {
-        mrcore.LogError("param 'repeat': %d > 16", repeat)
+        mrcore.LogWarning("param 'repeat': %d > 16", repeat)
         repeat = 16
     }
 
@@ -40,12 +40,12 @@ func GenTokenHexWithDelimiter(length int, repeat int) string {
 
 func GenToken(length int) []byte {
     if length < 1 {
-        mrcore.LogError("param 'length': %d < 1", length)
+        mrcore.LogWarning("param 'length': %d < 1", length)
         length = 1
     }
 
     if length > 256 {
-        mrcore.LogError("param 'length': %d > 256", length)
+        mrcore.LogWarning("param 'length': %d > 256", length)
         length = 256
     }
 

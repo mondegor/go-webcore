@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-    logger, err := mrcore.NewLogger("[my-logger]", "info")
+    logger, err := mrcore.NewLogger("[my-logger] ", "info")
 
     if err != nil {
         fmt.Println("create logger error")

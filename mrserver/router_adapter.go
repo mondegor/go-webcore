@@ -64,6 +64,7 @@ func (rt *routerAdapter) HandlerFunc(method, path string, handler http.HandlerFu
 }
 
 func (rt *routerAdapter) HttpHandlerFunc(method, path string, handler mrcore.HttpHandlerFunc) {
+    rt.logger.Debug("- registered: %s %s", method, path)
     rt.router.Handler(method, path, rt.handlerAdapterFunc(handler))
 }
 

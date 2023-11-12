@@ -4,6 +4,8 @@ import (
     "context"
     "io"
     "net/http"
+
+    "github.com/mondegor/go-webcore/mrtype"
 )
 
 type (
@@ -22,11 +24,11 @@ type (
 
         SendResponse(status int, structResponse any) error
         SendResponseNoContent() error
-        SendFile(contentType string, file io.Reader) error
+        SendFile(info mrtype.FileInfo, attachmentName string, file io.Reader) error
     }
 
     RequestPath interface {
         Get(name string) string
-        GetInt(name string) int64
+        GetInt64(name string) int64
     }
 )

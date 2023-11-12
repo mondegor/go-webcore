@@ -10,11 +10,11 @@ type (
     permissionMap map[string][]int32
 
     ModulesAccess struct {
-        roles roleMap // map to rolesIds
+        roles roleMap // map to rolesIDs
         privileges privilegeMap // map to roles
         permissions permissionMap // map to roles
         defaultRole string
-        defaultRoleId int32
+        defaultRoleID int32
     }
 
     ModulesAccessOptions struct {
@@ -44,15 +44,15 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
         permissions: make(permissionMap, 0),
     }
 
-    var roleId int32
+    var roleID int32
 
     for pos, roleName := range opt.Roles {
         if _, ok := ma.roles[roleName]; ok {
             return nil, fmt.Errorf("duplicate role %s detected (pos: %d)", roleName, pos + 1)
         }
 
-        roleId++
-        ma.roles[roleName] = roleId
+        roleID++
+        ma.roles[roleName] = roleID
 
         config, err := loadRoleConfig(roleName, opt.RolesDirPath, opt.RolesFileType)
 
@@ -65,7 +65,7 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
                 return nil, fmt.Errorf("privilege '%s' is not registered in opt.Privileges", priv)
             }
 
-            ma.privileges[priv] = append(ma.privileges[priv], roleId)
+            ma.privileges[priv] = append(ma.privileges[priv], roleID)
         }
 
         for _, perm := range config.Permissions {
@@ -73,12 +73,12 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
                 return nil, fmt.Errorf("permission '%s' is not registered in opt.Permissions", perm)
             }
 
-            ma.permissions[perm] = append(ma.permissions[perm], roleId)
+            ma.permissions[perm] = append(ma.permissions[perm], roleID)
         }
 
         if opt.DefaultRole == roleName {
             ma.defaultRole = roleName
-            ma.defaultRoleId = roleId
+            ma.defaultRoleID = roleID
         }
     }
 
@@ -93,24 +93,24 @@ func (a *ModulesAccess) DefaultRole() string {
     return a.defaultRole
 }
 
-func (a *ModulesAccess) CheckPrivilege(rolesIds []int32, name string) bool {
-    privRolesIds, ok := a.privileges[name]
+func (a *ModulesAccess) CheckPrivilege(rolesIDs []int32, name string) bool {
+    privRolesIDs, ok := a.privileges[name]
 
     if !ok {
         return false
     }
 
-    return isArraysIntersection(rolesIds, privRolesIds)
+    return isArraysIntersection(rolesIDs, privRolesIDs)
 }
 
-func (a *ModulesAccess) CheckPermission(rolesIds []int32, name string) bool {
-    permRolesIds, ok := a.permissions[name]
+func (a *ModulesAccess) CheckPermission(rolesIDs []int32, name string) bool {
+    permRolesIDs, ok := a.permissions[name]
 
     if !ok {
         return false
     }
 
-    return isArraysIntersection(rolesIds, permRolesIds)
+    return isArraysIntersection(rolesIDs, permRolesIDs)
 }
 
 func (a *ModulesAccess) RegisteredRoles() []string {
@@ -149,19 +149,19 @@ func (a *ModulesAccess) RegisteredPermissions() []string {
     return permissions
 }
 
-func (a *ModulesAccess) roleNamesToIds(roles []string) []int32 {
-    var roleIds []int32
+func (a *ModulesAccess) roleNamesToIDs(roles []string) []int32 {
+    var roleIDs []int32
 
     for _, role := range roles {
         if id, ok := a.roles[role]; ok {
-            roleIds = append(roleIds, id)
+            roleIDs = append(roleIDs, id)
         }
     }
 
-    return roleIds
+    return roleIDs
 }
 
-func isArraysIntersection(ids1 []int32, ids2 []int32) bool {
+func isArraysIntersection(ids1, ids2 []int32) bool {
     for id1 := range ids1 {
         for id2 := range ids2 {
             if id1 == id2 {

@@ -21,5 +21,5 @@ func Logger(ctx context.Context) mrcore.Logger {
         return value
     }
 
-    return mrcore.DefaultLogger()
+    return mrcore.Log()
 }

@@ -25,7 +25,7 @@ func NewAppHelper(logger mrcore.Logger) *AppHelper {
 
 func (h *AppHelper) Close(c io.Closer) {
     if err := c.Close(); err != nil {
-        h.Logger.Err(mrcore.FactoryErrInternalFailedToClose.Caller(1).Wrap(err, fmt.Sprintf("%#v", c)))
+        h.Logger.Err(mrcore.FactoryErrInternalFailedToClose.Wrap(err, fmt.Sprintf("%#v", c)))
     }
 }
 
@@ -48,7 +48,7 @@ func (h *AppHelper) GracefulShutdown(cancel context.CancelFunc) {
 
 func (h *AppHelper) ExitOnError(err error) {
     if err != nil {
-        h.Logger.Err(mrcore.FactoryErrInternal.Caller(1).Wrap(err))
+        h.Logger.Err(mrcore.FactoryErrInternal.Wrap(err))
         os.Exit(1)
     }
 }

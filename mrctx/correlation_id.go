@@ -9,23 +9,23 @@ import (
 // https://www.rapid7.com/blog/post/2016/12/23/the-value-of-correlation-ids/
 
 type (
-    ctxCorrelationId struct{}
+    ctxCorrelationID struct{}
 )
 
-func WithCorrelationId(ctx context.Context, value string) context.Context {
-    return context.WithValue(ctx, ctxCorrelationId{}, value)
+func WithCorrelationID(ctx context.Context, value string) context.Context {
+    return context.WithValue(ctx, ctxCorrelationID{}, value)
 }
 
-func CorrelationId(ctx context.Context) string {
-    value, ok := ctx.Value(ctxCorrelationId{}).(string)
+func CorrelationID(ctx context.Context) string {
+    value, ok := ctx.Value(ctxCorrelationID{}).(string)
 
     if ok {
         return value
     }
 
-    return GenCorrelationId()
+    return GenCorrelationID()
 }
 
-func GenCorrelationId() string {
+func GenCorrelationID() string {
     return uuid.New().String()
 }

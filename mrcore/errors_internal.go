@@ -4,7 +4,7 @@ import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
     FactoryErrInternal = NewFactory(
-        ErrorIdInternal, ErrorKindInternal, "internal server error")
+        ErrorInternalID, ErrorKindInternal, "internal server error")
 
     FactoryErrInternalNilPointer = NewFactory(
         "errInternalNilPointer", ErrorKindInternal, "nil pointer")

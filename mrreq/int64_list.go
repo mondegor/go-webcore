@@ -9,18 +9,18 @@ import (
 )
 
 const (
-    maxInt64ListLen = 256
+    maxLenInt64List = 256
 )
 
 func ParseInt64List(r *http.Request, key string) ([]int64, error) {
-    value := r.URL.Query().Get(key)
+    value := strings.TrimSpace(r.URL.Query().Get(key))
 
     if value == "" {
         return []int64{}, nil
     }
 
-    if len(value) > maxInt64ListLen {
-        return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxEnumListLen)
+    if len(value) > maxLenInt64List {
+        return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenInt64List)
     }
 
     itemsTmp := strings.Split(value, ",")
