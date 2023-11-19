@@ -37,7 +37,7 @@ func SetDefaultLogger(logger Logger) {
 	defaultLogger = logger
 }
 
-func Log() Logger {
+func DefaultLogger() Logger {
 	return defaultLogger
 }
 

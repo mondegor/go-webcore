@@ -1,8 +1,6 @@
 package mrperms
 
 import (
-	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrcore"
@@ -38,19 +36,19 @@ func (s *ClientSection) Caption() string {
 }
 
 func (s *ClientSection) Path(actionPath string) string {
-	return fmt.Sprintf("/%s/%s", s.rootPath, strings.TrimLeft(actionPath, "/"))
+	return "/" + s.rootPath + "/" + strings.TrimLeft(actionPath, "/")
 }
 
 func (s *ClientSection) MiddlewareWithPermission(name string, next mrcore.HttpHandlerFunc) mrcore.HttpHandlerFunc {
-	return func(c mrcore.ClientData) error {
+	return func(c mrcore.ClientContext) error {
 		group := s.access.NewRoleGroup([]string{"administrators", "guests"}) // :TODO: брать у пользователя
 
-		if !group.CheckPrivilege(s.privilege) {
-			return errors.New("403") // :TODO: превратить в системную ошибку
-		}
-
-		if !group.CheckPermission(name) {
-			return errors.New("403") // :TODO: превратить в системную ошибку
+		if !group.CheckPrivilege(s.privilege) && !group.CheckPermission(name) {
+			if group.IsAuthorized() {
+				return mrcore.FactoryErrHttpAccessForbidden.New()
+			} else {
+				return mrcore.FactoryErrHttpClientUnauthorized.New()
+			}
 		}
 
 		return next(c)

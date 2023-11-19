@@ -2,8 +2,8 @@ package mrcrypto
 
 import (
 	"crypto/rand"
-	"fmt"
 	"math/big"
+	"strconv"
 
 	"github.com/mondegor/go-webcore/mrcore"
 )
@@ -27,7 +27,7 @@ func GenDigitCode(length int) string {
 		value = big.NewInt(min * 9)
 	}
 
-	return fmt.Sprintf("%d", value.Int64()+min)
+	return strconv.FormatInt(value.Int64()+min, 10)
 }
 
 func pow(num int64, exponent int) int64 {

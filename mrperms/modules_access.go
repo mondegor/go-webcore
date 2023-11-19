@@ -10,11 +10,11 @@ type (
 	permissionMap map[string][]int32
 
 	ModulesAccess struct {
-		roles         roleMap       // map to rolesIDs
-		privileges    privilegeMap  // map to roles
-		permissions   permissionMap // map to roles
-		defaultRole   string
-		defaultRoleID int32
+		roles        roleMap       // map to rolesIDs
+		privileges   privilegeMap  // map to roles
+		permissions  permissionMap // map to roles
+		guestsRole   string
+		guestsRoleID int32
 	}
 
 	ModulesAccessOptions struct {
@@ -23,7 +23,7 @@ type (
 		Roles         []string
 		Privileges    []string
 		Permissions   []string
-		DefaultRole   string // optional
+		GuestRole     string // optional
 	}
 )
 
@@ -32,10 +32,10 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
 		return nil, fmt.Errorf("opt.Roles is required")
 	}
 
-	if opt.DefaultRole == "" {
-		opt.DefaultRole = opt.Roles[0]
-	} else if !defaultRoleInArray(opt.DefaultRole, opt.Roles) {
-		return nil, fmt.Errorf("opt.DefaultRole='%s' not found in opt.Roles", opt.DefaultRole)
+	if opt.GuestRole == "" {
+		opt.GuestRole = opt.Roles[0]
+	} else if !roleInArray(opt.GuestRole, opt.Roles) {
+		return nil, fmt.Errorf("opt.GuestRole='%s' not found in opt.Roles", opt.GuestRole)
 	}
 
 	ma := ModulesAccess{
@@ -76,9 +76,9 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
 			ma.permissions[perm] = append(ma.permissions[perm], roleID)
 		}
 
-		if opt.DefaultRole == roleName {
-			ma.defaultRole = roleName
-			ma.defaultRoleID = roleID
+		if ma.guestsRoleID == 0 && opt.GuestRole == roleName {
+			ma.guestsRole = roleName
+			ma.guestsRoleID = roleID
 		}
 	}
 
@@ -89,8 +89,8 @@ func (a *ModulesAccess) NewRoleGroup(roles []string) *RoleGroup {
 	return newRoleGroup(a, roles)
 }
 
-func (a *ModulesAccess) DefaultRole() string {
-	return a.defaultRole
+func (a *ModulesAccess) GuestRole() string {
+	return a.guestsRole
 }
 
 func (a *ModulesAccess) CheckPrivilege(rolesIDs []int32, name string) bool {
@@ -183,7 +183,7 @@ func stringInArray(value string, values []string) bool {
 	return false
 }
 
-func defaultRoleInArray(roleName string, roleNames []string) bool {
+func roleInArray(roleName string, roleNames []string) bool {
 	for i := range roleNames {
 		if roleName == roleNames[i] {
 			return true

@@ -1,6 +1,8 @@
 package mrcore
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type (
 	HttpRouter interface {
@@ -21,7 +23,7 @@ type (
 		AddHandlers(router HttpRouter)
 	}
 
-	HttpHandlerFunc        func(c ClientData) error
+	HttpHandlerFunc        func(c ClientContext) error
 	HttpHandlerAdapterFunc func(next HttpHandlerFunc) http.HandlerFunc
 )
 

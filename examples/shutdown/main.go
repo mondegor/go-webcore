@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	logger := mrcore.Log().With("shutdown")
+	logger := mrcore.DefaultLogger().With("shutdown")
 	appHelper := mrtool.NewAppHelper(logger)
 
 	ctx, cancel := context.WithCancel(context.Background())

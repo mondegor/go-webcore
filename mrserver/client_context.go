@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/julienschmidt/httprouter"
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrctx"
@@ -17,43 +18,78 @@ import (
 
 type (
 	clientContext struct {
-		request        *http.Request
-		responseWriter http.ResponseWriter
-		requestPath    *requestPath
-		validator      mrcore.Validator
+		request          *http.Request
+		responseWriter   http.ResponseWriter
+		pathParams       httprouter.Params
+		errorWrapperFunc mrcore.ClientErrorWrapperFunc
+		tools            mrctx.ClientTools
 	}
 )
 
-// Make sure the clientContext conforms with the mrcore.ClientData interface
-var _ mrcore.ClientData = (*clientContext)(nil)
+// Make sure the clientContext conforms with the mrcore.ClientContext interface
+var _ mrcore.ClientContext = (*clientContext)(nil)
+
+func newClientData(
+	r *http.Request,
+	w http.ResponseWriter,
+	ew mrcore.ClientErrorWrapperFunc,
+	tools mrctx.ClientTools,
+) *clientContext {
+	if ew == nil {
+		ew = DefaultErrorWrapperFunc
+	}
+
+	c := clientContext{
+		request:          r,
+		responseWriter:   w,
+		errorWrapperFunc: ew,
+		tools:            tools,
+	}
+
+	params, ok := r.Context().Value(httprouter.ParamsKey).(httprouter.Params)
+
+	if ok {
+		c.pathParams = params
+	}
+
+	return &c
+}
 
 func (c *clientContext) Request() *http.Request {
 	return c.request
 }
 
-func (c *clientContext) RequestPath() mrcore.RequestPath {
-	if c.requestPath == nil {
-		c.requestPath = newRequestPath(c.request)
-	}
-
-	return c.requestPath
+func (c *clientContext) ParamFromPath(name string) string {
+	return c.pathParams.ByName(name)
 }
 
 func (c *clientContext) Context() context.Context {
 	return c.request.Context()
 }
 
-func (c *clientContext) WithContext(ctx context.Context) mrcore.ClientData {
-	c.request = c.request.WithContext(ctx)
-
-	return c
+func (c *clientContext) WithContext(ctx context.Context) mrcore.ClientContext {
+	return &clientContext{
+		request:          c.request.WithContext(ctx),
+		responseWriter:   c.responseWriter,
+		pathParams:       c.pathParams,
+		errorWrapperFunc: c.errorWrapperFunc,
+		tools:            c.tools,
+	}
 }
 
 func (c *clientContext) Writer() http.ResponseWriter {
 	return c.responseWriter
 }
 
-func (c *clientContext) Parse(structRequest any) error {
+func (c *clientContext) Validate(structRequest any) error {
+	if err := c.parse(structRequest); err != nil {
+		return err
+	}
+
+	return c.validate(structRequest)
+}
+
+func (c *clientContext) parse(structRequest any) error {
 	dec := json.NewDecoder(c.request.Body)
 	dec.DisallowUnknownFields()
 
@@ -64,23 +100,14 @@ func (c *clientContext) Parse(structRequest any) error {
 	return nil
 }
 
-func (c *clientContext) Validate(structRequest any) error {
-	return c.validator.Validate(c.request.Context(), structRequest)
-}
-
-func (c *clientContext) ParseAndValidate(structRequest any) error {
-	if err := c.Parse(structRequest); err != nil {
-		return err
-	}
-
-	return c.Validate(structRequest)
+func (c *clientContext) validate(structRequest any) error {
+	return c.tools.Validator.Validate(c.request.Context(), structRequest)
 }
 
 func (c *clientContext) SendResponse(status int, structResponse any) error {
-	appError := c.sendResponse(status, structResponse)
-
-	if appError != nil {
-		return appError
+	// WARNING: err is important, because error(nil) != *mrerr.AppError(nil)
+	if err := c.sendResponse(status, structResponse); err != nil {
+		return err
 	}
 
 	return nil
@@ -120,7 +147,7 @@ func (c *clientContext) SendFile(info mrtype.FileInfo, attachmentName string, fi
 
 	if attachmentName != "" {
 		c.responseWriter.Header().Set("Cache-control", "private")
-		c.responseWriter.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", attachmentName)) // :TODO: escape
+		c.responseWriter.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s\"", attachmentName)) // :TODO: escape
 	}
 
 	c.responseWriter.WriteHeader(http.StatusOK)
@@ -138,14 +165,19 @@ func (c *clientContext) sendErrorResponse(err error) {
 	var appError *mrerr.AppError
 
 	for { // only for break
-		if userErrorList, ok := err.(*mrerr.FieldErrorList); ok {
-			appError = c.sendUserErrorListResponse(userErrorList)
+		if fieldError, ok := err.(*mrerr.FieldError); ok {
+			appError = c.sendFieldErrorListResponse(mrerr.FieldErrorList{fieldError})
+			break
+		}
+
+		if fieldErrorList, ok := err.(mrerr.FieldErrorList); ok {
+			appError = c.sendFieldErrorListResponse(fieldErrorList)
 			break
 		}
 
 		if appErrorTmp, ok := err.(*mrerr.AppError); ok {
 			if appErrorTmp.Kind() == mrerr.ErrorKindUser {
-				appError = c.sendUserErrorResponse(appErrorTmp)
+				appError = c.sendSystemErrorResponse(appErrorTmp)
 				break
 			}
 
@@ -153,44 +185,41 @@ func (c *clientContext) sendErrorResponse(err error) {
 			break
 		}
 
-		appError = mrcore.FactoryErrInternal.Wrap(err)
+		appError = mrcore.FactoryErrInternal.Caller(-1).Wrap(err)
 		break
 	}
 
 	if appError != nil {
-		mrctx.Logger(c.Context()).DisableFileLine().Err(appError)
-		c.sendAppErrorResponse(c.wrapErrorFunc(appError))
+		c.tools.Logger.DisableFileLine().Err(appError)
+		c.sendAppErrorResponse(c.errorWrapperFunc(appError))
 	}
 }
 
-func (c *clientContext) sendUserErrorListResponse(list *mrerr.FieldErrorList) *mrerr.AppError {
-	locale := mrctx.Locale(c.Context())
+func (c *clientContext) sendFieldErrorListResponse(list mrerr.FieldErrorList) *mrerr.AppError {
 	errorResponseList := AppErrorListResponse{}
 
-	for _, userError := range *list {
-		if userError.Err.Kind() != mrerr.ErrorKindUser {
-			mrctx.Logger(c.Context()).Err(userError.Err)
+	for _, fieldError := range list {
+		if fieldError.Kind() != mrerr.ErrorKindUser {
+			c.tools.Logger.Err(fieldError.AppError())
 			continue
 		}
 
 		errorResponseList.Add(
-			userError.ID,
-			userError.Err.Translate(locale).Reason,
+			fieldError.ID(),
+			fieldError.AppError().Translate(c.tools.Locale).Reason,
 		)
 	}
 
 	return c.sendResponse(http.StatusBadRequest, errorResponseList)
 }
 
-func (c *clientContext) sendUserErrorResponse(appError *mrerr.AppError) *mrerr.AppError {
-	locale := mrctx.Locale(c.Context())
-
+func (c *clientContext) sendSystemErrorResponse(appError *mrerr.AppError) *mrerr.AppError {
 	return c.sendResponse(
 		http.StatusBadRequest,
 		AppErrorListResponse{
 			AppErrorAttribute{
 				ID:    AppErrorAttributeNameSystem,
-				Value: appError.Translate(locale).Reason,
+				Value: appError.Translate(c.tools.Locale).Reason,
 			},
 		},
 	)
@@ -200,8 +229,7 @@ func (c *clientContext) sendAppErrorResponse(status int, appError *mrerr.AppErro
 	c.responseWriter.Header().Set("Content-Type", "application/problem+json")
 	c.responseWriter.WriteHeader(status)
 
-	locale := mrctx.Locale(c.Context())
-	errMessage := appError.Translate(locale)
+	errMessage := appError.Translate(c.tools.Locale)
 	errorResponse := AppErrorResponse{
 		Title:        errMessage.Reason,
 		Details:      errMessage.DetailsToString(),
@@ -215,27 +243,10 @@ func (c *clientContext) sendAppErrorResponse(status int, appError *mrerr.AppErro
 
 func (c *clientContext) getErrorTraceID(err *mrerr.AppError) string {
 	errorTraceID := err.TraceID()
-	correlationID := mrctx.CorrelationID(c.Context())
 
 	if errorTraceID == "" {
-		return correlationID
+		return c.tools.CorrelationID
 	}
 
-	return fmt.Sprintf("%s, %s", correlationID, errorTraceID)
-}
-
-// :TODO: move to package internal
-func (c *clientContext) wrapErrorFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
-	status := http.StatusInternalServerError
-
-	if mrcore.FactoryErrServiceEntityNotFound.Is(err) {
-		status = http.StatusNotFound
-		err = mrcore.FactoryErrHttpResourceNotFound.Wrap(err)
-	} else if mrcore.FactoryErrServiceTemporarilyUnavailable.Is(err) {
-		err = mrcore.FactoryErrHttpResponseSystemTemporarilyUnableToProcess.Wrap(err)
-	} else if err.ID() == mrerr.ErrorInternalID {
-		status = http.StatusTeapot
-	}
-
-	return status, err
+	return c.tools.CorrelationID + ", " + errorTraceID
 }

@@ -27,6 +27,12 @@ var (
 	FactoryErrHttpResponseSystemTemporarilyUnableToProcess = NewFactory(
 		"errHttpResponseSystemTemporarilyUnableToProcess", ErrorKindUser, "the system is temporarily unable to process your request. please try again")
 
+	FactoryErrHttpClientUnauthorized = NewFactory(
+		"errHttpClientUnauthorized401", ErrorKindUser, "client is unauthorized")
+
+	FactoryErrHttpAccessForbidden = NewFactory(
+		"errHttpAccessForbidden403", ErrorKindUser, "access forbidden")
+
 	FactoryErrHttpResourceNotFound = NewFactory(
 		"errHttpResourceNotFound", ErrorKindUser, "resource not found")
 )

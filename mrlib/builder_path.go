@@ -4,6 +4,10 @@ import (
 	"strings"
 )
 
+const (
+	placeholderPath = "{{path}}"
+)
+
 type (
 	BuilderPath struct {
 		basePath string
@@ -11,15 +15,18 @@ type (
 	}
 )
 
+// NewBuilderPath - sample /dir/{{path}}/postfix -> /dir/real-value/postfix
 func NewBuilderPath(basePath string) *BuilderPath {
+	return NewBuilderPathWithPlaceholder(basePath, placeholderPath)
+}
+
+func NewBuilderPathWithPlaceholder(basePath, placeholder string) *BuilderPath {
 	basePath = strings.TrimRight(basePath, "/")
 
-	i := strings.Index(basePath, ":path:")
-
-	if i > 0 {
+	if i := strings.Index(basePath, placeholder); i > 0 {
 		return &BuilderPath{
-			basePath: basePath[0:i],
-			postfix:  basePath[i+6:],
+			basePath: strings.TrimRight(basePath[0:i], "/"),
+			postfix:  strings.TrimLeft(basePath[i+len(placeholder):], "/"),
 		}
 	}
 

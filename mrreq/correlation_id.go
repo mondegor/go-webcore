@@ -8,12 +8,13 @@ import (
 
 const (
 	// f7479171-83d2-4f64-84ac-892f8c0aaf48
-	lenCorrelationID       = 36
+	minLenCorrelationID    = 16
+	maxLenCorrelationID    = 64
 	headerKeyCorrelationID = "CorrelationID"
 )
 
 var (
-	regexpCorrelationID = regexp.MustCompile(`^[0-9a-fA-F][0-9a-fA-F-]{34}[0-9a-fA-F]$`)
+	regexpCorrelationID = regexp.MustCompile(`^[0-9a-fA-F][0-9a-fA-F-]+[0-9a-fA-F]$`)
 )
 
 func ParseCorrelationID(r *http.Request) (string, error) {
@@ -23,7 +24,8 @@ func ParseCorrelationID(r *http.Request) (string, error) {
 		return "", nil
 	}
 
-	if len(value) != lenCorrelationID ||
+	if len(value) < minLenCorrelationID ||
+		len(value) > maxLenCorrelationID ||
 		!regexpCorrelationID.MatchString(value) {
 		return "", FactoryErrHttpRequestCorrelationID.New(value)
 	}

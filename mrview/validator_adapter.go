@@ -2,7 +2,6 @@ package mrview
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -64,11 +63,11 @@ func (v *validatorAdapter) Validate(ctx context.Context, structure any) error {
 		return mrcore.FactoryErrInternal.Wrap(err)
 	}
 
-	errorList := mrerr.NewList()
+	errorList := mrerr.FieldErrorList{}
 	logger := mrctx.Logger(ctx)
 
 	for _, errField := range errors {
-		errorList.Add(errField.Field(), v.createAppError(errField))
+		errorList.AddAppErr(errField.Field(), v.createAppError(errField))
 
 		logger.Debug(
 			"Namespace: %s\n"+
@@ -110,7 +109,7 @@ func (v *validatorAdapter) createAppError(field validator.FieldError) *mrerr.App
 
 	return mrerr.New(
 		string(id),
-		fmt.Sprintf("%s: value='{{ .value }}'", id),
+		string(id)+": value='{{ .value }}'",
 		field.Value(),
 	)
 }

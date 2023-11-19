@@ -29,15 +29,26 @@ func (h *ServiceHelper) WrapErrorForSelect(err error, entityName string) error {
 }
 
 func (h *ServiceHelper) WrapErrorForUpdate(err error, entityName string) error {
-	if mrcore.FactoryErrStorageRowsNotAffected.Is(err) {
+	if mrcore.FactoryErrStorageRowsNotAffected.Is(err) ||
+		mrcore.FactoryErrStorageNoRowFound.Is(err) {
 		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, entityName)
 	}
 
 	return mrcore.FactoryErrServiceEntityNotUpdated.Caller(h.callerSkip).Wrap(err, entityName)
 }
 
+func (h *ServiceHelper) WrapErrorForUpdateWithVersion(err error, entityName string) error {
+	if mrcore.FactoryErrStorageRowsNotAffected.Is(err) ||
+		mrcore.FactoryErrStorageNoRowFound.Is(err) {
+		return mrcore.FactoryErrServiceEntityVersionIsIncorrect.Wrap(err, entityName)
+	}
+
+	return mrcore.FactoryErrServiceEntityNotUpdated.Caller(h.callerSkip).Wrap(err, entityName)
+}
+
 func (h *ServiceHelper) WrapErrorForRemove(err error, entityName string) error {
-	if mrcore.FactoryErrStorageRowsNotAffected.Is(err) {
+	if mrcore.FactoryErrStorageRowsNotAffected.Is(err) ||
+		mrcore.FactoryErrStorageNoRowFound.Is(err) {
 		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, entityName)
 	}
 

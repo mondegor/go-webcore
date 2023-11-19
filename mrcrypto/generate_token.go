@@ -11,11 +11,11 @@ import (
 )
 
 func GenTokenBase64(length int) string {
-	return base64.StdEncoding.EncodeToString(GenToken(length))
+	return cutString(base64.StdEncoding.EncodeToString(genToken(length)), length)
 }
 
 func GenTokenHex(length int) string {
-	return hex.EncodeToString(GenToken(length))
+	return cutString(hex.EncodeToString(genToken(length)), length)
 }
 
 func GenTokenHexWithDelimiter(length, repeat int) string {
@@ -32,13 +32,13 @@ func GenTokenHexWithDelimiter(length, repeat int) string {
 	s := make([]string, repeat)
 
 	for i := 0; i < repeat; i++ {
-		s[i] = hex.EncodeToString(GenToken(length))
+		s[i] = cutString(hex.EncodeToString(genToken(length)), length)
 	}
 
 	return strings.Join(s, "-")
 }
 
-func GenToken(length int) []byte {
+func genToken(length int) []byte {
 	if length < 1 {
 		mrcore.LogWarning("param 'length': %d < 1", length)
 		length = 1
@@ -59,4 +59,12 @@ func GenToken(length int) []byte {
 	}
 
 	return value
+}
+
+func cutString(str string, length int) string {
+	if len(str) > length {
+		return str[0:length]
+	}
+
+	return str
 }

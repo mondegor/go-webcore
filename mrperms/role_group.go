@@ -14,6 +14,11 @@ func newRoleGroup(access *ModulesAccess, roles []string) *RoleGroup {
 	}
 }
 
+// IsAuthorized - авторизован тогда, когда несколько ролей или роль одна и она не равна гостевой роли
+func (g *RoleGroup) IsAuthorized() bool {
+	return len(g.roleIDs) > 0 && g.roleIDs[0] != g.access.guestsRoleID
+}
+
 func (g *RoleGroup) CheckPrivilege(name string) bool {
 	return g.access.CheckPrivilege(g.roleIDs, name)
 }

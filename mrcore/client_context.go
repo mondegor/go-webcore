@@ -5,30 +5,26 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
 type (
-	ClientData interface {
+	ClientContext interface {
 		Request() *http.Request
-		RequestPath() RequestPath
+		ParamFromPath(name string) string
 
 		Context() context.Context
-		WithContext(ctx context.Context) ClientData
+		WithContext(ctx context.Context) ClientContext
 
 		Writer() http.ResponseWriter
 
-		Parse(structRequest any) error
 		Validate(structRequest any) error
-		ParseAndValidate(structRequest any) error
 
 		SendResponse(status int, structResponse any) error
 		SendResponseNoContent() error
 		SendFile(info mrtype.FileInfo, attachmentName string, file io.Reader) error
 	}
 
-	RequestPath interface {
-		Get(name string) string
-		GetInt64(name string) int64
-	}
+	ClientErrorWrapperFunc func(err *mrerr.AppError) (int, *mrerr.AppError)
 )

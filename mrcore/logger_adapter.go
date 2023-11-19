@@ -1,10 +1,10 @@
 package mrcore
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -52,7 +52,7 @@ func newLogger(prefix string, level LogLevel) *LoggerAdapter {
 
 func (l LoggerAdapter) With(name string) Logger {
 	if l.name != "" {
-		name = fmt.Sprintf("%s; %s", l.name, name)
+		name = l.name + "; " + name
 	}
 
 	l.name = name
@@ -74,6 +74,10 @@ func (l *LoggerAdapter) Error(message string, args ...any) {
 }
 
 func (l *LoggerAdapter) Err(e error) {
+	if e == nil {
+		return
+	}
+
 	l.logPrint(l.errLog, "ERROR", e.Error(), []any{}, true)
 }
 
@@ -84,7 +88,7 @@ func (l *LoggerAdapter) Warning(message string, args ...any) {
 }
 
 func (l *LoggerAdapter) Warn(e error) {
-	if l.level >= LogWarnLevel {
+	if l.level >= LogWarnLevel && e != nil {
 		l.logPrint(l.errLog, "WARN", e.Error(), []any{}, true)
 	}
 }
@@ -140,6 +144,9 @@ func (l *LoggerAdapter) formatHeader(buf *strings.Builder, prefix string, showFi
 			line = 0
 		}
 
-		buf.WriteString(fmt.Sprintf("%s:%d\t", file, line))
+		buf.WriteString(file)
+		buf.WriteByte(':')
+		buf.WriteString(strconv.Itoa(line))
+		buf.WriteByte('\t')
 	}
 }
