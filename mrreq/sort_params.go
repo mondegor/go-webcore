@@ -3,6 +3,7 @@ package mrreq
 import (
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrtype"
@@ -37,8 +38,11 @@ func ParseSortParams(r *http.Request, keyField, keyDirection string) (mrtype.Sor
 	direction := query.Get(keyDirection)
 
 	if direction != "" {
-		err := params.Direction.ParseAndSet(direction)
-		return params, err
+		err := params.Direction.ParseAndSet(strings.ToUpper(direction))
+
+		if err != nil {
+			return params, err
+		}
 	}
 
 	params.FieldName = value

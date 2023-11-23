@@ -1,8 +1,10 @@
 package mrserver
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/rs/cors"
 )
 
@@ -24,6 +26,18 @@ type (
 )
 
 func NewCors(opt CorsOptions) *corsAdapter {
+	debugInfo := fmt.Sprintf("Cors.AllowedOrigins:")
+
+	for i := range opt.AllowedOrigins {
+		debugInfo = fmt.Sprintf(
+			"%s\n- %s;",
+			debugInfo,
+			opt.AllowedOrigins[i],
+		)
+	}
+
+	mrcore.LogDebug(debugInfo)
+
 	return &corsAdapter{
 		cors: cors.New(cors.Options{
 			AllowedOrigins:   opt.AllowedOrigins,
