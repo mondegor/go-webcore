@@ -94,6 +94,7 @@ func (c *clientContext) parse(structRequest any) error {
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(&structRequest); err != nil {
+		c.tools.Logger.Caller(1).Warn(err)
 		return mrcore.FactoryErrHttpRequestParseData.Wrap(err)
 	}
 

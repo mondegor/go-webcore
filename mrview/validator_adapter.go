@@ -107,9 +107,25 @@ func (v *validatorAdapter) createAppError(field validator.FieldError) *mrerr.App
 	tag[0] -= 32 // to uppercase first char
 	id = append(id, tag...)
 
+	message := string(id) + ": name={{ .name }}, type={{ .type }}, value={{ .value }}"
+	param := field.Param()
+
+	if param != "" {
+		return mrerr.New(
+			string(id),
+			message+", param={{ .param }}",
+			field.Field(),
+			field.Kind().String(),
+			field.Value(),
+			param,
+		)
+	}
+
 	return mrerr.New(
 		string(id),
-		string(id)+": value='{{ .value }}'",
+		message,
+		field.Field(),
+		field.Kind().String(),
 		field.Value(),
 	)
 }

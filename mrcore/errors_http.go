@@ -35,4 +35,7 @@ var (
 
 	FactoryErrHttpResourceNotFound = NewFactory(
 		"errHttpResourceNotFound", ErrorKindUser, "resource not found")
+
+	FactoryErrHttpMultipartFormFile = NewFactory(
+		"errHttpMultipartFormFile", ErrorKindInternal, "the file with the specified key '{{ .key }}' cannot be processed")
 )
