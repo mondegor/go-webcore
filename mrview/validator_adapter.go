@@ -13,6 +13,10 @@ import (
 
 // go get -u github.com/go-playground/validator/v10
 
+const (
+	validatorErrorPrefix = "validator_err"
+)
+
 type (
 	validatorAdapter struct {
 		validate *validator.Validate
@@ -63,23 +67,26 @@ func (v *validatorAdapter) Validate(ctx context.Context, structure any) error {
 		return mrcore.FactoryErrInternal.Wrap(err)
 	}
 
-	errorList := mrerr.FieldErrorList{}
+	fields := make([]*mrerr.FieldError, len(errors))
 	logger := mrctx.Logger(ctx)
 
-	for _, errField := range errors {
-		errorList.AddAppErr(errField.Field(), v.createAppError(errField))
+	for i, errField := range errors {
+		fields[i] = mrerr.NewFieldErrorAppError(
+			errField.Field(),
+			v.createAppError(errField),
+		)
 
 		logger.Debug(
-			"Namespace: %s\n"+
-				"Field: %s\n"+
-				"StructNamespace: %s\n"+
-				"StructField: %s\n"+
-				"Tag: %s\n"+
-				"ActualTag: %s\n"+
-				"Kind: %v\n"+
-				"Type: %v\n"+
-				"Value: %v\n"+
-				"Param: %s",
+			"{Namespace: %s, "+
+				"Field: %s, "+
+				"StructNamespace: %s, "+
+				"StructField: %s, "+
+				"Tag: %s, "+
+				"ActualTag: %s, "+
+				"Kind: %v, "+
+				"Type: %v, "+
+				"Value: %v, "+
+				"Param: %s}",
 			errField.Namespace(),
 			errField.Field(),
 			errField.StructNamespace(),
@@ -93,26 +100,23 @@ func (v *validatorAdapter) Validate(ctx context.Context, structure any) error {
 		)
 	}
 
-	return errorList
+	return mrerr.FieldErrorList(fields)
 }
 
 func (v *validatorAdapter) createAppError(field validator.FieldError) *mrerr.AppError {
-	id := []byte("errValidation")
-	tag := []byte(field.Tag())
+	tag := field.Tag()
 
 	if len(tag) == 0 {
-		return mrerr.New(string(id), string(id))
+		return mrerr.New(validatorErrorPrefix, validatorErrorPrefix)
 	}
 
-	tag[0] -= 32 // to uppercase first char
-	id = append(id, tag...)
-
-	message := string(id) + ": name={{ .name }}, type={{ .type }}, value={{ .value }}"
+	id := validatorErrorPrefix + "_" + tag
+	message := id + ": name={{ .name }}, type={{ .type }}, value={{ .value }}"
 	param := field.Param()
 
 	if param != "" {
 		return mrerr.New(
-			string(id),
+			id,
 			message+", param={{ .param }}",
 			field.Field(),
 			field.Kind().String(),
@@ -122,7 +126,7 @@ func (v *validatorAdapter) createAppError(field validator.FieldError) *mrerr.App
 	}
 
 	return mrerr.New(
-		string(id),
+		id,
 		message,
 		field.Field(),
 		field.Kind().String(),

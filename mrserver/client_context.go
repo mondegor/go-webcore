@@ -16,6 +16,11 @@ import (
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
+const (
+	contentTypeJson        = "application/json; charset=utf-8"
+	contentTypeProblemJson = "application/problem+json; charset=utf-8"
+)
+
 type (
 	clientContext struct {
 		request          *http.Request
@@ -106,29 +111,13 @@ func (c *clientContext) validate(structRequest any) error {
 }
 
 func (c *clientContext) SendResponse(status int, structResponse any) error {
-	// WARNING: err is important, because error(nil) != *mrerr.AppError(nil)
-	if err := c.sendResponse(status, structResponse); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *clientContext) sendResponse(status int, structResponse any) *mrerr.AppError {
-	c.responseWriter.Header().Set("Content-Type", "application/json; charset=utf-8")
-	c.responseWriter.WriteHeader(status)
-
 	bytes, err := json.Marshal(structResponse)
 
 	if err != nil {
 		return mrcore.FactoryErrHttpResponseParseData.Wrap(err)
 	}
 
-	_, err = c.responseWriter.Write(bytes)
-
-	if err != nil {
-		return mrcore.FactoryErrHttpResponseSendData.Wrap(err)
-	}
+	c.sendResponse(status, contentTypeJson, bytes)
 
 	return nil
 }
@@ -162,76 +151,100 @@ func (c *clientContext) SendFile(info mrtype.FileInfo, attachmentName string, fi
 	return nil
 }
 
+func (c *clientContext) sendResponse(status int, contentType string, body []byte) {
+	c.responseWriter.Header().Set("Content-Type", contentType)
+	c.responseWriter.WriteHeader(status)
+
+	if len(body) < 1 {
+		return
+	}
+
+	_, err := c.responseWriter.Write(body)
+
+	if err != nil {
+		c.tools.Logger.DisableFileLine().Err(mrcore.FactoryErrHttpResponseSendData.Caller(1).Wrap(err))
+	}
+}
+
+func (c *clientContext) sendStructResponse(status int, contentType string, structResponse any) {
+	bytes, err := json.Marshal(structResponse)
+
+	if err != nil {
+		status = http.StatusTeapot
+		bytes = []byte{}
+		c.tools.Logger.DisableFileLine().Err(mrcore.FactoryErrHttpResponseParseData.Caller(1).Wrap(err))
+	}
+
+	c.sendResponse(status, contentType, bytes)
+}
+
 func (c *clientContext) sendErrorResponse(err error) {
-	var appError *mrerr.AppError
-
-	for { // only for break
-		if fieldError, ok := err.(*mrerr.FieldError); ok {
-			appError = c.sendFieldErrorListResponse(mrerr.FieldErrorList{fieldError})
-			break
-		}
-
-		if fieldErrorList, ok := err.(mrerr.FieldErrorList); ok {
-			appError = c.sendFieldErrorListResponse(fieldErrorList)
-			break
-		}
-
-		if appErrorTmp, ok := err.(*mrerr.AppError); ok {
-			if appErrorTmp.Kind() == mrerr.ErrorKindUser {
-				appError = c.sendSystemErrorResponse(appErrorTmp)
-				break
-			}
-
-			appError = appErrorTmp
-			break
-		}
-
-		appError = mrcore.FactoryErrInternal.Caller(-1).Wrap(err)
-		break
-	}
-
-	if appError != nil {
-		c.tools.Logger.DisableFileLine().Err(appError)
-		c.sendAppErrorResponse(c.errorWrapperFunc(appError))
-	}
-}
-
-func (c *clientContext) sendFieldErrorListResponse(list mrerr.FieldErrorList) *mrerr.AppError {
-	errorResponseList := AppErrorListResponse{}
-
-	for _, fieldError := range list {
-		if fieldError.Kind() != mrerr.ErrorKindUser {
-			c.tools.Logger.Err(fieldError.AppError())
-			continue
-		}
-
-		errorResponseList.Add(
-			fieldError.ID(),
-			fieldError.AppError().Translate(c.tools.Locale).Reason,
+	if fieldError, ok := err.(*mrerr.FieldError); ok {
+		c.sendStructResponse(
+			http.StatusBadRequest,
+			contentTypeJson,
+			c.getErrorListResponse(fieldError),
 		)
+
+		return
 	}
 
-	return c.sendResponse(http.StatusBadRequest, errorResponseList)
-}
+	if fieldErrorList, ok := err.(mrerr.FieldErrorList); ok {
+		c.sendStructResponse(
+			http.StatusBadRequest,
+			contentTypeJson,
+			c.getErrorListResponse(fieldErrorList...),
+		)
 
-func (c *clientContext) sendSystemErrorResponse(appError *mrerr.AppError) *mrerr.AppError {
-	return c.sendResponse(
-		http.StatusBadRequest,
-		AppErrorListResponse{
-			AppErrorAttribute{
-				ID:    AppErrorAttributeNameSystem,
-				Value: appError.Translate(c.tools.Locale).Reason,
-			},
-		},
+		return
+	}
+
+	appError, ok := err.(*mrerr.AppError)
+
+	if ok {
+		if appError.Kind() == mrerr.ErrorKindUser {
+			c.sendStructResponse(
+				http.StatusBadRequest,
+				contentTypeJson,
+				c.getErrorListResponse(
+					mrerr.NewFieldErrorAppError(ErrorAttributeNameByDefault, appError),
+				),
+			)
+
+			return
+		}
+	} else {
+		appError = mrcore.FactoryErrInternal.Caller(-1).Wrap(err)
+	}
+
+	c.tools.Logger.DisableFileLine().Err(appError)
+	status, appError := c.errorWrapperFunc(appError)
+
+	c.sendStructResponse(
+		status,
+		contentTypeProblemJson,
+		c.getErrorDetailsResponse(appError),
 	)
 }
 
-func (c *clientContext) sendAppErrorResponse(status int, appError *mrerr.AppError) {
-	c.responseWriter.Header().Set("Content-Type", "application/problem+json")
-	c.responseWriter.WriteHeader(status)
+func (c *clientContext) getErrorListResponse(fields ...*mrerr.FieldError) ErrorListResponse {
+	attrs := make([]ErrorAttribute, len(fields))
 
+	for i, fieldError := range fields {
+		attrs[i].ID = fieldError.ID()
+		attrs[i].Value = fieldError.AppError().Translate(c.tools.Locale).Reason
+
+		if mrcore.Debug() {
+			attrs[i].DebugInfo = c.debugInfo(fieldError.AppError())
+		}
+	}
+
+	return attrs
+}
+
+func (c *clientContext) getErrorDetailsResponse(appError *mrerr.AppError) ErrorDetailsResponse {
 	errMessage := appError.Translate(c.tools.Locale)
-	errorResponse := AppErrorResponse{
+	response := ErrorDetailsResponse{
 		Title:        errMessage.Reason,
 		Details:      errMessage.DetailsToString(),
 		Request:      c.request.URL.Path,
@@ -239,7 +252,15 @@ func (c *clientContext) sendAppErrorResponse(status int, appError *mrerr.AppErro
 		ErrorTraceID: c.getErrorTraceID(appError),
 	}
 
-	c.responseWriter.Write(errorResponse.Marshal())
+	if mrcore.Debug() {
+		if response.Details != "" {
+			response.Details += "\n"
+		}
+
+		response.Details += "DebugInfo: " + c.debugInfo(appError)
+	}
+
+	return response
 }
 
 func (c *clientContext) getErrorTraceID(err *mrerr.AppError) string {
@@ -250,4 +271,13 @@ func (c *clientContext) getErrorTraceID(err *mrerr.AppError) string {
 	}
 
 	return c.tools.CorrelationID + ", " + errorTraceID
+}
+
+func (c *clientContext) debugInfo(err *mrerr.AppError) string {
+	return fmt.Sprintf(
+		"errId=%s; errKind=%s; err={%s}",
+		err.ID(),
+		err.Kind(),
+		err.Error(),
+	)
 }

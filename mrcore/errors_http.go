@@ -25,17 +25,17 @@ var (
 		"errHttpResponseSendData", ErrorKindInternal, "response data is not send")
 
 	FactoryErrHttpResponseSystemTemporarilyUnableToProcess = NewFactory(
-		"errHttpResponseSystemTemporarilyUnableToProcess", ErrorKindUser, "the system is temporarily unable to process your request. please try again")
+		"errHttpResponseSystemTemporarilyUnableToProcess", ErrorKindUser, "the system is temporarily unable to process your request. please try again later")
 
 	FactoryErrHttpClientUnauthorized = NewFactory(
-		"errHttpClientUnauthorized401", ErrorKindUser, "client is unauthorized")
+		"errHttpClientUnauthorized", ErrorKindUser, "401. client is unauthorized")
 
 	FactoryErrHttpAccessForbidden = NewFactory(
-		"errHttpAccessForbidden403", ErrorKindUser, "access forbidden")
+		"errHttpAccessForbidden", ErrorKindUser, "403. access forbidden")
 
 	FactoryErrHttpResourceNotFound = NewFactory(
-		"errHttpResourceNotFound", ErrorKindUser, "resource not found")
+		"errHttpResourceNotFound", ErrorKindUser, "404. resource not found")
 
 	FactoryErrHttpMultipartFormFile = NewFactory(
-		"errHttpMultipartFormFile", ErrorKindInternal, "the file with the specified key '{{ .key }}' cannot be processed")
+		"errHttpMultipartFormFile", ErrorKindSystem, "the file with the specified key '{{ .key }}' cannot be processed")
 )

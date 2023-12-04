@@ -16,17 +16,11 @@ var (
 		"errInternalInvalidType", ErrorKindInternal, "invalid type '{{ .type1 }}', expected: '{{ .type2 }}'")
 
 	FactoryErrInternalInvalidData = NewFactory(
-		"errInternalInvalidData", ErrorKindInternal, "invalid data '{{ .value }}'")
-
-	FactoryErrInternalParseData = NewFactory(
-		"errInternalParseData", ErrorKindInternal, "data '{{ .name1 }}' parsed to {{ .name2 }} with error")
+		"errInternalInvalidData", ErrorKindInternal, "invalid data '{{ .data }}'")
 
 	FactoryErrInternalFailedToClose = NewFactory(
 		"errInternalFailedToClose", ErrorKindInternal, "failed to close '{{ .name }}'")
 
 	FactoryErrInternalMapValueNotFound = NewFactory(
 		"errInternalMapValueNotFound", ErrorKindInternal, "'{{ .value }}' is not found in map {{ .name }}")
-
-	FactoryErrInternalNoticeDataContainer = NewFactory(
-		"errInternalNoticeDataContainer", ErrorKindInternalNotice, "data: '{{ .value }}'")
 )

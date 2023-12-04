@@ -1,6 +1,9 @@
 package mrtool
 
-import "github.com/mondegor/go-webcore/mrcore"
+import (
+	"github.com/mondegor/go-sysmess/mrerr"
+	"github.com/mondegor/go-webcore/mrcore"
+)
 
 type (
 	ServiceHelper struct {
@@ -20,49 +23,44 @@ func (h *ServiceHelper) Caller(skip int) *ServiceHelper {
 	}
 }
 
-func (h *ServiceHelper) WrapErrorForSelect(err error, entityName string) error {
+func (h *ServiceHelper) WrapErrorEntityFetch(err error, entityName string, entityData any) error {
 	if mrcore.FactoryErrStorageNoRowFound.Is(err) {
-		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, entityName)
+		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, mrerr.Arg{entityName: entityData})
 	}
 
-	return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(h.callerSkip).Wrap(err, entityName)
+	return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(h.callerSkip).Wrap(err, mrerr.Arg{entityName: entityData})
 }
 
-func (h *ServiceHelper) WrapErrorForUpdate(err error, entityName string) error {
+func (h *ServiceHelper) WrapErrorEntityInsert(err error, entityName string, entityData any) error {
+	if mrcore.FactoryErrStorageQueryFailed.Is(err) {
+		return mrcore.FactoryErrServiceEntityNotCreated.Wrap(err, mrerr.Arg{entityName: entityData})
+	}
+
+	return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(h.callerSkip).Wrap(err, mrerr.Arg{entityName: entityData})
+}
+
+func (h *ServiceHelper) WrapErrorEntityUpdate(err error, entityName string, entityData any) error {
 	if mrcore.FactoryErrStorageRowsNotAffected.Is(err) ||
 		mrcore.FactoryErrStorageNoRowFound.Is(err) {
-		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, entityName)
+		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, mrerr.Arg{entityName: entityData})
 	}
 
-	return mrcore.FactoryErrServiceEntityNotUpdated.Caller(h.callerSkip).Wrap(err, entityName)
+	if mrcore.FactoryErrStorageQueryFailed.Is(err) {
+		return mrcore.FactoryErrServiceEntityNotStored.Wrap(err, mrerr.Arg{entityName: entityData})
+	}
+
+	return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(h.callerSkip).Wrap(err, mrerr.Arg{entityName: entityData})
 }
 
-func (h *ServiceHelper) WrapErrorForUpdateWithVersion(err error, entityName string) error {
+func (h *ServiceHelper) WrapErrorEntityDelete(err error, entityName string, entityData any) error {
 	if mrcore.FactoryErrStorageRowsNotAffected.Is(err) ||
 		mrcore.FactoryErrStorageNoRowFound.Is(err) {
-		return mrcore.FactoryErrServiceEntityVersionIsIncorrect.Wrap(err, entityName)
+		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, mrerr.Arg{entityName: entityData})
 	}
 
-	return mrcore.FactoryErrServiceEntityNotUpdated.Caller(h.callerSkip).Wrap(err, entityName)
-}
-
-func (h *ServiceHelper) WrapErrorForRemove(err error, entityName string) error {
-	if mrcore.FactoryErrStorageRowsNotAffected.Is(err) ||
-		mrcore.FactoryErrStorageNoRowFound.Is(err) {
-		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, entityName)
+	if mrcore.FactoryErrStorageQueryFailed.Is(err) {
+		return mrcore.FactoryErrServiceEntityNotRemoved.Wrap(err, mrerr.Arg{entityName: entityData})
 	}
 
-	return mrcore.FactoryErrServiceEntityNotRemoved.Caller(h.callerSkip).Wrap(err, entityName)
-}
-
-func (h *ServiceHelper) ReturnErrorIfItemNotFound(err error, entityName string) error {
-	if err != nil {
-		if mrcore.FactoryErrStorageNoRowFound.Is(err) {
-			return mrcore.FactoryErrServiceEntityNotFound.Wrap(err, entityName)
-		}
-
-		return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(h.callerSkip).Wrap(err, entityName)
-	}
-
-	return nil
+	return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(h.callerSkip).Wrap(err, mrerr.Arg{entityName: entityData})
 }

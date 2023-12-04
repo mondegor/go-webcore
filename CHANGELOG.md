@@ -1,6 +1,40 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-12-04
+### Added
+- Добавлена глобальная переменная отладочного режима и два метода для управления им: `mrcore.SetDebug()` и `mrcore.Debug()`;
+- В интерфейс логгера добавлен метод `Level()` которы удобно использовать совместно с `mrcore.Debug()`;
+- Во включенном debug режиме в `ErrorDetailsResponse.Details` и в `ErrorAttribute.DebugInfo`
+  добавляется полная информация об ошибке предназначенная для разработчиков и тестировщиков;
+
+### Changed
+- Переработан механизм отправки ответа в sendErrorResponse в ClientContext;
+- Доработан механизм обработки ошибок, в результате:
+    - обновлены и переименованы следующие сущности:
+        - `mrserver.AppErrorListResponse` -> `ErrorListResponse`;
+        - `mrserver.AppErrorAttribute` -> `ErrorAttribute`;
+        - `mrserver.AppErrorAttributeNameSystem` -> `ErrorAttributeNameByDefault`;
+        - `mrcore.FactoryErrServiceEntityNotUpdated` -> `FactoryErrServiceEntityNotStored`;
+        - `mrcore.FactoryErrServiceIncorrectSwitchStatus` -> `FactoryErrServiceEntitySwitchStatusImpossible`, также изменился порядок и кол-во параметров;
+        - `mrcore.FactoryErrInternalNoticeDataContainer` -> `FactoryErrStorageQueryDataContainer` (и перенесён в `errors_storage.go`);
+        - `mrcore.FactoryErrInternalParseData` удалён;
+        - `mrcore.FactoryErrServiceEntityVersionIsIncorrect` удалён, вместо него следует использовать -> `FactoryErrServiceEntityNotFound`;
+    - Internal и System ошибки для пользователя отображались со стандартным сообщением "Внутренняя ошибка сервера".
+      Теперь можно для каждой такой ошибки, в yaml файлах на разных языках, описать более подробную причину понятную пользователю с инструкциями, что делать в данной ситуации;
+    - переработан `mrtool.ServiceHelper`, в котором:
+        - добавлен метод `WrapErrorEntityInsert`;
+        - обновлены и переименованы следующие методы:
+            - `WrapErrorForSelect` -> `WrapErrorEntityFetch` + добавлен параметр `entityData`;
+            - `WrapErrorForUpdate` -> `WrapErrorEntityUpdate` + добавлен параметр `entityData`;
+            - `WrapErrorForRemove` -> `WrapErrorEntityDelete` + добавлен параметр `entityData`;
+            - `ReturnErrorIfItemNotFound` удалён, вместо него следует использовать `WrapErrorEntityFetch`;
+    - изменено формирование идентификаторов валидаторов, которые проверяют пользовательские поля:
+        - `errValidation{Name}` -> `validator_err_{name}` (пример: `errValidationGte` -> `validator_err_gte`);
+        - новые идентификаторы также участвуют для описания пользовательских ошибок (в yaml файлах на разных языках);
+- В `mrserver.corsAdapter` вместо передачи параметра `Debug` теперь передаётся `Logger` системы,
+  и в зависимости от его настроек решается, включать `Debug` режим или нет;
+
 ## 2023-11-26
 ### Added
 - Добавлено логирования ошибок при парсинге `json` данных поступивших в запросе;
@@ -34,7 +68,8 @@
 - Объединено: `MiddlewareFirst` + `MiddlewareAcceptLanguage` -> `MiddlewareFirst`, выделен объект `ClientTools`;
 - В `ServiceHelper` доработаны `WrapErrorForUpdate` и `WrapErrorForRemove`, добавлен метод `WrapErrorForUpdateWithVersion`;
 - Удалён интерфейс `RequestPath`, теперь значение из пути можно получать методом `ClientContext::ParamFromPath`;
-- В `clientContext` преобразована функция преобразования ошибок `wrapErrorFunc` во внешнюю функцию, по умолчанию вызывается `DefaultErrorWrapperFunc`, но её можно переопределить на собственную;
+- В `clientContext` преобразована функция преобразования ошибок `wrapErrorFunc` во внешнюю функцию,
+  по умолчанию вызывается `DefaultErrorWrapperFunc`, но её можно переопределить на собственную;
 - В некоторых местах оптимизирована конкатенация строк (`Sprintf` заменён на нативный "+");
 - Обновлён `.editorconfig`;
 

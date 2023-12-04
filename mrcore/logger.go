@@ -18,7 +18,9 @@ type (
 	Logger interface {
 		With(name string) Logger
 		Caller(skip int) Logger
-		DisableFileLine() Logger
+		DisableFileLine() Logger // only for: Error, Err, Warning, Warn
+
+		Level() LogLevel
 		Error(message string, args ...any)
 		Err(err error)
 		Warning(message string, args ...any)

@@ -10,12 +10,12 @@ import (
 
 type (
 	User struct {
-		Login string `validate:"required,min=3,max=32,login"`
+		Login string `validate:"required,min=3,max=16,login"`
 	}
 )
 
 var (
-	regexpLogin = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]+$`)
+	regexpLogin = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9\-]+[a-zA-Z]$`)
 )
 
 func main() {
@@ -30,14 +30,18 @@ func main() {
 
 	if err := validator.Validate(context.Background(), &user); err != nil {
 		fmt.Println(err)
-		return
 	}
 
 	user2 := User{Login: "not-valid-login!"}
 
 	if err := validator.Validate(context.Background(), &user2); err != nil {
 		fmt.Println(err)
-		return
+	}
+
+	user3 := User{Login: "really-long-login"}
+
+	if err := validator.Validate(context.Background(), &user3); err != nil {
+		fmt.Println(err)
 	}
 }
 

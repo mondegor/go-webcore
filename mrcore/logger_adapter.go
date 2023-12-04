@@ -64,9 +64,14 @@ func (l LoggerAdapter) Caller(skip int) Logger {
 	return &l
 }
 
+// DisableFileLine - only for: Error, Err, Warning, Warn
 func (l LoggerAdapter) DisableFileLine() Logger {
 	l.enabledFileLine = false
 	return &l
+}
+
+func (l *LoggerAdapter) Level() LogLevel {
+	return l.level
 }
 
 func (l *LoggerAdapter) Error(message string, args ...any) {

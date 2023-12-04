@@ -4,29 +4,26 @@ import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
 	FactoryErrServiceEmptyInputData = NewFactory(
-		"errServiceEmptyData", ErrorKindInternalNotice, "{{ .name }} is empty")
+		"errServiceEmptyData", ErrorKindInternalNotice, "value of '{{ .name }}' is empty")
 
 	FactoryErrServiceIncorrectInputData = NewFactory(
 		"errServiceIncorrectData", ErrorKindInternalNotice, "data '{{ .data }}' is incorrect")
 
 	FactoryErrServiceTemporarilyUnavailable = NewFactory(
-		"errServiceTemporarilyUnavailable", ErrorKindSystem, "resource '{{ .name }}' is temporarily unavailable")
+		"errServiceTemporarilyUnavailable", ErrorKindSystem, "resource '{{ .data }}' is temporarily unavailable")
 
 	FactoryErrServiceEntityNotFound = NewFactory(
-		"errServiceEntityNotFound", ErrorKindInternalNotice, "entity '{{ .name }}' is not found")
-
-	FactoryErrServiceEntityVersionIsIncorrect = NewFactory(
-		"errServiceEntityVersionIsIncorrect", ErrorKindUser, "version of entity '{{ .name }}' is incorrect")
+		"errServiceEntityNotFound", ErrorKindInternalNotice, "entity '{{ .data }}' is not found")
 
 	FactoryErrServiceEntityNotCreated = NewFactory(
-		"errServiceEntityNotCreated", ErrorKindSystem, "entity '{{ .name }}' is not created")
+		"errServiceEntityNotCreated", ErrorKindInternal, "entity '{{ .data }}' is not created")
 
-	FactoryErrServiceEntityNotUpdated = NewFactory(
-		"errServiceEntityNotUpdated", ErrorKindSystem, "entity '{{ .name }}' is not updated")
+	FactoryErrServiceEntityNotStored = NewFactory(
+		"errServiceEntityNotStored", ErrorKindInternal, "entity '{{ .data }}' is not stored")
 
 	FactoryErrServiceEntityNotRemoved = NewFactory(
-		"errServiceEntityNotRemoved", ErrorKindSystem, "entity '{{ .name }}' is not removed")
+		"errServiceEntityNotRemoved", ErrorKindInternal, "entity '{{ .data }}' is not removed")
 
-	FactoryErrServiceIncorrectSwitchStatus = NewFactory(
-		"errServiceIncorrectSwitchStatus", ErrorKindInternalNotice, "incorrect switch status: '{{ .currentStatus }}' -> '{{ .statusTo }}' for entity '{{ .name }}(ID={{ .id }})'")
+	FactoryErrServiceEntitySwitchStatusImpossible = NewFactory(
+		"errServiceEntitySwitchStatusImpossible", ErrorKindInternalNotice, "entity '{{ .data }}': switching from '{{ .statusFrom }}' to '{{ .statusTo }}' is impossible")
 )

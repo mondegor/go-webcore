@@ -1,40 +1,25 @@
 package mrserver
 
-import "encoding/json"
-
 const (
-	AppErrorAttributeNameSystem = "system"
+	ErrorAttributeNameByDefault = "generalError"
 )
 
 type (
-	// AppErrorResponse - application/problem+json:
-	AppErrorResponse struct {
+	// ErrorListResponse - application/json (400)
+	ErrorListResponse []ErrorAttribute
+
+	ErrorAttribute struct {
+		ID        string `json:"id"`
+		Value     string `json:"value"`
+		DebugInfo string `json:"debugInfo,omitempty"`
+	}
+
+	// ErrorDetailsResponse - application/problem+json (401, 403, 404, 418, 500)
+	ErrorDetailsResponse struct {
 		Title        string `json:"title"`
 		Details      string `json:"details"`
 		Request      string `json:"request"`
 		Time         string `json:"time"`
 		ErrorTraceID string `json:"errorTraceId,omitempty"`
 	}
-
-	// AppErrorListResponse - application/json:
-	AppErrorListResponse []AppErrorAttribute
-
-	AppErrorAttribute struct {
-		ID    string `json:"id"`
-		Value string `json:"value"`
-	}
 )
-
-func (ar *AppErrorResponse) Marshal() []byte {
-	bytes, err := json.Marshal(ar)
-
-	if err != nil {
-		return nil
-	}
-
-	return bytes
-}
-
-func (a *AppErrorListResponse) Add(id, value string) {
-	*a = append(*a, AppErrorAttribute{ID: id, Value: value})
-}
