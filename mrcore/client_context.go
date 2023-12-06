@@ -26,5 +26,5 @@ type (
 		SendFile(info mrtype.FileInfo, attachmentName string, file io.Reader) error
 	}
 
-	ClientErrorWrapperFunc func(err *mrerr.AppError) (int, *mrerr.AppError)
+	ClientWrapErrorFunc func(err *mrerr.AppError) (int, *mrerr.AppError)
 )

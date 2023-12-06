@@ -19,7 +19,7 @@ func ParseRequiredBool(r *http.Request, key string) (bool, error) {
 	item, err := strconv.ParseBool(value)
 
 	if err != nil {
-		return false, mrcore.FactoryErrHttpRequestParseParam.New("RequiredBool", key, value)
+		return false, mrcore.FactoryErrHttpRequestParseParam.New(key, "RequiredBool", value)
 	}
 
 	return item, nil
@@ -35,7 +35,7 @@ func ParseNullableBool(r *http.Request, key string) (mrtype.NullableBool, error)
 	item, err := strconv.ParseBool(value)
 
 	if err != nil {
-		return mrtype.NullableBoolNull, mrcore.FactoryErrHttpRequestParseParam.New("NullableBool", key, value)
+		return mrtype.NullableBoolNull, mrcore.FactoryErrHttpRequestParseParam.New(key, "NullableBool", value)
 	}
 
 	if item {

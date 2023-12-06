@@ -34,7 +34,7 @@ func ParseEnum(r *http.Request, key string, required bool) (string, error) {
 	value = strings.ToUpper(value)
 
 	if !regexpEnum.MatchString(value) {
-		return "", mrcore.FactoryErrHttpRequestParseParam.New("Enum", key, value)
+		return "", mrcore.FactoryErrHttpRequestParseParam.New(key, "Enum", value)
 	}
 
 	return value, nil

@@ -15,14 +15,8 @@ var (
 	FactoryErrStorageQueryFailed = NewFactory(
 		"errStorageQueryFailed", ErrorKindInternal, "query is failed")
 
-	FactoryErrStorageQueryDataContainer = NewFactory(
-		"errStorageQueryDataContainer", ErrorKindInternalNotice, "'{{ .data }}'")
-
 	FactoryErrStorageFetchDataFailed = NewFactory(
 		"errStorageFetchDataFailed", ErrorKindInternal, "fetching data is failed")
-
-	FactoryErrStorageFetchedInvalidData = NewFactory(
-		"errStorageFetchedInvalidData", ErrorKindInternal, "fetched data '{{ .data }}' is invalid")
 
 	FactoryErrStorageNoRowFound = NewFactory(
 		"errStorageNoRowFound", ErrorKindInternalNotice, "no row found")

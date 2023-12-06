@@ -32,7 +32,7 @@ func ParseSortParams(r *http.Request, keyField, keyDirection string) (mrtype.Sor
 	}
 
 	if !regexpSorterField.MatchString(value) {
-		return params, mrcore.FactoryErrHttpRequestParseParam.New("SortParams", keyField, value)
+		return params, mrcore.FactoryErrHttpRequestParseParam.New(keyField, "SortParams", value)
 	}
 
 	direction := query.Get(keyDirection)

@@ -14,7 +14,7 @@ type (
 		DebugInfo string `json:"debugInfo,omitempty"`
 	}
 
-	// ErrorDetailsResponse - application/problem+json (401, 403, 404, 418, 500)
+	// ErrorDetailsResponse - application/problem+json (401, 403, 404, 418, 5XX)
 	ErrorDetailsResponse struct {
 		Title        string `json:"title"`
 		Details      string `json:"details"`

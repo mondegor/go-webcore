@@ -1,6 +1,42 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-12-06
+### Added
+- Добавлены следующие типы ошибок:
+    - `mrcore.FactoryErrInternalNotice` - используется для оборачивания ошибок без активации callstack;
+    - `mrcore.FactoryErrInternalWithData` - используется как контейнер с данными с активацией callstack;
+    - `mrcore.FactoryErrWithData` - используется как контейнер с данными без активации callstack;
+    - `mrcore.FactoryErrServiceEntityVersionInvalid` - сообщает, что версия объекта не валидна (при сохранении, с использованием механизма версий);
+    - `mrcore.FactoryErrServiceOperationFailed` - используется при любом неуспешном запросе (`API`, `Storage`);
+
+### Changed
+- Изменился порядок параметров в `mrcore.FactoryErrHttpRequestParseParam`;
+- Удалён параметр из `mrcore.FactoryErrServiceTemporarilyUnavailable`;
+- Теперь поле `ErrorDetailsResponse.ErrorTraceID` отображается пользователю только тогда, когда связанное с ней ошибка записывается в лог;
+- Переименован метод `mrcore.ClientErrorWrapperFunc` -> `mrcore.ClientWrapErrorFunc`;
+- Переименован метод `mrcore.FactoryErrServiceEntitySwitchStatusImpossible` -> `FactoryErrServiceSwitchStatusRejected`, а также изменено в нём кол-во параметров;
+- переработан `mrtool.ServiceHelper`:
+    - добавлен метод `IsNotFound` - для определения, что указанная ошибка связана с тем, что запись не найдена;
+    - добавлен метод `WrapErrorEntity` для обёртывания ошибок при запросах с возможностью указания ошибки, которая будет создана, если присутствует ошибка, о том, что запись не найдена;
+    - добавлен метод `WrapErrorEntityNotFoundOrFailed` для обёртывания ошибок при запросах (например: при получении, сохранении, удалении записи);
+    - добавлен метод `WrapErrorFailed` для обёртывания ошибок при запросах (например: при получении списка, при обращении к API, создании записи);
+    - добавлен метод `WrapErrorEntityFailed` для обёртывания ошибок при запросах (например: при обращении к API для получения записи);
+    - методы `WrapErrorEntityFetch`, `WrapErrorEntityUpdate`, `WrapErrorEntityDelete`, вместо них него следует использовать `WrapErrorEntityNotFoundOrFailed`;
+    - метод `WrapErrorEntityInsert` удалён, вместо него следует использовать `WrapErrorEntityFailed`;
+
+### Removed
+- Удалены следующие неиспользуемые типы ошибок:
+    - `mrcore.FactoryErrHttpResponseSystemTemporarilyUnableToProcess`;
+    - `mrcore.FactoryErrInternalInvalidData`;
+    - `mrcore.FactoryErrInternalMapValueNotFound`;
+    - `mrcore.FactoryErrServiceEmptyInputData`;
+    - `mrcore.FactoryErrServiceEntityNotCreated`;
+    - `mrcore.FactoryErrServiceEntityNotStored`;
+    - `mrcore.FactoryErrServiceEntityNotRemoved`;
+    - `mrcore.FactoryErrStorageQueryDataContainer`;
+    - `mrcore.FactoryErrStorageFetchedInvalidData`;
+
 ## 2023-12-04
 ### Added
 - Добавлена глобальная переменная отладочного режима и два метода для управления им: `mrcore.SetDebug()` и `mrcore.Debug()`;

@@ -23,11 +23,11 @@ const (
 
 type (
 	clientContext struct {
-		request          *http.Request
-		responseWriter   http.ResponseWriter
-		pathParams       httprouter.Params
-		errorWrapperFunc mrcore.ClientErrorWrapperFunc
-		tools            mrctx.ClientTools
+		request        *http.Request
+		responseWriter http.ResponseWriter
+		pathParams     httprouter.Params
+		wrapErrorFunc  mrcore.ClientWrapErrorFunc
+		tools          mrctx.ClientTools
 	}
 )
 
@@ -37,18 +37,18 @@ var _ mrcore.ClientContext = (*clientContext)(nil)
 func newClientData(
 	r *http.Request,
 	w http.ResponseWriter,
-	ew mrcore.ClientErrorWrapperFunc,
+	wefn mrcore.ClientWrapErrorFunc,
 	tools mrctx.ClientTools,
 ) *clientContext {
-	if ew == nil {
-		ew = DefaultErrorWrapperFunc
+	if wefn == nil {
+		wefn = DefaultWrapErrorFunc
 	}
 
 	c := clientContext{
-		request:          r,
-		responseWriter:   w,
-		errorWrapperFunc: ew,
-		tools:            tools,
+		request:        r,
+		responseWriter: w,
+		wrapErrorFunc:  wefn,
+		tools:          tools,
 	}
 
 	params, ok := r.Context().Value(httprouter.ParamsKey).(httprouter.Params)
@@ -74,11 +74,11 @@ func (c *clientContext) Context() context.Context {
 
 func (c *clientContext) WithContext(ctx context.Context) mrcore.ClientContext {
 	return &clientContext{
-		request:          c.request.WithContext(ctx),
-		responseWriter:   c.responseWriter,
-		pathParams:       c.pathParams,
-		errorWrapperFunc: c.errorWrapperFunc,
-		tools:            c.tools,
+		request:        c.request.WithContext(ctx),
+		responseWriter: c.responseWriter,
+		pathParams:     c.pathParams,
+		wrapErrorFunc:  c.wrapErrorFunc,
+		tools:          c.tools,
 	}
 }
 
@@ -201,24 +201,11 @@ func (c *clientContext) sendErrorResponse(err error) {
 
 	appError, ok := err.(*mrerr.AppError)
 
-	if ok {
-		if appError.Kind() == mrerr.ErrorKindUser {
-			c.sendStructResponse(
-				http.StatusBadRequest,
-				contentTypeJson,
-				c.getErrorListResponse(
-					mrerr.NewFieldErrorAppError(ErrorAttributeNameByDefault, appError),
-				),
-			)
-
-			return
-		}
-	} else {
-		appError = mrcore.FactoryErrInternal.Caller(-1).Wrap(err)
+	if !ok {
+		appError = mrcore.FactoryErrInternalNotice.Wrap(err)
 	}
 
-	c.tools.Logger.DisableFileLine().Err(appError)
-	status, appError := c.errorWrapperFunc(appError)
+	status, appError := c.wrapErrorFunc(appError)
 
 	c.sendStructResponse(
 		status,
@@ -245,11 +232,10 @@ func (c *clientContext) getErrorListResponse(fields ...*mrerr.FieldError) ErrorL
 func (c *clientContext) getErrorDetailsResponse(appError *mrerr.AppError) ErrorDetailsResponse {
 	errMessage := appError.Translate(c.tools.Locale)
 	response := ErrorDetailsResponse{
-		Title:        errMessage.Reason,
-		Details:      errMessage.DetailsToString(),
-		Request:      c.request.URL.Path,
-		Time:         time.Now().Format(time.RFC3339),
-		ErrorTraceID: c.getErrorTraceID(appError),
+		Title:   errMessage.Reason,
+		Details: errMessage.DetailsToString(),
+		Request: c.request.URL.Path,
+		Time:    time.Now().Format(time.RFC3339),
 	}
 
 	if mrcore.Debug() {
@@ -258,6 +244,11 @@ func (c *clientContext) getErrorDetailsResponse(appError *mrerr.AppError) ErrorD
 		}
 
 		response.Details += "DebugInfo: " + c.debugInfo(appError)
+	}
+
+	if appError.Kind() != mrerr.ErrorKindUser {
+		response.ErrorTraceID = c.getErrorTraceID(appError)
+		c.tools.Logger.DisableFileLine().Err(appError)
 	}
 
 	return response

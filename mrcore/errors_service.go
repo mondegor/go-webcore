@@ -3,27 +3,21 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrServiceEmptyInputData = NewFactory(
-		"errServiceEmptyData", ErrorKindInternalNotice, "value of '{{ .name }}' is empty")
-
-	FactoryErrServiceIncorrectInputData = NewFactory(
-		"errServiceIncorrectData", ErrorKindInternalNotice, "data '{{ .data }}' is incorrect")
+	FactoryErrServiceOperationFailed = NewFactory(
+		"errServiceOperationFailed", ErrorKindInternal, "operation failed")
 
 	FactoryErrServiceTemporarilyUnavailable = NewFactory(
-		"errServiceTemporarilyUnavailable", ErrorKindSystem, "resource '{{ .data }}' is temporarily unavailable")
+		"errServiceTemporarilyUnavailable", ErrorKindSystem, "system is temporarily unavailable")
+
+	FactoryErrServiceIncorrectInputData = NewFactory(
+		"errServiceIncorrectInputData", ErrorKindInternalNotice, "{{ .key }}={{ .data }} is incorrect")
 
 	FactoryErrServiceEntityNotFound = NewFactory(
-		"errServiceEntityNotFound", ErrorKindInternalNotice, "entity '{{ .data }}' is not found")
+		"errServiceEntityNotFound", ErrorKindUser, "entity not found")
 
-	FactoryErrServiceEntityNotCreated = NewFactory(
-		"errServiceEntityNotCreated", ErrorKindInternal, "entity '{{ .data }}' is not created")
+	FactoryErrServiceEntityVersionInvalid = NewFactory(
+		"errServiceEntityVersionInvalid", ErrorKindUser, "entity version is invalid")
 
-	FactoryErrServiceEntityNotStored = NewFactory(
-		"errServiceEntityNotStored", ErrorKindInternal, "entity '{{ .data }}' is not stored")
-
-	FactoryErrServiceEntityNotRemoved = NewFactory(
-		"errServiceEntityNotRemoved", ErrorKindInternal, "entity '{{ .data }}' is not removed")
-
-	FactoryErrServiceEntitySwitchStatusImpossible = NewFactory(
-		"errServiceEntitySwitchStatusImpossible", ErrorKindInternalNotice, "entity '{{ .data }}': switching from '{{ .statusFrom }}' to '{{ .statusTo }}' is impossible")
+	FactoryErrServiceSwitchStatusRejected = NewFactory(
+		"errServiceSwitchStatusRejected", ErrorKindUser, "switching from '{{ .statusFrom }}' to '{{ .statusTo }}' is rejected")
 )

@@ -30,7 +30,7 @@ func ParseInt64List(r *http.Request, key string) ([]int64, error) {
 		itemN, err := strconv.ParseInt(strings.TrimSpace(item), 10, 64)
 
 		if err != nil {
-			return nil, mrcore.FactoryErrHttpRequestParseParam.New("Int64", key, value)
+			return nil, mrcore.FactoryErrHttpRequestParseParam.New(key, "Int64", value)
 		}
 
 		items[i] = itemN

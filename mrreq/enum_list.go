@@ -28,7 +28,7 @@ func ParseEnumList(r *http.Request, key string) ([]string, error) {
 		item = strings.TrimSpace(item)
 
 		if !regexpEnum.MatchString(item) {
-			return nil, mrcore.FactoryErrHttpRequestParseParam.New("Enum", key, value)
+			return nil, mrcore.FactoryErrHttpRequestParseParam.New(key, "Enum", value)
 		}
 
 		items[i] = item

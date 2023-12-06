@@ -7,22 +7,19 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
-func DefaultErrorWrapperFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
+// DefaultWrapErrorFunc - only for: 401, 403, 404, 418, 5XX
+func DefaultWrapErrorFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
 	status := http.StatusInternalServerError
 
-	if mrcore.FactoryErrServiceEntityNotFound.Is(err) {
+	if mrcore.FactoryErrServiceEntityNotFound.Is(err) ||
+		mrcore.FactoryErrHttpResourceNotFound.Is(err) {
 		status = http.StatusNotFound
-		err = mrcore.FactoryErrHttpResourceNotFound.Wrap(err)
 	} else if mrcore.FactoryErrHttpClientUnauthorized.Is(err) {
 		status = http.StatusUnauthorized
 	} else if mrcore.FactoryErrHttpAccessForbidden.Is(err) {
 		status = http.StatusForbidden
-	} else if mrcore.FactoryErrServiceEmptyInputData.Is(err) ||
-		mrcore.FactoryErrServiceIncorrectInputData.Is(err) {
-		err = mrcore.FactoryErrHttpRequestParseData.Wrap(err)
-	} else if mrcore.FactoryErrServiceTemporarilyUnavailable.Is(err) {
-		err = mrcore.FactoryErrHttpResponseSystemTemporarilyUnableToProcess.Wrap(err)
-	} else if err.ID() == mrerr.ErrorInternalID {
+	} else if err.ID() == mrcore.FactoryErrInternal.ErrorID() {
+		// если ошибка явно не обработана разработчиком, то вместо 500 отображается 418
 		status = http.StatusTeapot
 	}
 

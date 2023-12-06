@@ -7,7 +7,7 @@ import (
 	"github.com/mondegor/go-webcore/mrctx"
 )
 
-func HandlerAdapter(ew mrcore.ClientErrorWrapperFunc) mrcore.HttpHandlerAdapterFunc {
+func HandlerAdapter(wefn mrcore.ClientWrapErrorFunc) mrcore.HttpHandlerAdapterFunc {
 	return func(next mrcore.HttpHandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			ct, err := mrctx.GetClientTools(r.Context())
@@ -20,7 +20,7 @@ func HandlerAdapter(ew mrcore.ClientErrorWrapperFunc) mrcore.HttpHandlerAdapterF
 
 			ct.Logger.Debug("Exec HandlerAdapter")
 
-			c := newClientData(r, w, ew, ct)
+			c := newClientData(r, w, wefn, ct)
 
 			if err = next(c); err != nil {
 				c.sendErrorResponse(err)
