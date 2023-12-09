@@ -3,6 +3,8 @@ package mrcore
 import (
 	"fmt"
 	"strings"
+
+	"github.com/mondegor/go-sysmess/mrerr"
 )
 
 const (
@@ -18,7 +20,6 @@ type (
 	Logger interface {
 		With(name string) Logger
 		Caller(skip int) Logger
-		DisableFileLine() Logger // only for: Error, Err, Warning, Warn
 
 		Level() LogLevel
 		Error(message string, args ...any)
@@ -31,7 +32,15 @@ type (
 )
 
 var (
-	defaultLogger Logger = newLogger("[mrcore] ", LogDebugLevel)
+	defaultLogger Logger = newLogger(
+		LoggerOptions{
+			Prefix: "[mrcore] ",
+			Caller: mrerr.CallerOptions{
+				Deep: 1,
+			},
+		},
+		LogDebugLevel,
+	)
 )
 
 // SetDefaultLogger - WARNING: use only when starting the main process

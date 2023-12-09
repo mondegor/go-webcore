@@ -3,10 +3,11 @@ package mrcore
 import (
 	"log"
 	"os"
-	"runtime"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/mondegor/go-sysmess/mrerr"
 )
 
 const (
@@ -15,12 +16,20 @@ const (
 
 type (
 	LoggerAdapter struct {
-		name            string
-		level           LogLevel
-		callerSkip      int
-		enabledFileLine bool
-		infoLog         *log.Logger
-		errLog          *log.Logger
+		name              string
+		level             LogLevel
+		caller            *mrerr.Caller
+		callerSkip        int
+		callerEnabledFunc func(err error) bool
+		infoLog           *log.Logger
+		errLog            *log.Logger
+	}
+
+	LoggerOptions struct {
+		Prefix            string
+		Level             string
+		Caller            mrerr.CallerOptions
+		CallerEnabledFunc func(err error) bool
 	}
 )
 
@@ -30,44 +39,59 @@ var _ Logger = (*LoggerAdapter)(nil)
 // Make sure the LoggerAdapter conforms with the EventBox interface
 var _ EventBox = (*LoggerAdapter)(nil)
 
-func NewLogger(prefix, level string) (*LoggerAdapter, error) {
-	lvl, err := ParseLogLevel(level)
+func NewLogger(opt LoggerOptions) (*LoggerAdapter, error) {
+	level, err := ParseLogLevel(opt.Level)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return newLogger(prefix, lvl), nil
+	return newLogger(opt, level), nil
 }
 
-func newLogger(prefix string, level LogLevel) *LoggerAdapter {
-	return &LoggerAdapter{
-		level:           level,
-		callerSkip:      4, // to parent function
-		enabledFileLine: true,
-		infoLog:         log.New(os.Stdout, prefix, 0),
-		errLog:          log.New(os.Stderr, prefix, 0),
+func newLogger(opt LoggerOptions, level LogLevel) *LoggerAdapter {
+	l := LoggerAdapter{
+		level:             level,
+		caller:            mrerr.NewCaller(opt.Caller),
+		callerEnabledFunc: opt.CallerEnabledFunc,
+		callerSkip:        3, // skip: .., logPrint, formatHeader
+		infoLog:           log.New(os.Stdout, opt.Prefix, 0),
+		errLog:            log.New(os.Stderr, opt.Prefix, 0),
 	}
+
+	if l.callerEnabledFunc == nil {
+		l.callerEnabledFunc = func(err error) bool {
+			return true
+		}
+	}
+
+	return &l
 }
 
-func (l LoggerAdapter) With(name string) Logger {
+func (l *LoggerAdapter) With(name string) Logger {
+	if name == "" {
+		return l
+	}
+
 	if l.name != "" {
-		name = l.name + "; " + name
+		name = l.name + ";" + name
 	}
 
-	l.name = name
-	return &l
+	c := *l
+	c.name = name
+
+	return &c
 }
 
-func (l LoggerAdapter) Caller(skip int) Logger {
-	l.callerSkip += skip
-	return &l
-}
+func (l *LoggerAdapter) Caller(skip int) Logger {
+	if skip == 0 {
+		return l
+	}
 
-// DisableFileLine - only for: Error, Err, Warning, Warn
-func (l LoggerAdapter) DisableFileLine() Logger {
-	l.enabledFileLine = false
-	return &l
+	c := *l
+	c.callerSkip += skip
+
+	return &c
 }
 
 func (l *LoggerAdapter) Level() LogLevel {
@@ -83,7 +107,7 @@ func (l *LoggerAdapter) Err(e error) {
 		return
 	}
 
-	l.logPrint(l.errLog, "ERROR", e.Error(), []any{}, true)
+	l.logPrint(l.errLog, "ERROR", e.Error(), []any{}, l.callerEnabledFunc(e))
 }
 
 func (l *LoggerAdapter) Warning(message string, args ...any) {
@@ -94,7 +118,7 @@ func (l *LoggerAdapter) Warning(message string, args ...any) {
 
 func (l *LoggerAdapter) Warn(e error) {
 	if l.level >= LogWarnLevel && e != nil {
-		l.logPrint(l.errLog, "WARN", e.Error(), []any{}, true)
+		l.logPrint(l.errLog, "WARN", e.Error(), []any{}, l.callerEnabledFunc(e))
 	}
 }
 
@@ -114,11 +138,11 @@ func (l *LoggerAdapter) Emit(message string, args ...any) {
 	l.logPrint(l.infoLog, "EVENT", message, args, false)
 }
 
-func (l *LoggerAdapter) logPrint(logger *log.Logger, prefix, message string, args []any, showFileLine bool) {
+func (l *LoggerAdapter) logPrint(logger *log.Logger, prefix, message string, args []any, showCallStack bool) {
 	var buf strings.Builder
 
 	buf.Grow(len(message) + len(l.name) + len(prefix) + 24) // 24 = (19 - datetime, 5 - separated chars)
-	l.formatHeader(&buf, prefix, showFileLine)
+	l.formatHeader(&buf, prefix, showCallStack)
 	buf.WriteString(message)
 
 	if len(args) == 0 {
@@ -128,7 +152,7 @@ func (l *LoggerAdapter) logPrint(logger *log.Logger, prefix, message string, arg
 	}
 }
 
-func (l *LoggerAdapter) formatHeader(buf *strings.Builder, prefix string, showFileLine bool) {
+func (l *LoggerAdapter) formatHeader(buf *strings.Builder, prefix string, showCallStack bool) {
 	buf.WriteString(time.Now().Format(datetime))
 	buf.WriteByte(' ')
 
@@ -141,17 +165,21 @@ func (l *LoggerAdapter) formatHeader(buf *strings.Builder, prefix string, showFi
 	buf.WriteString(prefix)
 	buf.WriteByte('\t')
 
-	if l.enabledFileLine && showFileLine {
-		_, file, line, ok := runtime.Caller(l.callerSkip)
+	if showCallStack {
+		cs := l.caller.CallStack(l.callerSkip)
 
-		if !ok {
-			file = "???"
-			line = 0
+		if len(cs) > 0 {
+			for i := range cs {
+				if i > 0 {
+					buf.Write([]byte{' ', '<', '-', ' '})
+				}
+
+				buf.WriteString(cs[i].File)
+				buf.WriteByte(':')
+				buf.WriteString(strconv.Itoa(cs[i].Line))
+			}
+
+			buf.WriteByte('\t')
 		}
-
-		buf.WriteString(file)
-		buf.WriteByte(':')
-		buf.WriteString(strconv.Itoa(line))
-		buf.WriteByte('\t')
 	}
 }

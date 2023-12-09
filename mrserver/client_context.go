@@ -73,13 +73,10 @@ func (c *clientContext) Context() context.Context {
 }
 
 func (c *clientContext) WithContext(ctx context.Context) mrcore.ClientContext {
-	return &clientContext{
-		request:        c.request.WithContext(ctx),
-		responseWriter: c.responseWriter,
-		pathParams:     c.pathParams,
-		wrapErrorFunc:  c.wrapErrorFunc,
-		tools:          c.tools,
-	}
+	cl := *c
+	cl.request = c.request.WithContext(ctx)
+
+	return &cl
 }
 
 func (c *clientContext) Writer() http.ResponseWriter {
@@ -99,7 +96,7 @@ func (c *clientContext) parse(structRequest any) error {
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(&structRequest); err != nil {
-		c.tools.Logger.Caller(1).Warn(err)
+		c.tools.Logger.Caller(2).Warn(err)
 		return mrcore.FactoryErrHttpRequestParseData.Wrap(err)
 	}
 
@@ -162,7 +159,7 @@ func (c *clientContext) sendResponse(status int, contentType string, body []byte
 	_, err := c.responseWriter.Write(body)
 
 	if err != nil {
-		c.tools.Logger.DisableFileLine().Err(mrcore.FactoryErrHttpResponseSendData.Caller(1).Wrap(err))
+		c.tools.Logger.Err(mrcore.FactoryErrHttpResponseSendData.Caller(1).Wrap(err))
 	}
 }
 
@@ -172,7 +169,7 @@ func (c *clientContext) sendStructResponse(status int, contentType string, struc
 	if err != nil {
 		status = http.StatusTeapot
 		bytes = []byte{}
-		c.tools.Logger.DisableFileLine().Err(mrcore.FactoryErrHttpResponseParseData.Caller(1).Wrap(err))
+		c.tools.Logger.Err(mrcore.FactoryErrHttpResponseParseData.Caller(1).Wrap(err))
 	}
 
 	c.sendResponse(status, contentType, bytes)
@@ -248,7 +245,7 @@ func (c *clientContext) getErrorDetailsResponse(appError *mrerr.AppError) ErrorD
 
 	if appError.Kind() != mrerr.ErrorKindUser {
 		response.ErrorTraceID = c.getErrorTraceID(appError)
-		c.tools.Logger.DisableFileLine().Err(appError)
+		c.tools.Logger.Err(appError)
 	}
 
 	return response

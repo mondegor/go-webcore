@@ -48,7 +48,7 @@ func (h *AppHelper) GracefulShutdown(cancel context.CancelFunc) {
 
 func (h *AppHelper) ExitOnError(err error) {
 	if err != nil {
-		h.Logger.Err(mrcore.FactoryErrInternal.Wrap(err))
+		h.Logger.Err(err)
 		os.Exit(1)
 	}
 }

@@ -18,9 +18,14 @@ func NewServiceHelper() *ServiceHelper {
 }
 
 func (h *ServiceHelper) Caller(skip int) *ServiceHelper {
-	return &ServiceHelper{
-		callerSkip: h.callerSkip + skip,
+	if skip == 0 {
+		return h
 	}
+
+	c := *h
+	c.callerSkip += skip
+
+	return &c
 }
 
 func (h *ServiceHelper) IsNotFound(err error) bool {

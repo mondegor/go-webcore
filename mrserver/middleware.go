@@ -22,7 +22,7 @@ func MiddlewareFirst(l mrcore.Logger, t *mrlang.Translator, v mrcore.Validator) 
 			logger := l.With(correlationID)
 
 			if err != nil {
-				logger.DisableFileLine().Warn(err)
+				logger.Warn(err)
 			}
 
 			logger.Debug("Exec MiddlewareFirst")
