@@ -1,6 +1,10 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-12-11
+### Added
+- Добавлен `mrdebug.NewLockerStub()`, который возвращает объект-заглушку реализующий интерфейс `mrcore.Locker`;
+
 ## 2023-12-10
 ### Removed
 - Удалены бесполезные вызовы Caller() в `mrtool.AppHelper`;
