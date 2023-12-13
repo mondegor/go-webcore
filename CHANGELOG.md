@@ -1,6 +1,14 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2023-12-13
+### Added
+- В `AppHelper.Close()` добавлено логирование при закрытии соединения;
+- Добавлен `mrlib.NewLockerMutex()`, который возвращает объект реализующий интерфейс `mrcore.Locker`, блокировку осуществляет с помощью Mutex;
+
+### Changed
+- В конструктор `ClientSection` теперь передаётся `ClientSectionOptions`;
+  
 ## 2023-12-11
 ### Added
 - Добавлен `mrdebug.NewLockerStub()`, который возвращает объект-заглушку реализующий интерфейс `mrcore.Locker`;
