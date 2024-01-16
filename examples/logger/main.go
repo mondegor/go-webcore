@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/mondegor/go-sysmess/mrerr"
+
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
@@ -11,6 +13,11 @@ func main() {
 		mrcore.LoggerOptions{
 			Prefix: "[my-logger] ",
 			Level:  "info",
+			CallerOptions: []mrerr.CallerOption{
+				mrerr.CallerDeep(4),
+				mrerr.CallerUseShortPath(true),
+				mrerr.CallerRootPath("/"),
+			},
 		},
 	)
 

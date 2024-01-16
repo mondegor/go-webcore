@@ -35,12 +35,8 @@ func ParseSortParams(r *http.Request, keyField, keyDirection string) (mrtype.Sor
 		return params, mrcore.FactoryErrHttpRequestParseParam.New(keyField, "SortParams", value)
 	}
 
-	direction := query.Get(keyDirection)
-
-	if direction != "" {
-		err := params.Direction.ParseAndSet(strings.ToUpper(direction))
-
-		if err != nil {
+	if direction := query.Get(keyDirection); direction != "" {
+		if err := params.Direction.ParseAndSet(strings.ToUpper(direction)); err != nil {
 			return params, err
 		}
 	}

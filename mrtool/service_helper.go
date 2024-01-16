@@ -1,7 +1,6 @@
 package mrtool
 
 import (
-	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
@@ -28,7 +27,7 @@ func (h *ServiceHelper) Caller(skip int) *ServiceHelper {
 	return &c
 }
 
-func (h *ServiceHelper) IsNotFound(err error) bool {
+func (h *ServiceHelper) IsNotFoundError(err error) bool {
 	return mrcore.FactoryErrStorageNoRowFound.Is(err) ||
 		mrcore.FactoryErrStorageRowsNotAffected.Is(err)
 }
@@ -41,26 +40,12 @@ func (h *ServiceHelper) WrapErrorEntityFailed(err error, entityName string, enti
 	return h.wrapErrorFailed(err, entityName, entityData)
 }
 
-func (h *ServiceHelper) WrapErrorEntity(
-	reasonWhyNotFound *mrerr.AppErrorFactory,
-	err error,
-	entityName string,
-	entityData any,
-) error {
-	if h.IsNotFound(err) {
-		return reasonWhyNotFound.Wrap(err)
+func (h *ServiceHelper) WrapErrorEntityNotFoundOrFailed(err error, entityName string, entityData any) error {
+	if h.IsNotFoundError(err) {
+		return mrcore.FactoryErrServiceEntityNotFound.Wrap(err)
 	}
 
 	return h.wrapErrorFailed(err, entityName, entityData)
-}
-
-func (h *ServiceHelper) WrapErrorEntityNotFoundOrFailed(err error, entityName string, entityData any) error {
-	return h.WrapErrorEntity(
-		mrcore.FactoryErrServiceEntityNotFound,
-		err,
-		entityName,
-		entityData,
-	)
 }
 
 func (h *ServiceHelper) wrapErrorFailed(err error, name string, data any) error {

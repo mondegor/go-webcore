@@ -3,7 +3,6 @@ package mrserver
 import (
 	"fmt"
 	"net"
-	"path"
 	"path/filepath"
 )
 
@@ -34,7 +33,7 @@ func (s *ServerAdapter) createListener(opt *ListenOptions) (net.Listener, error)
 			return nil, fmt.Errorf("app real path: %w", err)
 		}
 
-		socketPath := path.Join(appDir, opt.SockName)
+		socketPath := filepath.Join(appDir, opt.SockName)
 		s.logger.Info("Listen to unix socket: %s", socketPath)
 
 		listener, listenErr = net.Listen("unix", socketPath)

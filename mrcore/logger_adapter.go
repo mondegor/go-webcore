@@ -28,7 +28,7 @@ type (
 	LoggerOptions struct {
 		Prefix            string
 		Level             string
-		Caller            mrerr.CallerOptions
+		CallerOptions     []mrerr.CallerOption
 		CallerEnabledFunc func(err error) bool
 	}
 )
@@ -52,7 +52,7 @@ func NewLogger(opt LoggerOptions) (*LoggerAdapter, error) {
 func newLogger(opt LoggerOptions, level LogLevel) *LoggerAdapter {
 	l := LoggerAdapter{
 		level:             level,
-		caller:            mrerr.NewCaller(opt.Caller),
+		caller:            mrerr.NewCaller(opt.CallerOptions...),
 		callerEnabledFunc: opt.CallerEnabledFunc,
 		callerSkip:        3, // skip: .., logPrint, formatHeader
 		infoLog:           log.New(os.Stdout, opt.Prefix, 0),
@@ -153,7 +153,7 @@ func (l *LoggerAdapter) logPrint(logger *log.Logger, prefix, message string, arg
 }
 
 func (l *LoggerAdapter) formatHeader(buf *strings.Builder, prefix string, showCallStack bool) {
-	buf.WriteString(time.Now().Format(datetime))
+	buf.WriteString(time.Now().UTC().Format(datetime))
 	buf.WriteByte(' ')
 
 	if l.name != "" {

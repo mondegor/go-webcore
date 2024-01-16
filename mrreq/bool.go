@@ -25,22 +25,18 @@ func ParseRequiredBool(r *http.Request, key string) (bool, error) {
 	return item, nil
 }
 
-func ParseNullableBool(r *http.Request, key string) (mrtype.NullableBool, error) {
+func ParseNullableBool(r *http.Request, key string) (*bool, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 
 	if value == "" {
-		return mrtype.NullableBoolNull, nil
+		return nil, nil
 	}
 
 	item, err := strconv.ParseBool(value)
 
 	if err != nil {
-		return mrtype.NullableBoolNull, mrcore.FactoryErrHttpRequestParseParam.New(key, "NullableBool", value)
+		return nil, mrcore.FactoryErrHttpRequestParseParam.New(key, "NullableBool", value)
 	}
 
-	if item {
-		return mrtype.NullableBoolTrue, nil
-	}
-
-	return mrtype.NullableBoolFalse, nil
+	return mrtype.BoolPointer(item), nil
 }

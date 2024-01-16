@@ -1,6 +1,23 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-01-16
+### Added
+- Добавлена ошибка `FactoryErrServiceInvalidFile`;
+- Добавлен новый тип `mrtype.ImageInfo` и доработан тип `mrtype.FileInfo`;
+- Добавлены функции `mrlib.MimeType`, `mrtype.StringPointer`, `mrtype.TimePointer`;
+- Добавлены системные обработчики `HandlerGetHealth`, `HandlerGetStatusOKAsJson`, `HandlerGetStructAsJson`;
+
+### Changed
+- Тип `mrtype.NullableBool` заменён на `*bool`;
+- Переименовано:
+  - `mrlib.MimeTypeByExt` -> `MimeTypeByFile`;
+  - `ServiceHelper.IsNotFound` -> `IsNotFoundError`;
+- Доработки для поддержки `mrerr.CallerOptions`;
+
+### Removed
+- Удалён метод `ServiceHelper.WrapErrorEntity`;
+
 ## 2023-12-13
 ### Added
 - В `AppHelper.Close()` добавлено логирование при закрытии соединения;

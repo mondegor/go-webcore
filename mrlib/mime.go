@@ -1,7 +1,11 @@
 package mrlib
 
+import (
+	"path"
+)
+
 var (
-	mimeTypes = map[string]string{
+	mimeExtType = map[string]string{
 		// "xl": "application/excel",
 		// "hqx": "application/mac-binhex40",
 		// "cpt": "application/mac-compactpro",
@@ -93,20 +97,25 @@ var (
 	}
 )
 
-func MimeTypeByExt(ext string) string {
-	if ext == "" {
-		return ""
-	}
+func MimeTypeByFile(name string) string {
+	if ext := path.Ext(name); ext != "" {
+		if ext[0] == '.' {
+			ext = ext[1:]
+		}
 
-	if ext[0] == '.' {
-		ext = ext[1:]
-	}
-
-	value, ok := mimeTypes[ext]
-
-	if ok {
-		return value
+		if value, ok := mimeExtType[ext]; ok {
+			return value
+		}
 	}
 
 	return ""
+}
+
+// MimeType - возвращает value если оно не пустое иначе вычисляется тип по расширению файла
+func MimeType(value, fileName string) string {
+	if value != "" || fileName == "" {
+		return value
+	}
+
+	return MimeTypeByFile(fileName)
 }

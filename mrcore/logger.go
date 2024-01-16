@@ -35,8 +35,8 @@ var (
 	defaultLogger Logger = newLogger(
 		LoggerOptions{
 			Prefix: "[mrcore] ",
-			Caller: mrerr.CallerOptions{
-				Deep: 1,
+			CallerOptions: []mrerr.CallerOption{
+				mrerr.CallerDeep(1),
 			},
 		},
 		LogDebugLevel,

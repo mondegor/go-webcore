@@ -22,7 +22,7 @@ func loadRoleConfig(roleName, dirPath, fileType string) (*roleConfig, error) {
 	filePath := fmt.Sprintf(rolesPathPattern, dirPath, roleName, fileType)
 
 	if err := cleanenv.ReadConfig(filePath, &cfg); err != nil {
-		return nil, fmt.Errorf("while reading role '%s', error '%s' occurred", filePath, err)
+		return nil, fmt.Errorf("error parsing role file '%s': %w", filePath, err)
 	}
 
 	return &cfg, nil

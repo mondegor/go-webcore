@@ -20,4 +20,7 @@ var (
 
 	FactoryErrServiceSwitchStatusRejected = NewFactory(
 		"errServiceSwitchStatusRejected", ErrorKindUser, "switching from '{{ .statusFrom }}' to '{{ .statusTo }}' is rejected")
+
+	FactoryErrServiceInvalidFile = NewFactory(
+		"errServiceInvalidFile", ErrorKindUser, "file is invalid")
 )

@@ -7,27 +7,27 @@ import (
 )
 
 func ParseRangeInt64(r *http.Request, key string) (mrtype.RangeInt64, error) {
-	min, err := ParseInt64(r, key+"-min", false)
+	minValue, err := ParseInt64(r, key+"-min", false)
 
 	if err != nil {
 		return mrtype.RangeInt64{}, err
 	}
 
-	max, err := ParseInt64(r, key+"-max", false)
+	maxValue, err := ParseInt64(r, key+"-max", false)
 
 	if err != nil {
 		return mrtype.RangeInt64{}, err
 	}
 
-	if min > max { // change
+	if minValue > maxValue { // change
 		return mrtype.RangeInt64{
-			Min: max,
-			Max: min,
+			Min: maxValue,
+			Max: minValue,
 		}, nil
 	}
 
 	return mrtype.RangeInt64{
-		Min: min,
-		Max: max,
+		Min: minValue,
+		Max: maxValue,
 	}, nil
 }

@@ -11,6 +11,10 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
+const (
+	signalChanLen = 10
+)
+
 type (
 	AppHelper struct {
 		Logger mrcore.Logger
@@ -32,10 +36,10 @@ func (h *AppHelper) Close(c io.Closer) {
 }
 
 func (h *AppHelper) GracefulShutdown(cancel context.CancelFunc) {
-	signalAppChan := make(chan os.Signal, 1)
+	signalStop := make(chan os.Signal, signalChanLen)
 
 	signal.Notify(
-		signalAppChan,
+		signalStop,
 		syscall.SIGABRT,
 		syscall.SIGQUIT,
 		syscall.SIGHUP,
@@ -43,7 +47,7 @@ func (h *AppHelper) GracefulShutdown(cancel context.CancelFunc) {
 		syscall.SIGTERM,
 	)
 
-	signalApp := <-signalAppChan
+	signalApp := <-signalStop
 	h.Logger.Info("Application shutdown, signal: " + signalApp.String())
 	cancel()
 }

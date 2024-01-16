@@ -5,6 +5,14 @@ var (
 	boolTrue  = newTrue()
 )
 
+func BoolPointer(value bool) *bool {
+	if value {
+		return boolTrue
+	}
+
+	return boolFalse
+}
+
 func newFalse() *bool {
 	value := false
 	return &value
@@ -13,12 +21,4 @@ func newFalse() *bool {
 func newTrue() *bool {
 	value := true
 	return &value
-}
-
-func BoolPointer(value bool) *bool {
-	if value {
-		return boolTrue
-	}
-
-	return boolFalse
 }

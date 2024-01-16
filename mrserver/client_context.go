@@ -232,7 +232,7 @@ func (c *clientContext) getErrorDetailsResponse(appError *mrerr.AppError) ErrorD
 		Title:   errMessage.Reason,
 		Details: errMessage.DetailsToString(),
 		Request: c.request.URL.Path,
-		Time:    time.Now().Format(time.RFC3339),
+		Time:    time.Now().UTC().Format(time.RFC3339),
 	}
 
 	if mrcore.Debug() {
