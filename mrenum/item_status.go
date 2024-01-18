@@ -13,6 +13,7 @@ const (
 	ItemStatusDisabled
 	ItemStatusRemoved
 
+	itemStatusLast     = uint8(ItemStatusRemoved)
 	enumNameItemStatus = "ItemStatus"
 )
 
@@ -62,6 +63,15 @@ func (e *ItemStatus) ParseAndSet(value string) error {
 	return fmt.Errorf("'%s' is not found in map %s", value, enumNameItemStatus)
 }
 
+func (e *ItemStatus) Set(value uint8) error {
+	if value > 0 && value <= itemStatusLast {
+		*e = ItemStatus(value)
+		return nil
+	}
+
+	return fmt.Errorf("number '%d' is not registered in %s", value, enumNameItemStatus)
+}
+
 func (e ItemStatus) String() string {
 	return itemStatusName[e]
 }
@@ -82,15 +92,15 @@ func (e *ItemStatus) UnmarshalJSON(data []byte) error {
 
 // Scan implements the Scanner interface.
 func (e *ItemStatus) Scan(value any) error {
-	if val, ok := value.(string); ok {
-		return e.ParseAndSet(val)
+	if val, ok := value.(int64); ok {
+		return e.Set(uint8(val))
 	}
 
-	return fmt.Errorf("invalid type '%s' assertion (value: %s)", enumNameItemStatus, value)
+	return fmt.Errorf("invalid type '%s' assertion (value: %v)", enumNameItemStatus, value)
 }
 
 func (e ItemStatus) Value() (driver.Value, error) {
-	return e.String(), nil
+	return uint8(e), nil
 }
 
 func ParseItemStatusList(items []string) ([]ItemStatus, error) {

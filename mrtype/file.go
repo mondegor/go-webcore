@@ -21,4 +21,9 @@ type (
 		FileInfo
 		Body io.ReadCloser
 	}
+
+	FileContent struct {
+		FileInfo
+		Body []byte
+	}
 )
