@@ -6,9 +6,6 @@ var (
 	FactoryErrHttpResponseParseData = NewFactory(
 		"errHttpResponseParseData", ErrorKindInternal, "response data is not valid")
 
-	FactoryErrHttpResponseSendData = NewFactory(
-		"errHttpResponseSendData", ErrorKindInternal, "response data is not send")
-
 	FactoryErrHttpMultipartFormFile = NewFactory(
 		"errHttpMultipartFormFile", ErrorKindSystem, "the file with the specified key '{{ .key }}' cannot be processed")
 

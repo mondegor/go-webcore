@@ -1,4 +1,4 @@
-package mrview
+package mrplayvalidator
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrctx"
+	"github.com/mondegor/go-webcore/mrview"
 )
 
 // go get -u github.com/go-playground/validator/v10
@@ -18,17 +19,18 @@ const (
 )
 
 type (
-	validatorAdapter struct {
+	ValidatorAdapter struct {
 		validate *validator.Validate
 	}
 )
 
-// Make sure the validatorAdapter conforms with the mrcore.Validator interface
-var _ mrcore.Validator = (*validatorAdapter)(nil)
+// Make sure the ValidatorAdapter conforms with the mrview.Validator interface
+var _ mrview.Validator = (*ValidatorAdapter)(nil)
 
-func NewValidator() *validatorAdapter {
+func New() *ValidatorAdapter {
 	validate := validator.New()
 
+	// возвращение в качестве имени поля названия из тега json
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
 		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
 
@@ -39,12 +41,12 @@ func NewValidator() *validatorAdapter {
 		return name
 	})
 
-	return &validatorAdapter{
+	return &ValidatorAdapter{
 		validate: validate,
 	}
 }
 
-func (v *validatorAdapter) Register(tagName string, fn mrcore.ValidatorTagNameFunc) error {
+func (v *ValidatorAdapter) Register(tagName string, fn mrview.ValidatorTagNameFunc) error {
 	return v.validate.RegisterValidation(
 		tagName,
 		func(fl validator.FieldLevel) bool {
@@ -53,7 +55,7 @@ func (v *validatorAdapter) Register(tagName string, fn mrcore.ValidatorTagNameFu
 	)
 }
 
-func (v *validatorAdapter) Validate(ctx context.Context, structure any) error {
+func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 	err := v.validate.Struct(structure)
 
 	// error not found, OK
@@ -103,7 +105,7 @@ func (v *validatorAdapter) Validate(ctx context.Context, structure any) error {
 	return mrerr.FieldErrorList(fields)
 }
 
-func (v *validatorAdapter) createAppError(field validator.FieldError) *mrerr.AppError {
+func (v *ValidatorAdapter) createAppError(field validator.FieldError) *mrerr.AppError {
 	tag := field.Tag()
 
 	if len(tag) == 0 {

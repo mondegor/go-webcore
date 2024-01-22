@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/mondegor/go-webcore/mrview"
+	"github.com/mondegor/go-webcore/mrview/mrplayvalidator"
 )
 
 type (
@@ -19,7 +19,7 @@ var (
 )
 
 func main() {
-	validator := mrview.NewValidator()
+	validator := mrplayvalidator.New()
 
 	if err := validator.Register("login", ValidateLogin); err != nil {
 		fmt.Println(err)

@@ -18,22 +18,22 @@ var (
 )
 
 func ParseSortParams(r *http.Request, keyField, keyDirection string) (mrtype.SortParams, error) {
-	params := mrtype.SortParams{}
 	query := r.URL.Query()
-
 	value := query.Get(keyField)
 
 	if value == "" {
-		return params, nil
+		return mrtype.SortParams{}, nil
 	}
 
 	if len(value) > maxLenSortField {
-		return params, mrcore.FactoryErrHttpRequestParamLenMax.New(keyField, maxLenSortField)
+		return mrtype.SortParams{}, mrcore.FactoryErrHttpRequestParamLenMax.New(keyField, maxLenSortField)
 	}
 
 	if !regexpSorterField.MatchString(value) {
-		return params, mrcore.FactoryErrHttpRequestParseParam.New(keyField, "SortParams", value)
+		return mrtype.SortParams{}, mrcore.FactoryErrHttpRequestParseParam.New(keyField, "SortParams", value)
 	}
+
+	var params mrtype.SortParams
 
 	if direction := query.Get(keyDirection); direction != "" {
 		if err := params.Direction.ParseAndSet(strings.ToUpper(direction)); err != nil {

@@ -7,8 +7,8 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
-// DefaultWrapErrorFunc - only for: 401, 403, 404, 418, 5XX
-func DefaultWrapErrorFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
+// DefaultHttpErrorOverrideFunc - only for: 401, 403, 404, 418, 5XX
+func DefaultHttpErrorOverrideFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
 	status := http.StatusInternalServerError
 
 	if mrcore.FactoryErrServiceEntityNotFound.Is(err) ||

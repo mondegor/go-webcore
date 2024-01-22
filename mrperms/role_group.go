@@ -2,21 +2,21 @@ package mrperms
 
 type (
 	RoleGroup struct {
-		roleIDs []int32
-		access  *ModulesAccess
+		roleIDs []uint16
+		access  *AccessControl
 	}
 )
 
-func newRoleGroup(access *ModulesAccess, roles []string) *RoleGroup {
+func newRoleGroup(access *AccessControl, roles []string) *RoleGroup {
 	return &RoleGroup{
 		roleIDs: access.roleNamesToIDs(roles),
 		access:  access,
 	}
 }
 
-// IsAuthorized - авторизован тогда, когда несколько ролей или роль одна и она не равна гостевой роли
-func (g *RoleGroup) IsAuthorized() bool {
-	return len(g.roleIDs) > 0 && g.roleIDs[0] != g.access.guestsRoleID
+// IsGuestAccess - если ролей нет или присутствует ровно одна роль и она гостевая
+func (g *RoleGroup) IsGuestAccess() bool {
+	return len(g.roleIDs) == 0 || len(g.roleIDs) == 1 && g.roleIDs[0] == g.access.guestsRoleID
 }
 
 func (g *RoleGroup) CheckPrivilege(name string) bool {

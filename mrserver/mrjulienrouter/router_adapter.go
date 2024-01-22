@@ -1,4 +1,4 @@
-package mrserver
+package mrjulienrouter
 
 import (
 	"net/http"
@@ -7,33 +7,34 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrserver"
 )
 
 // go get -u github.com/julienschmidt/httprouter
 
-// Make sure the routerAdapter conforms with the mrcore.HttpRouter interface
-var _ mrcore.HttpRouter = (*routerAdapter)(nil)
-
 type (
-	routerAdapter struct {
+	RouterAdapter struct {
 		router             *httprouter.Router
 		generalHandler     http.Handler
-		handlerAdapterFunc mrcore.HttpHandlerAdapterFunc
+		handlerAdapterFunc mrserver.HttpHandlerAdapterFunc
 		logger             mrcore.Logger
 	}
 )
 
-func NewRouter(
+// Make sure the RouterAdapter conforms with the mrserver.HttpRouter interface
+var _ mrserver.HttpRouter = (*RouterAdapter)(nil)
+
+func New(
 	logger mrcore.Logger,
-	handlerAdapterFunc mrcore.HttpHandlerAdapterFunc,
-) *routerAdapter {
+	handlerAdapterFunc mrserver.HttpHandlerAdapterFunc,
+) *RouterAdapter {
 	router := httprouter.New()
 
 	// r.GlobalOPTIONS
 	// rt.router.MethodNotAllowed
 	// rt.router.NotFound
 
-	return &routerAdapter{
+	return &RouterAdapter{
 		router:             router,
 		generalHandler:     router,
 		handlerAdapterFunc: handlerAdapterFunc,
@@ -41,7 +42,7 @@ func NewRouter(
 	}
 }
 
-func (rt *routerAdapter) RegisterMiddleware(handlers ...mrcore.HttpMiddleware) {
+func (rt *RouterAdapter) RegisterMiddleware(handlers ...mrserver.HttpMiddleware) {
 	// recursion call: handler1(handler2(handler3(router())))
 	for i := len(handlers) - 1; i >= 0; i-- {
 		rt.generalHandler = handlers[i].Middleware(rt.generalHandler)
@@ -53,22 +54,24 @@ func (rt *routerAdapter) RegisterMiddleware(handlers ...mrcore.HttpMiddleware) {
 	}
 }
 
-func (rt *routerAdapter) Register(controllers ...mrcore.HttpController) {
+func (rt *RouterAdapter) Register(controllers ...mrserver.HttpController) {
 	for i := range controllers {
-		controllers[i].AddHandlers(rt)
+		for _, handler := range controllers[i].Handlers() {
+			rt.HttpHandlerFunc(handler.Method, handler.URL, handler.Func)
+		}
 	}
 }
 
-func (rt *routerAdapter) HandlerFunc(method, path string, handler http.HandlerFunc) {
+func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFunc) {
 	rt.logger.Debug("- registered: %s %s", method, path)
 	rt.router.Handler(method, path, handler)
 }
 
-func (rt *routerAdapter) HttpHandlerFunc(method, path string, handler mrcore.HttpHandlerFunc) {
+func (rt *RouterAdapter) HttpHandlerFunc(method, path string, handler mrserver.HttpHandlerFunc) {
 	rt.logger.Debug("- registered: %s %s", method, path)
 	rt.router.Handler(method, path, rt.handlerAdapterFunc(handler))
 }
 
-func (rt *routerAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (rt *RouterAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rt.generalHandler.ServeHTTP(w, r)
 }

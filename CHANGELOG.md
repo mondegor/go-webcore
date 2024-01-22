@@ -1,6 +1,41 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-01-22
+### Added
+- Добавлена поддержка google/uuid (используется парсером запросов); 
+
+### Changed
+- Расформирован объект `ClientContext` и его одноименный интерфейс, в результате:
+  - Изменена сигнатура обработчиков с `func(c mrcore.ClientContext)` на `func(w http.ResponseWriter, r *http.Request) error`;
+  - С помощью интерфейсов `RequestDecoder`, `ResponseEncoder` можно задавать различные форматы
+    принимаемых и отправляемых данных (сейчас реализован только формат `JSON`);
+  - Запросы обрабатываются встраиваемыми в обработчики объектов `mrparser.*` через интерфейсы:
+    `mrserver.RequestParserPath`, `RequestParser`, `RequestParserItemStatus`, `RequestParserKeyInt32`,
+    `RequestParserSortPage`, `RequestParserUUID`, `RequestParserValidate`;
+  - Ответы отправляются встраиваемыми в обработчики объекты `mrresponse.*` через интерфейсы:
+    `mrserver.ResponseSender`, `FileResponseSender`, `ErrorResponseSender`;
+  - Вместо метода `Validate(structRequest any)` используется объект `mrparser.Validator`;
+- Произведены следующие замены:
+  - `HttpController.AddHandlers` -> `Handlers() []HttpHandler`.
+    Убрана зависимость контроллера от роутера и секции.
+    Для установки стандартных разрешений добавлены следующие методы
+    `mrfactory.WithPermission`, `mrfactory.WithMiddlewareCheckAccess`; 
+  - `ModulesAccess` -> `AccessControl` и добавлен интерфейс `mrcore.AccessControl`;
+  - `AccessObject` -> `AccessRights`;
+  - `ClientSection` -> AppSection удалена зависимость от `AccessControl`;
+  - `DefaultWrapErrorFunc` -> `DefaultHttpErrorOverrideFunc`;
+  - `IsAuthorized` -> `IsGuestAccess` (с инверсией флага);
+- Перенесены следующие библиотеки:
+  - `rs/cors` -> `mrserver/mrrscors`;
+  - `julienschmidt/httprouter` -> `mrserver/mrjulienrouter`;
+  - `go-playground/validator` -> `mrview/mrplayvalidator`;
+  - `mrreq` -> `mrserver/mrreq`;
+- Загрузка ролей (`loadRoleConfig`) происходит через библиотеку `yaml`, удалена зависимость от `ilyakaznacheev/cleanenv`;
+
+### Removed
+- Удалён `FactoryErrHttpResponseSendData`;
+
 ## 2024-01-19
 ### Changed
 - Обновлены зависимости библиотеки;

@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	maxLenStringsList = 1024
+	maxLenStringsList = 2048
 )
 
 func ParseStrList(r *http.Request, key string) ([]string, error) {

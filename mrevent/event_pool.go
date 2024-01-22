@@ -9,8 +9,8 @@ import (
 )
 
 type (
-	// eventPool - thread safe structure stores events, their handlers and functions for management
-	eventPool struct {
+	// EventPool - thread safe structure stores events, their handlers and functions for management
+	EventPool struct {
 		mutex       sync.RWMutex
 		waitGroup   sync.WaitGroup
 		subscribers map[string][]chan eventArgsWithContext
@@ -23,18 +23,18 @@ type (
 	}
 )
 
-// Make sure the eventPool conforms with the mrcore.EventPool interface
-var _ mrcore.EventPool = (*eventPool)(nil)
+// Make sure the EventPool conforms with the mrcore.EventPool interface
+var _ mrcore.EventPool = (*EventPool)(nil)
 
-func NewEventPool(bufferSize uint32) *eventPool {
-	return &eventPool{
+func NewEventPool(bufferSize uint32) *EventPool {
+	return &EventPool{
 		subscribers: map[string][]chan eventArgsWithContext{},
 		bufferSize:  bufferSize,
 	}
 }
 
 // Listen - Subscribe on eventName
-func (e *eventPool) Listen(eventName string, handlerFunc mrcore.EventHandlerFunc) {
+func (e *EventPool) Listen(eventName string, handlerFunc mrcore.EventHandlerFunc) {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 
@@ -57,12 +57,12 @@ func (e *eventPool) Listen(eventName string, handlerFunc mrcore.EventHandlerFunc
 }
 
 // Emit - Call eventName there
-func (e *eventPool) Emit(eventName string, args mrcore.EventArgs) error {
+func (e *EventPool) Emit(eventName string, args mrcore.EventArgs) error {
 	return e.EmitWithContext(context.Background(), eventName, args)
 }
 
 // EmitWithContext - Call eventName there
-func (e *eventPool) EmitWithContext(ctx context.Context, eventName string, args mrcore.EventArgs) error {
+func (e *EventPool) EmitWithContext(ctx context.Context, eventName string, args mrcore.EventArgs) error {
 	e.mutex.RLock()
 	defer e.mutex.RUnlock()
 
@@ -79,7 +79,7 @@ func (e *eventPool) EmitWithContext(ctx context.Context, eventName string, args 
 }
 
 // List - Returns a list of events that listeners are subscribed to
-func (e *eventPool) List() []string {
+func (e *EventPool) List() []string {
 	e.mutex.RLock()
 	defer e.mutex.RUnlock()
 
@@ -87,7 +87,7 @@ func (e *eventPool) List() []string {
 }
 
 // Has - Checks if there are listeners for the passed eventName
-func (e *eventPool) Has(eventName string) bool {
+func (e *EventPool) Has(eventName string) bool {
 	e.mutex.RLock()
 	defer e.mutex.RUnlock()
 
@@ -98,7 +98,7 @@ func (e *eventPool) Has(eventName string) bool {
 // Removing listeners closes subscribers and stops the goroutine.
 //
 // If you call the function without the "names" parameter, all listeners of all events will be removed.
-func (e *eventPool) Remove(eventNames ...string) {
+func (e *EventPool) Remove(eventNames ...string) {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 
@@ -116,14 +116,14 @@ func (e *eventPool) Remove(eventNames ...string) {
 }
 
 // Wait - Blocks the thread until all running events are completed
-func (e *eventPool) Wait() {
+func (e *EventPool) Wait() {
 	e.mutex.Lock()
 	defer e.mutex.Unlock()
 
 	e.waitGroup.Wait()
 }
 
-func (e *eventPool) list() []string {
+func (e *EventPool) list() []string {
 	list := make([]string, len(e.subscribers))
 	i := 0
 
@@ -135,7 +135,7 @@ func (e *eventPool) list() []string {
 	return list
 }
 
-func (e *eventPool) has(eventName string) bool {
+func (e *EventPool) has(eventName string) bool {
 	_, ok := e.subscribers[eventName]
 
 	return ok

@@ -15,7 +15,6 @@ type (
 		CorrelationID string
 		Logger        mrcore.Logger
 		Locale        *mrlang.Locale
-		Validator     mrcore.Validator
 	}
 )
 
@@ -24,7 +23,6 @@ func WithClientTools(
 	correlationID string,
 	logger mrcore.Logger,
 	locale *mrlang.Locale,
-	validator mrcore.Validator,
 ) context.Context {
 	return context.WithValue(
 		ctx,
@@ -33,7 +31,6 @@ func WithClientTools(
 			CorrelationID: correlationID,
 			Logger:        logger,
 			Locale:        locale,
-			Validator:     validator,
 		},
 	)
 }

@@ -1,4 +1,4 @@
-package mrserver
+package mrrscors
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 // go get -u github.com/rs/cors
 
 type (
-	corsAdapter struct {
+	CorsAdapter struct {
 		cors *cors.Cors
 	}
 
@@ -19,7 +19,7 @@ type (
 		logger mrcore.Logger
 	}
 
-	CorsOptions struct {
+	Options struct {
 		AllowedOrigins   []string
 		AllowedMethods   []string
 		AllowedHeaders   []string
@@ -29,7 +29,7 @@ type (
 	}
 )
 
-func NewCors(opt CorsOptions) *corsAdapter {
+func New(opt Options) *CorsAdapter {
 	options := cors.Options{
 		AllowedOrigins:   opt.AllowedOrigins,
 		AllowedMethods:   opt.AllowedMethods,
@@ -55,10 +55,10 @@ func NewCors(opt CorsOptions) *corsAdapter {
 		opt.Logger.Debug(debugInfo)
 	}
 
-	return &corsAdapter{cors: cors.New(options)}
+	return &CorsAdapter{cors: cors.New(options)}
 }
 
-func (c *corsAdapter) Middleware(next http.Handler) http.Handler {
+func (c *CorsAdapter) Middleware(next http.Handler) http.Handler {
 	return c.cors.Handler(next)
 }
 

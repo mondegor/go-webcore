@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	maxLenDateTime = 32
+	maxLenDateTime = 64
 )
 
 func ParseDateTime(r *http.Request, key string, required bool) (time.Time, error) {

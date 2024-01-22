@@ -2,12 +2,14 @@ package mrperms
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
-	"github.com/ilyakaznacheev/cleanenv"
+	"gopkg.in/yaml.v3"
 )
 
 const (
-	rolesPathPattern = "%s/%s.%s" // dir/role.ext, ./roles/administrators.yaml
+	roleFileType = "yaml"
 )
 
 type (
@@ -17,13 +19,29 @@ type (
 	}
 )
 
-func loadRoleConfig(roleName, dirPath, fileType string) (*roleConfig, error) {
+func loadRoleConfig(roleName, filePath string) (*roleConfig, error) {
 	cfg := roleConfig{}
-	filePath := fmt.Sprintf(rolesPathPattern, dirPath, roleName, fileType)
 
-	if err := cleanenv.ReadConfig(filePath, &cfg); err != nil {
+	if err := parseFile(filePath, &cfg); err != nil {
 		return nil, fmt.Errorf("error parsing role file '%s': %w", filePath, err)
 	}
 
 	return &cfg, nil
+}
+
+func parseFile(path string, data any) error {
+	f, err := os.OpenFile(path, os.O_RDONLY, 0)
+
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	return yaml.NewDecoder(f).Decode(data)
+}
+
+func getFilePath(dirPath, name string) string {
+	// dir/role.ext: ./roles/administrators.yaml
+	return strings.TrimRight(dirPath, "/") + "/" + strings.Trim(name, "/") + "." + roleFileType
 }

@@ -1,4 +1,4 @@
-package mrcore
+package mrserver
 
 import (
 	"net/http"
@@ -20,10 +20,17 @@ type (
 	HttpMiddlewareFunc func(next http.Handler) http.Handler
 
 	HttpController interface {
-		AddHandlers(router HttpRouter)
+		Handlers() []HttpHandler
 	}
 
-	HttpHandlerFunc        func(c ClientContext) error
+	HttpHandler struct {
+		Method     string
+		URL        string
+		Permission string
+		Func       HttpHandlerFunc
+	}
+
+	HttpHandlerFunc        func(w http.ResponseWriter, r *http.Request) error
 	HttpHandlerAdapterFunc func(next HttpHandlerFunc) http.HandlerFunc
 )
 

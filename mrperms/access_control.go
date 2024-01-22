@@ -2,22 +2,24 @@ package mrperms
 
 import (
 	"fmt"
+
+	"github.com/mondegor/go-webcore/mrcore"
 )
 
 type (
-	roleMap       map[string]int32
-	privilegeMap  map[string][]int32
-	permissionMap map[string][]int32
+	roleMap       map[string]uint16
+	privilegeMap  map[string][]uint16
+	permissionMap map[string][]uint16
 
-	ModulesAccess struct {
+	AccessControl struct {
 		roles        roleMap       // map to rolesIDs
 		privileges   privilegeMap  // map to roles
 		permissions  permissionMap // map to roles
 		guestsRole   string
-		guestsRoleID int32
+		guestsRoleID uint16
 	}
 
-	ModulesAccessOptions struct {
+	AccessControlOptions struct {
 		RolesDirPath  string
 		RolesFileType string
 		Roles         []string
@@ -27,7 +29,7 @@ type (
 	}
 )
 
-func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
+func NewAccessControl(opt AccessControlOptions) (*AccessControl, error) {
 	if len(opt.Roles) == 0 {
 		return nil, fmt.Errorf("opt.Roles is required")
 	}
@@ -38,13 +40,13 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
 		return nil, fmt.Errorf("opt.GuestRole='%s' not found in opt.Roles", opt.GuestRole)
 	}
 
-	ma := ModulesAccess{
+	ma := AccessControl{
 		roles:       make(roleMap, len(opt.Roles)),
 		privileges:  make(privilegeMap, 0),
 		permissions: make(permissionMap, 0),
 	}
 
-	var roleID int32
+	var roleID uint16
 
 	for pos, roleName := range opt.Roles {
 		if _, ok := ma.roles[roleName]; ok {
@@ -54,7 +56,7 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
 		roleID++
 		ma.roles[roleName] = roleID
 
-		config, err := loadRoleConfig(roleName, opt.RolesDirPath, opt.RolesFileType)
+		config, err := loadRoleConfig(roleName, getFilePath(opt.RolesDirPath, roleName))
 
 		if err != nil {
 			return nil, err
@@ -85,15 +87,21 @@ func NewModulesAccess(opt ModulesAccessOptions) (*ModulesAccess, error) {
 	return &ma, nil
 }
 
-func (a *ModulesAccess) NewRoleGroup(roles []string) *RoleGroup {
+func (a *AccessControl) NewAccessRights(roles ...string) mrcore.AccessRights {
 	return newRoleGroup(a, roles)
 }
 
-func (a *ModulesAccess) GuestRole() string {
+func (a *AccessControl) GuestRole() string {
 	return a.guestsRole
 }
 
-func (a *ModulesAccess) CheckPrivilege(rolesIDs []int32, name string) bool {
+func (a *AccessControl) HasPrivilege(name string) bool {
+	_, ok := a.privileges[name]
+
+	return ok
+}
+
+func (a *AccessControl) CheckPrivilege(rolesIDs []uint16, name string) bool {
 	privRolesIDs, ok := a.privileges[name]
 
 	if !ok {
@@ -103,7 +111,13 @@ func (a *ModulesAccess) CheckPrivilege(rolesIDs []int32, name string) bool {
 	return isArraysIntersection(rolesIDs, privRolesIDs)
 }
 
-func (a *ModulesAccess) CheckPermission(rolesIDs []int32, name string) bool {
+func (a *AccessControl) HasPermission(name string) bool {
+	_, ok := a.permissions[name]
+
+	return ok
+}
+
+func (a *AccessControl) CheckPermission(rolesIDs []uint16, name string) bool {
 	permRolesIDs, ok := a.permissions[name]
 
 	if !ok {
@@ -113,7 +127,7 @@ func (a *ModulesAccess) CheckPermission(rolesIDs []int32, name string) bool {
 	return isArraysIntersection(rolesIDs, permRolesIDs)
 }
 
-func (a *ModulesAccess) RegisteredRoles() []string {
+func (a *AccessControl) RegisteredRoles() []string {
 	roles := make([]string, len(a.roles))
 	i := 0
 
@@ -125,7 +139,7 @@ func (a *ModulesAccess) RegisteredRoles() []string {
 	return roles
 }
 
-func (a *ModulesAccess) RegisteredPrivileges() []string {
+func (a *AccessControl) RegisteredPrivileges() []string {
 	privileges := make([]string, len(a.privileges))
 	i := 0
 
@@ -137,7 +151,7 @@ func (a *ModulesAccess) RegisteredPrivileges() []string {
 	return privileges
 }
 
-func (a *ModulesAccess) RegisteredPermissions() []string {
+func (a *AccessControl) RegisteredPermissions() []string {
 	permissions := make([]string, len(a.permissions))
 	i := 0
 
@@ -149,8 +163,8 @@ func (a *ModulesAccess) RegisteredPermissions() []string {
 	return permissions
 }
 
-func (a *ModulesAccess) roleNamesToIDs(roles []string) []int32 {
-	var roleIDs []int32
+func (a *AccessControl) roleNamesToIDs(roles []string) []uint16 {
+	var roleIDs []uint16
 
 	for _, role := range roles {
 		if id, ok := a.roles[role]; ok {
@@ -161,7 +175,7 @@ func (a *ModulesAccess) roleNamesToIDs(roles []string) []int32 {
 	return roleIDs
 }
 
-func isArraysIntersection(ids1, ids2 []int32) bool {
+func isArraysIntersection(ids1, ids2 []uint16) bool {
 	for id1 := range ids1 {
 		for id2 := range ids2 {
 			if id1 == id2 {

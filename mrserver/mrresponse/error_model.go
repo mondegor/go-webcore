@@ -1,4 +1,4 @@
-package mrserver
+package mrresponse
 
 const (
 	ErrorAttributeNameByDefault = "generalError"

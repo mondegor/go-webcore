@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	maxLenString = 128
+	maxLenString = 256
 )
 
 func ParseStr(r *http.Request, key string, required bool) (string, error) {
