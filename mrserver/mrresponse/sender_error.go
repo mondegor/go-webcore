@@ -41,25 +41,25 @@ func NewErrorSenderWithOverrideFunc(
 }
 
 func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err error) {
-	if fieldError, ok := err.(*mrerr.FieldError); ok {
+	if customError, ok := err.(*mrerr.CustomError); ok {
 		rs.sendStructResponse(
 			r.Context(),
 			w,
 			http.StatusBadRequest,
 			rs.encoder.ContentType(),
-			rs.getErrorListResponse(r.Context(), fieldError),
+			rs.getErrorListResponse(r.Context(), customError),
 		)
 
 		return
 	}
 
-	if fieldErrorList, ok := err.(mrerr.FieldErrorList); ok {
+	if customErrorList, ok := err.(mrerr.CustomErrorList); ok {
 		rs.sendStructResponse(
 			r.Context(),
 			w,
 			http.StatusBadRequest,
 			rs.encoder.ContentType(),
-			rs.getErrorListResponse(r.Context(), fieldErrorList...),
+			rs.getErrorListResponse(r.Context(), customErrorList...),
 		)
 
 		return
@@ -107,15 +107,15 @@ func (rs *ErrorSender) sendStructResponse(
 	w.Write(bytes)
 }
 
-func (rs *ErrorSender) getErrorListResponse(ctx context.Context, fields ...*mrerr.FieldError) ErrorListResponse {
-	attrs := make([]ErrorAttribute, len(fields))
+func (rs *ErrorSender) getErrorListResponse(ctx context.Context, errors ...*mrerr.CustomError) ErrorListResponse {
+	attrs := make([]ErrorAttribute, len(errors))
 
-	for i, fieldError := range fields {
-		attrs[i].ID = fieldError.ID()
-		attrs[i].Value = fieldError.AppError().Translate(mrctx.Locale(ctx)).Reason
+	for i, customError := range errors {
+		attrs[i].ID = customError.Code()
+		attrs[i].Value = customError.AppError().Translate(mrctx.Locale(ctx)).Reason
 
 		if mrcore.Debug() {
-			attrs[i].DebugInfo = rs.debugInfo(fieldError.AppError())
+			attrs[i].DebugInfo = rs.debugInfo(customError.AppError())
 		}
 	}
 
@@ -159,8 +159,8 @@ func (rs *ErrorSender) getErrorTraceID(ctx context.Context, err *mrerr.AppError)
 
 func (rs *ErrorSender) debugInfo(err *mrerr.AppError) string {
 	return fmt.Sprintf(
-		"errId=%s; errKind=%s; err={%s}",
-		err.ID(),
+		"errCode=%s; errKind=%s; err={%s}",
+		err.Code(),
 		err.Kind(),
 		err.Error(),
 	)

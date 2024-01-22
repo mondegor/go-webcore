@@ -4,10 +4,10 @@ import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
 	FactoryErrInternal = NewFactory(
-		ErrorInternalID, ErrorKindInternal, "internal server error")
+		ErrorCodeInternal, ErrorKindInternal, "internal server error")
 
 	FactoryErrInternalNotice = NewFactory(
-		ErrorInternalID, ErrorKindInternalNotice, "internal server error")
+		ErrorCodeInternal, ErrorKindInternalNotice, "internal server error")
 
 	FactoryErrInternalNilPointer = NewFactory(
 		"errInternalNilPointer", ErrorKindInternal, "nil pointer")
@@ -20,9 +20,6 @@ var (
 
 	FactoryErrInternalFailedToClose = NewFactory(
 		"errInternalFailedToClose", ErrorKindInternal, "failed to close '{{ .name }}'")
-
-	FactoryErrInternalWithData = NewFactory(
-		"errInternalWithData", ErrorKindInternal, "{{ .key }}={{ .data }}")
 
 	FactoryErrWithData = NewFactory(
 		"errWithData", ErrorKindInternalNotice, "{{ .key }}={{ .data }}")

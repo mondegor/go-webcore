@@ -69,11 +69,11 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 		return mrcore.FactoryErrInternal.Wrap(err)
 	}
 
-	fields := make([]*mrerr.FieldError, len(errors))
+	fields := make([]*mrerr.CustomError, len(errors))
 	logger := mrctx.Logger(ctx)
 
 	for i, errField := range errors {
-		fields[i] = mrerr.NewFieldErrorAppError(
+		fields[i] = mrerr.NewCustomErrorAppError(
 			errField.Field(),
 			v.createAppError(errField),
 		)
@@ -102,7 +102,7 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 		)
 	}
 
-	return mrerr.FieldErrorList(fields)
+	return mrerr.CustomErrorList(fields)
 }
 
 func (v *ValidatorAdapter) createAppError(field validator.FieldError) *mrerr.AppError {

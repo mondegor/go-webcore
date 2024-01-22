@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	datetime = "2006/01/02 15:04:05"
+	datetimeFormat = "2006/01/02 15:04:05"
 )
 
 type (
@@ -141,7 +141,7 @@ func (l *LoggerAdapter) Emit(message string, args ...any) {
 func (l *LoggerAdapter) logPrint(logger *log.Logger, prefix, message string, args []any, showCallStack bool) {
 	var buf strings.Builder
 
-	buf.Grow(len(message) + len(l.name) + len(prefix) + 24) // 24 = (19 - datetime, 5 - separated chars)
+	buf.Grow(len(message) + len(l.name) + len(prefix) + 24) // 24 = (19 - datetimeFormat, 5 - separated chars)
 	l.formatHeader(&buf, prefix, showCallStack)
 	buf.WriteString(message)
 
@@ -153,7 +153,7 @@ func (l *LoggerAdapter) logPrint(logger *log.Logger, prefix, message string, arg
 }
 
 func (l *LoggerAdapter) formatHeader(buf *strings.Builder, prefix string, showCallStack bool) {
-	buf.WriteString(time.Now().UTC().Format(datetime))
+	buf.WriteString(time.Now().UTC().Format(datetimeFormat))
 	buf.WriteByte(' ')
 
 	if l.name != "" {

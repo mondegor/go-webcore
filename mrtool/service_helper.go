@@ -49,11 +49,9 @@ func (h *ServiceHelper) WrapErrorEntityNotFoundOrFailed(err error, entityName st
 }
 
 func (h *ServiceHelper) wrapErrorFailed(err error, name string, data any) error {
-	err = mrcore.FactoryErrWithData.Wrap(err, name, data)
-
 	if mrcore.FactoryErrStorageQueryFailed.Is(err) {
-		return mrcore.FactoryErrServiceOperationFailed.Wrap(err)
+		return mrcore.FactoryErrServiceOperationFailed.WithAttr(name, data).Wrap(err)
 	}
 
-	return mrcore.FactoryErrServiceTemporarilyUnavailable.Caller(h.callerSkip).Wrap(err)
+	return mrcore.FactoryErrServiceTemporarilyUnavailable.WithAttr(name, data).Caller(h.callerSkip).Wrap(err)
 }

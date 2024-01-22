@@ -3,7 +3,7 @@
 
 ## 2024-01-22
 ### Added
-- Добавлена поддержка google/uuid (используется парсером запросов); 
+- Добавлена поддержка google/uuid (используется парсером запросов);
 
 ### Changed
 - Расформирован объект `ClientContext` и его одноименный интерфейс, в результате:
@@ -32,9 +32,15 @@
   - `go-playground/validator` -> `mrview/mrplayvalidator`;
   - `mrreq` -> `mrserver/mrreq`;
 - Загрузка ролей (`loadRoleConfig`) происходит через библиотеку `yaml`, удалена зависимость от `ilyakaznacheev/cleanenv`;
+- Расформирован объект `ClientContext` и его одноименный интерфейс, в результате;
+- При внедрении новой версии библиотеки `go-sysmess` было заменено:
+  - `ErrorInternalID` -> `ErrorCodeInternal`;
+  - `mrerr.FieldError` -> `CustomError`;
+  - `mrerr.FieldErrorList` -> `CustomErrorList`;
+  - `FactoryErrInternalWithData` было удалено, вместо неё используется `FactoryErrInternal.WithAttr(...)`;
 
 ### Removed
-- Удалён `FactoryErrHttpResponseSendData`;
+- Удалёно `FactoryErrHttpResponseSendData`;
 
 ## 2024-01-19
 ### Changed

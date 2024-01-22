@@ -11,5 +11,5 @@ func main() {
 	logger.Err(mrcore.FactoryErrInternal.New())
 	logger.Err(mrcore.FactoryErrInternalTypeAssertion.New("MY-TYPE", "MY-VALUE"))
 
-	logger.Info(mrcore.FactoryErrInternalWithData.New("MY-DATA-KEY", mrmsg.Data{"itemId": "id-001"}).Error())
+	logger.Info(mrcore.FactoryErrInternal.WithAttr("MY-DATA-KEY", mrmsg.Data{"itemId": "id-001"}).New().Error())
 }

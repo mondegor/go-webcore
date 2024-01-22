@@ -18,7 +18,7 @@ func DefaultHttpErrorOverrideFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
 		status = http.StatusUnauthorized
 	} else if mrcore.FactoryErrHttpAccessForbidden.Is(err) {
 		status = http.StatusForbidden
-	} else if err.ID() == mrcore.FactoryErrInternal.ErrorID() {
+	} else if err.Code() == mrcore.FactoryErrInternal.Code() {
 		// если ошибка явно не обработана разработчиком, то вместо 500 отображается 418
 		status = http.StatusTeapot
 	}
