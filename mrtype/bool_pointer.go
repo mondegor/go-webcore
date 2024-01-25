@@ -1,24 +1,15 @@
 package mrtype
 
-var (
-	boolFalse = newFalse()
-	boolTrue  = newTrue()
-)
-
 func BoolPointer(value bool) *bool {
-	if value {
-		return boolTrue
+	return &value
+}
+
+func BoolPointerCopy(value *bool) *bool {
+	if value == nil {
+		return nil
 	}
 
-	return boolFalse
-}
+	c := *value
 
-func newFalse() *bool {
-	value := false
-	return &value
-}
-
-func newTrue() *bool {
-	value := true
-	return &value
+	return &c
 }

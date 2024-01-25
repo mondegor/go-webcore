@@ -10,7 +10,6 @@ var (
 		// "hqx": "application/mac-binhex40",
 		// "cpt": "application/mac-compactpro",
 		// "bin": "application/macbinary",
-		"doc": "application/msword",
 		// "word": "application/msword",
 		// "class": "application/octet-stream",
 		// "dll": "application/octet-stream",
@@ -29,8 +28,6 @@ var (
 		// "smi": "application/smil",
 		// "smil": "application/smil",
 		// "mif": "application/vnd.mif",
-		"xls": "application/vnd.ms-excel",
-		"ppt": "application/vnd.ms-powerpoint",
 		// "wbxml": "application/vnd.wap.wbxml",
 		// "wmlc": "application/vnd.wap.wmlc",
 		// "dcr": "application/x-director",
@@ -44,8 +41,10 @@ var (
 		// "phtml": "application/x-httpd-php",
 		// "phps": "application/x-httpd-php-source",
 		// "js": "application/x-javascript",
+		"json": "application/json",
 		// "swf": "application/x-shockwave-flash",
 		// "sit": "application/x-stuffit",
+		"rar": "application/vnd.rar",
 		"tar": "application/x-tar",
 		"tgz": "application/x-tar",
 		// "xht": "application/xhtml+xml",
@@ -70,8 +69,8 @@ var (
 		"jpe":  "image/jpeg",
 		"jpg":  "image/jpeg",
 		"png":  "image/png",
-		"tiff": "image/tiff",
-		"tif":  "image/tiff",
+		// "tiff": "image/tiff",
+		// "tif":  "image/tiff",
 		// "eml": "message/rfc822",
 		"css":  "text/css",
 		"html": "text/html",
@@ -79,9 +78,9 @@ var (
 		// "shtml": "text/html",
 		// "log": "text/plain",
 		// "text": "text/plain",
-		"txt": "text/plain",
+		// "txt": "text/plain",
 		// "rtx": "text/richtext",
-		"rtf": "text/rtf",
+		// "rtf": "text/rtf",
 		// "vcf": "text/vcard",
 		// "vcard": "text/vcard",
 		"xml": "text/xml",
@@ -94,11 +93,39 @@ var (
 		// "rv": "video/vnd.rn-realvideo",
 		// "avi": "video/x-msvideo",
 		// "movie": "video/x-sgi-movie",
+
+		"doc": "application/msword",
+		// "dot":   "application/msword",
+		"docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		// "dotx":   "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+		// "docm":   "application/vnd.ms-word.document.macroEnabled.12",
+		// "dotm":   "application/vnd.ms-word.template.macroEnabled.12",
+		"xls": "application/vnd.ms-excel",
+		// "xlt":   "application/vnd.ms-excel",
+		// "xla":   "application/vnd.ms-excel",
+		"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+		// "xltx":   "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+		// "xlsm":   "application/vnd.ms-excel.sheet.macroEnabled.12",
+		// "xltm":   "application/vnd.ms-excel.template.macroEnabled.12",
+		// "xlam":   "application/vnd.ms-excel.addin.macroEnabled.12",
+		// "xlsb":   "application/vnd.ms-excel.sheet.binary.macroEnabled.12",
+		"ppt": "application/vnd.ms-powerpoint",
+		// "pot":   "application/vnd.ms-powerpoint",
+		// "pps":   "application/vnd.ms-powerpoint",
+		// "ppa":   "application/vnd.ms-powerpoint",
+		"pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+		// "potx":   "application/vnd.openxmlformats-officedocument.presentationml.template",
+		// "ppsx":   "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
+		// "ppam":   "application/vnd.ms-powerpoint.addin.macroEnabled.12",
+		// "pptm":   "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
+		// "potm":   "application/vnd.ms-powerpoint.template.macroEnabled.12",
+		// "ppsm":   "application/vnd.ms-powerpoint.slideshow.macroEnabled.12",
+		// "mdb":   "application/vnd.ms-access",
 	}
 )
 
-func MimeTypeByFile(name string) string {
-	if ext := path.Ext(name); ext != "" {
+func MimeTypeByExt(ext string) string {
+	if ext != "" {
 		if ext[0] == '.' {
 			ext = ext[1:]
 		}
@@ -109,6 +136,10 @@ func MimeTypeByFile(name string) string {
 	}
 
 	return ""
+}
+
+func MimeTypeByFile(name string) string {
+	return MimeTypeByExt(path.Ext(name))
 }
 
 // MimeType - возвращает value если оно не пустое иначе вычисляется тип по расширению файла

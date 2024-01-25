@@ -1,7 +1,7 @@
 package mrresponse
 
 const (
-	ErrorAttributeNameByDefault = "generalError"
+	ErrorAttributeIDByDefault = "generalError"
 )
 
 type (

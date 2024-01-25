@@ -9,3 +9,13 @@ func TimePointer(value time.Time) *time.Time {
 
 	return &value
 }
+
+func TimePointerCopy(value *time.Time) *time.Time {
+	if value == nil || value.IsZero() {
+		return nil
+	}
+
+	c := *value
+
+	return &c
+}

@@ -12,21 +12,21 @@ import (
 
 type (
 	KeyInt32 struct {
-		path mrserver.RequestParserPath
+		pathFunc mrserver.RequestParserParamFunc
 	}
 )
 
 // Make sure the KeyInt32 conforms with the mrserver.RequestParserKeyInt32 interface
 var _ mrserver.RequestParserKeyInt32 = (*KeyInt32)(nil)
 
-func NewKeyInt32(path mrserver.RequestParserPath) *KeyInt32 {
+func NewKeyInt32(pathFunc mrserver.RequestParserParamFunc) *KeyInt32 {
 	return &KeyInt32{
-		path: path,
+		pathFunc: pathFunc,
 	}
 }
 
 func (p *KeyInt32) PathKeyInt32(r *http.Request, name string) mrtype.KeyInt32 {
-	value, err := strconv.ParseInt(p.path.PathParam(r, name), 10, 32)
+	value, err := strconv.ParseInt(p.pathFunc(r, name), 10, 32)
 
 	if err != nil {
 		mrctx.Logger(r.Context()).Warn(err)

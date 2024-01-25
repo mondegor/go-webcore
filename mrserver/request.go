@@ -15,29 +15,22 @@ type (
 		ParseToStruct(r *http.Request, structPointer any) error
 	}
 
-	RequestParserPath interface {
-		PathParam(r *http.Request, name string) string
+	RequestParserString interface {
+		PathParamString(r *http.Request, name string) string
+		// RawParamString - returns nil if the param not found
+		RawParamString(r *http.Request, key string) *string
+		FilterString(r *http.Request, key string) string
 	}
 
-	RequestParserPathFunc func(r *http.Request, name string) string
+	RequestParserValidate interface {
+		Validate(r *http.Request, structPointer any) error
+	}
 
-	RequestParser interface {
-		PathParamString(r *http.Request, name string) string
+	RequestParserInt64 interface {
 		PathParamInt64(r *http.Request, name string) int64
-
-		// RawQueryParam - returns nil if the param not found
-		RawQueryParam(r *http.Request, key string) *string
-
-		FilterString(r *http.Request, key string) string
-		FilterNullableBool(r *http.Request, key string) *bool
 		FilterInt64(r *http.Request, key string) int64
 		FilterRangeInt64(r *http.Request, key string) mrtype.RangeInt64
 		FilterInt64List(r *http.Request, key string) []int64
-		FilterDateTime(r *http.Request, key string) time.Time
-	}
-
-	RequestParserItemStatus interface {
-		FilterStatusList(r *http.Request, key string) []mrenum.ItemStatus
 	}
 
 	RequestParserKeyInt32 interface {
@@ -46,9 +39,12 @@ type (
 		FilterKeyInt32List(r *http.Request, key string) []mrtype.KeyInt32
 	}
 
-	RequestParserSortPage interface {
-		SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams
-		PageParams(r *http.Request) mrtype.PageParams
+	RequestParserBool interface {
+		FilterNullableBool(r *http.Request, key string) *bool
+	}
+
+	RequestParserDateTime interface {
+		FilterDateTime(r *http.Request, key string) time.Time
 	}
 
 	RequestParserUUID interface {
@@ -56,11 +52,24 @@ type (
 		FilterUUID(r *http.Request, key string) uuid.UUID
 	}
 
-	RequestParserValidate interface {
-		Validate(r *http.Request, structPointer any) error
+	RequestParserFile interface {
+		FormFile(r *http.Request, key string) (mrtype.File, error)
+		FormFileContent(r *http.Request, key string) (mrtype.FileContent, error)
 	}
-)
 
-func (f RequestParserPathFunc) PathParam(r *http.Request, name string) string {
-	return f(r, name)
-}
+	RequestParserImage interface {
+		FormImage(r *http.Request, key string) (mrtype.Image, error)
+		FormImageContent(r *http.Request, key string) (mrtype.ImageContent, error)
+	}
+
+	RequestParserSortPage interface {
+		SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams
+		PageParams(r *http.Request) mrtype.PageParams
+	}
+
+	RequestParserItemStatus interface {
+		FilterStatusList(r *http.Request, key string) []mrenum.ItemStatus
+	}
+
+	RequestParserParamFunc func(r *http.Request, key string) string
+)

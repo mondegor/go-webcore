@@ -11,21 +11,21 @@ import (
 
 type (
 	UUID struct {
-		path mrserver.RequestParserPath
+		pathFunc mrserver.RequestParserParamFunc
 	}
 )
 
 // Make sure the UUID conforms with the mrserver.RequestParserUUID interface
 var _ mrserver.RequestParserUUID = (*UUID)(nil)
 
-func NewUUID(path mrserver.RequestParserPath) *UUID {
+func NewUUID(pathFunc mrserver.RequestParserParamFunc) *UUID {
 	return &UUID{
-		path: path,
+		pathFunc: pathFunc,
 	}
 }
 
 func (p *UUID) PathParamUUID(r *http.Request, name string) uuid.UUID {
-	value, err := uuid.Parse(p.path.PathParam(r, name))
+	value, err := uuid.Parse(p.pathFunc(r, name))
 
 	if err != nil {
 		mrctx.Logger(r.Context()).Warn(err)

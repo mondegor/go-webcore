@@ -1,6 +1,31 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-01-25
+### Added
+- Добавлено: 
+  `mrtype.BoolPointerCopy()`;
+  `mrtype.TimePointerCopy()`;
+  `mrlib.MimeTypeByExt()`;
+- Разработаны парсеры для получения файлов и изображений из `multipart` формы.
+  Они реализуют следующие интерфейсы `mrserver.RequestParserFile`, `mrserver.RequestParserImage`.
+  Также для них были добавлены:
+  - функция `mrreq.FormFile()` для извлечения файла из `multipart` формы;
+  - типы `mrtype.Image`,`mrtype.ImageContent` подобные `mrtype.File`;
+  - функции для работы с изображениями: `mrlib.DecodeImageConfig()`, `mrlib.CheckImage()`, `DecodeImage()`;
+  - новые типы пользовательских ошибок `FactoryErrHttpRequestFile*`, `FactoryErrHttpRequestImage*`;
+
+### Changed
+- Переименовано `ErrorAttributeNameByDefault` -> `ErrorAttributeIDByDefault`;
+- Интерфейс `mrserver.RequestParser` и его реализации были разложены на следующие интерфейсы:
+  - `mrserver.RequestParserString`;
+  - `mrserver.RequestParserInt64`;
+  - `mrserver.RequestParserBool`;
+  - `mrserver.RequestParserDateTime`;
+
+### Removed
+- `mrserver.RequestParserPath` удалён вместо него используется `mrserver.RequestParserParamFunc`;
+
 ## 2024-01-22
 ### Added
 - Добавлена поддержка google/uuid (используется парсером запросов);
