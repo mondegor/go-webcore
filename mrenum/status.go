@@ -1,7 +1,9 @@
 package mrenum
 
+import "fmt"
+
 type (
 	Status interface {
-		String() string
+		fmt.Stringer
 	}
 )

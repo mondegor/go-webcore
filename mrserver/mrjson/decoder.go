@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrctx"
+	"github.com/mondegor/go-webcore/mrlog"
 )
 
 type (
@@ -22,7 +22,7 @@ func (p *JsonDecoder) ParseToStruct(r *http.Request, structPointer any) error {
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(structPointer); err != nil {
-		mrctx.Logger(r.Context()).Caller(1).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Caller(1).Err(err)
 		return mrcore.FactoryErrHttpRequestParseData.Wrap(err)
 	}
 

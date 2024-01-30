@@ -19,7 +19,7 @@ var (
 		"errInternalInvalidType", ErrorKindInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
 
 	FactoryErrInternalFailedToClose = NewFactory(
-		"errInternalFailedToClose", ErrorKindInternal, "failed to close '{{ .name }}'")
+		"errInternalFailedToClose", ErrorKindInternal, "failed to close object")
 
 	FactoryErrWithData = NewFactory(
 		"errWithData", ErrorKindInternalNotice, "{{ .key }}={{ .data }}")

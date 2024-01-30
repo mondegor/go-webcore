@@ -1,11 +1,14 @@
 package mrfactory
 
 import (
-	"github.com/mondegor/go-webcore/mrcore"
+	"context"
+
+	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-webcore/mrperms"
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
-func WithPermission(list []mrserver.HttpController, permission string) []mrserver.HttpController {
+func WithPermission(ctx context.Context, list []mrserver.HttpController, permission string) []mrserver.HttpController {
 	for i := range list {
 		handlers := list[i].Handlers()
 
@@ -22,17 +25,18 @@ func WithPermission(list []mrserver.HttpController, permission string) []mrserve
 }
 
 func WithMiddlewareCheckAccess(
+	ctx context.Context,
 	list []mrserver.HttpController,
-	section mrcore.AppSection,
-	access mrcore.AccessControl,
+	section mrperms.AppSection,
+	access mrperms.AccessControl,
 ) []mrserver.HttpController {
 	for i := range list {
 		handlers := list[i].Handlers()
 
 		for j := range handlers {
 			if !access.HasPermission(handlers[j].Permission) {
-				mrcore.LogWarning(
-					"permission '%s' is not registered for handler '%s %s', perhaps, it is not registered in the config or is not associated with any role",
+				mrlog.Ctx(ctx).Warn().Msgf(
+					"Permission '%s' is not registered for handler '%s %s', perhaps, it is not registered in the config or is not associated with any role",
 					handlers[j].Permission,
 					handlers[j].Method,
 					handlers[j].URL,

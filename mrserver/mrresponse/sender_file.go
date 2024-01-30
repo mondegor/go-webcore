@@ -41,9 +41,5 @@ func (rs *FileSender) SendFile(w http.ResponseWriter, info mrtype.FileInfo, atta
 
 	_, err := io.Copy(w, file)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

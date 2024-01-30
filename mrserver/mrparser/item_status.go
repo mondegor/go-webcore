@@ -3,8 +3,8 @@ package mrparser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrctx"
 	"github.com/mondegor/go-webcore/mrenum"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
@@ -32,7 +32,7 @@ func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.Item
 	)
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 		return []mrenum.ItemStatus{}
 	}
 

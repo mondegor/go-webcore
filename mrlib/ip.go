@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrlog"
 )
 
 func Ip2int(ip net.IP) (uint32, error) {
@@ -20,7 +20,7 @@ func Ip2intMust(ip net.IP) uint32 {
 	value, err := Ip2int(ip)
 
 	if err != nil {
-		mrcore.LogErr(err)
+		mrlog.Default().Error().Caller().Err(err).Send()
 		return 0
 	}
 

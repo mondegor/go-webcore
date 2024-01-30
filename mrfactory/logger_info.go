@@ -1,13 +1,15 @@
 package mrfactory
 
 import (
-	"github.com/mondegor/go-webcore/mrcore"
+	"context"
+
+	"github.com/mondegor/go-webcore/mrlog"
 )
 
-func InfoCreateModule(logger mrcore.Logger, name string) {
-	logger.Info("Create module '%s'", name)
+func InfoCreateModule(ctx context.Context, name string) {
+	mrlog.Ctx(ctx).Info().Msgf("Create and init module '%s'", name)
 }
 
-func InfoCreateUnit(logger mrcore.Logger, name string) {
-	logger.Info("Create unit '%s' of the module", name)
+func InfoCreateUnit(ctx context.Context, name string) {
+	mrlog.Ctx(ctx).Info().Msgf("Create and init unit '%s' of the module", name)
 }

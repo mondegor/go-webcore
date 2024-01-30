@@ -2,48 +2,63 @@ package mrserver
 
 import (
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/mondegor/go-sysmess/mrlang"
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrcrypto"
-	"github.com/mondegor/go-webcore/mrctx"
+	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-webcore/mrperms"
+	"github.com/rs/xid"
+
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
 
-func MiddlewareFirst(l mrcore.Logger, t *mrlang.Translator) HttpMiddleware {
+// go get -u github.com/rs/xid
+
+func MiddlewareGeneral(tr *mrlang.Translator) HttpMiddleware {
 	return HttpMiddlewareFunc(func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
 			correlationID, err := mrreq.ParseCorrelationID(r)
 
 			if err != nil || correlationID == "" {
-				correlationID = mrcrypto.GenTokenHexWithDelimiter(9, 4)
+				correlationID = xid.New().String()
 			}
 
-			logger := l.With(correlationID)
+			logger := mrlog.Ctx(r.Context()).With().Str("correlationID", correlationID).Logger()
+			w.Header().Add(mrreq.HeaderKeyCorrelationID, correlationID)
 
 			if err != nil {
-				logger.Warn(err)
+				logger.Warn().Err(err).Msg("mrreq.ParseCorrelationID() error")
 			}
 
-			logger.Debug("Exec MiddlewareFirst")
-			logger.Debug("%s %s", r.Method, r.RequestURI)
-			logger.Debug("CorrelationID: %s", correlationID)
-
 			acceptLanguages := mrreq.ParseLanguage(r)
-			locale := t.FindFirstLocale(acceptLanguages...)
+			locale := tr.FindFirstLocale(acceptLanguages...)
+			logger.Debug().Str("language", locale.LangCode()).Msgf("Accept-Language: %s", strings.Join(acceptLanguages, ", "))
 
-			logger.Debug("Accept-Language: %v; Set-Language: %s", acceptLanguages, locale.LangCode())
+			srw := NewStatResponseWriter(r.Context(), w)
 
-			ctx := mrctx.WithClientTools(r.Context(), correlationID, logger, locale)
+			defer func() {
+				logger.
+					Trace().
+					Str("method", r.Method).
+					Str("url", r.RequestURI).
+					Str("userAgent", r.UserAgent()).
+					Int("status", srw.statusCode).
+					Int("size", srw.bytes).
+					Int("elapsed_μs", int(time.Since(start).Microseconds())).
+					Msg("incoming request")
+			}()
 
-			next.ServeHTTP(w, r.WithContext(ctx))
+			next.ServeHTTP(srw, r.WithContext(locale.WithContext(r.Context())))
 		})
 	})
 }
 
 func MiddlewareCheckAccess(
-	section mrcore.AppSection,
-	access mrcore.AccessControl,
+	section mrperms.AppSection,
+	access mrperms.AccessControl,
 	permission string,
 	next HttpHandlerFunc,
 ) HttpHandlerFunc {

@@ -8,8 +8,10 @@ import (
 	"time"
 
 	"github.com/mondegor/go-sysmess/mrerr"
+	"github.com/mondegor/go-sysmess/mrlang"
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrctx"
+	"github.com/mondegor/go-webcore/mrdebug"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
@@ -94,7 +96,7 @@ func (rs *ErrorSender) sendStructResponse(
 	if err != nil {
 		status = http.StatusTeapot
 		bytes = []byte{}
-		mrctx.Logger(ctx).Err(mrcore.FactoryErrHttpResponseParseData.Caller(1).Wrap(err))
+		mrlog.Ctx(ctx).Error().Err(mrcore.FactoryErrHttpResponseParseData.Caller(1).Wrap(err))
 	}
 
 	w.Header().Set("Content-Type", contentType)
@@ -112,9 +114,9 @@ func (rs *ErrorSender) getErrorListResponse(ctx context.Context, errors ...*mrer
 
 	for i, customError := range errors {
 		attrs[i].ID = customError.Code()
-		attrs[i].Value = customError.AppError().Translate(mrctx.Locale(ctx)).Reason
+		attrs[i].Value = customError.AppError().Translate(mrlang.Ctx(ctx)).Reason
 
-		if mrcore.Debug() {
+		if mrdebug.IsDebug() {
 			attrs[i].DebugInfo = rs.debugInfo(customError.AppError())
 		}
 	}
@@ -123,7 +125,7 @@ func (rs *ErrorSender) getErrorListResponse(ctx context.Context, errors ...*mrer
 }
 
 func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.AppError) ErrorDetailsResponse {
-	errMessage := appError.Translate(mrctx.Locale(r.Context()))
+	errMessage := appError.Translate(mrlang.Ctx(r.Context()))
 	response := ErrorDetailsResponse{
 		Title:   errMessage.Reason,
 		Details: errMessage.DetailsToString(),
@@ -131,7 +133,7 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.
 		Time:    time.Now().UTC().Format(time.RFC3339),
 	}
 
-	if mrcore.Debug() {
+	if mrdebug.IsDebug() {
 		if response.Details != "" {
 			response.Details += "\n"
 		}
@@ -140,21 +142,11 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.
 	}
 
 	if appError.Kind() != mrerr.ErrorKindUser {
-		response.ErrorTraceID = rs.getErrorTraceID(r.Context(), appError)
-		mrctx.Logger(r.Context()).Err(appError)
+		response.ErrorTraceID = appError.TraceID()
+		mrlog.Ctx(r.Context()).Error().Err(appError)
 	}
 
 	return response
-}
-
-func (rs *ErrorSender) getErrorTraceID(ctx context.Context, err *mrerr.AppError) string {
-	errorTraceID := err.TraceID()
-
-	if errorTraceID == "" {
-		return mrctx.CorrelationID(ctx)
-	}
-
-	return mrctx.CorrelationID(ctx) + ", " + errorTraceID
 }
 
 func (rs *ErrorSender) debugInfo(err *mrerr.AppError) string {

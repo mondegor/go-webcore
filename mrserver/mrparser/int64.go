@@ -3,7 +3,7 @@ package mrparser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrctx"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
@@ -28,7 +28,7 @@ func (p *Int64) PathParamInt64(r *http.Request, name string) int64 {
 	value, err := mrreq.ParseInt64(r, p.pathFunc(r, name), false)
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 		return 0
 	}
 
@@ -39,7 +39,7 @@ func (p *Int64) FilterInt64(r *http.Request, key string) int64 {
 	value, err := mrreq.ParseInt64(r, key, false)
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 		return 0
 	}
 
@@ -50,7 +50,7 @@ func (p *Int64) FilterRangeInt64(r *http.Request, key string) mrtype.RangeInt64 
 	value, err := mrreq.ParseRangeInt64(r, key)
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 		return mrtype.RangeInt64{}
 	}
 
@@ -61,7 +61,7 @@ func (p *Int64) FilterInt64List(r *http.Request, key string) []int64 {
 	items, err := mrreq.ParseInt64List(r, key)
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 		return []int64{}
 	}
 

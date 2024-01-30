@@ -4,7 +4,8 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/mondegor/go-webcore/mrctx"
+	"github.com/mondegor/go-webcore/mrlog"
+
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
@@ -28,7 +29,7 @@ func (p *UUID) PathParamUUID(r *http.Request, name string) uuid.UUID {
 	value, err := uuid.Parse(p.pathFunc(r, name))
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 		return uuid.Nil
 	}
 
@@ -39,7 +40,7 @@ func (p *UUID) FilterUUID(r *http.Request, key string) uuid.UUID {
 	value, err := mrreq.ParseUUID(r, key, true)
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 		return uuid.Nil
 	}
 

@@ -1,12 +1,13 @@
 package mrjulienrouter
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"runtime"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
@@ -17,7 +18,7 @@ type (
 		router             *httprouter.Router
 		generalHandler     http.Handler
 		handlerAdapterFunc mrserver.HttpHandlerAdapterFunc
-		logger             mrcore.Logger
+		logger             mrlog.Logger
 	}
 )
 
@@ -25,7 +26,7 @@ type (
 var _ mrserver.HttpRouter = (*RouterAdapter)(nil)
 
 func New(
-	logger mrcore.Logger,
+	logger mrlog.Logger,
 	handlerAdapterFunc mrserver.HttpHandlerAdapterFunc,
 ) *RouterAdapter {
 	router := httprouter.New()
@@ -47,9 +48,13 @@ func (rt *RouterAdapter) RegisterMiddleware(handlers ...mrserver.HttpMiddleware)
 	for i := len(handlers) - 1; i >= 0; i-- {
 		rt.generalHandler = handlers[i].Middleware(rt.generalHandler)
 
-		rt.logger.Info(
-			"Registered Middleware %s",
-			runtime.FuncForPC(reflect.ValueOf(rt.generalHandler).Pointer()).Name(),
+		rt.logger.Debug().MsgFunc(
+			func() string {
+				return fmt.Sprintf(
+					"Registered Middleware %s",
+					runtime.FuncForPC(reflect.ValueOf(rt.generalHandler).Pointer()).Name(),
+				)
+			},
 		)
 	}
 }
@@ -63,12 +68,12 @@ func (rt *RouterAdapter) Register(controllers ...mrserver.HttpController) {
 }
 
 func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFunc) {
-	rt.logger.Debug("- registered: %s %s", method, path)
+	rt.logger.Debug().Msgf("- registered: %s %s", method, path)
 	rt.router.Handler(method, path, handler)
 }
 
 func (rt *RouterAdapter) HttpHandlerFunc(method, path string, handler mrserver.HttpHandlerFunc) {
-	rt.logger.Debug("- registered: %s %s", method, path)
+	rt.logger.Debug().Msgf("- registered: %s %s", method, path)
 	rt.router.Handler(method, path, rt.handlerAdapterFunc(handler))
 }
 

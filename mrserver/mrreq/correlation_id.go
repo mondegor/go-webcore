@@ -7,10 +7,11 @@ import (
 )
 
 const (
+	HeaderKeyCorrelationID = "X-Correlation-ID"
+
 	// f7479171-83d2-4f64-84ac-892f8c0aaf48
-	minLenCorrelationID    = 16
-	maxLenCorrelationID    = 64
-	headerKeyCorrelationID = "CorrelationID"
+	minLenCorrelationID = 16
+	maxLenCorrelationID = 64
 )
 
 var (
@@ -18,7 +19,7 @@ var (
 )
 
 func ParseCorrelationID(r *http.Request) (string, error) {
-	value := strings.TrimSpace(r.Header.Get(headerKeyCorrelationID))
+	value := strings.TrimSpace(r.Header.Get(HeaderKeyCorrelationID))
 
 	if value == "" {
 		return "", nil

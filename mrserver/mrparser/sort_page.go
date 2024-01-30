@@ -3,7 +3,7 @@ package mrparser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrctx"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
@@ -44,7 +44,7 @@ func (p *SortPage) SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.
 	)
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 	}
 
 	if value.FieldName == "" {
@@ -52,7 +52,7 @@ func (p *SortPage) SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.
 	}
 
 	if !sorter.CheckField(value.FieldName) {
-		mrctx.Logger(r.Context()).Warning("sort field '%s' is not registered", value.FieldName)
+		mrlog.Ctx(r.Context()).Warn().Msgf("sort field '%s' is not registered", value.FieldName)
 		return sorter.DefaultSort()
 	}
 
@@ -69,7 +69,7 @@ func (p *SortPage) PageParams(r *http.Request) mrtype.PageParams {
 	// :TODO: вынести параметры p.pageSizeMax и p.pageSizeDefault по аналогии с SortParams
 	if err != nil || value.Size < 1 || value.Size > p.pageSizeMax {
 		if err != nil {
-			mrctx.Logger(r.Context()).Warn(err)
+			mrlog.Ctx(r.Context()).Warn().Err(err)
 		}
 
 		return mrtype.PageParams{

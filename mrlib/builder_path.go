@@ -9,33 +9,37 @@ const (
 )
 
 type (
-	BuilderPath struct {
+	BuilderPath interface {
+		FullPath(path string) string
+	}
+
+	builderPath struct {
 		basePath string
 		postfix  string
 	}
 )
 
 // NewBuilderPath - sample /dir/{{path}}/postfix -> /dir/real-value/postfix
-func NewBuilderPath(basePath string) *BuilderPath {
+func NewBuilderPath(basePath string) BuilderPath {
 	return NewBuilderPathWithPlaceholder(basePath, placeholderPath)
 }
 
-func NewBuilderPathWithPlaceholder(basePath, placeholder string) *BuilderPath {
+func NewBuilderPathWithPlaceholder(basePath, placeholder string) BuilderPath {
 	basePath = strings.TrimRight(basePath, "/")
 
 	if i := strings.Index(basePath, placeholder); i > 0 {
-		return &BuilderPath{
+		return &builderPath{
 			basePath: strings.TrimRight(basePath[0:i], "/"),
 			postfix:  strings.TrimLeft(basePath[i+len(placeholder):], "/"),
 		}
 	}
 
-	return &BuilderPath{
+	return &builderPath{
 		basePath: basePath,
 	}
 }
 
-func (p *BuilderPath) FullPath(path string) string {
+func (p *builderPath) FullPath(path string) string {
 	if path == "" {
 		return ""
 	}

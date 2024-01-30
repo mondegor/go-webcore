@@ -1,10 +1,9 @@
 package mrrscors
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/rs/cors"
 )
 
@@ -15,53 +14,48 @@ type (
 		cors *cors.Cors
 	}
 
-	corsLoggerAdapter struct {
-		logger mrcore.Logger
-	}
-
 	Options struct {
 		AllowedOrigins   []string
 		AllowedMethods   []string
 		AllowedHeaders   []string
 		ExposedHeaders   []string
 		AllowCredentials bool
-		Logger           mrcore.Logger
+		Logger           mrlog.Logger
 	}
 )
 
-func New(opt Options) *CorsAdapter {
+func New(opts Options) *CorsAdapter {
 	options := cors.Options{
-		AllowedOrigins:   opt.AllowedOrigins,
-		AllowedMethods:   opt.AllowedMethods,
-		AllowedHeaders:   opt.ExposedHeaders,
-		ExposedHeaders:   opt.ExposedHeaders,
-		AllowCredentials: opt.AllowCredentials,
+		AllowedOrigins:   opts.AllowedOrigins,
+		AllowedMethods:   opts.AllowedMethods,
+		AllowedHeaders:   opts.ExposedHeaders,
+		ExposedHeaders:   opts.ExposedHeaders,
+		AllowCredentials: opts.AllowCredentials,
 	}
 
-	if opt.Logger != nil && opt.Logger.Level() == mrcore.LogDebugLevel {
+	if opts.Logger != nil && opts.Logger.Level() <= mrlog.DebugLevel {
 		options.Debug = true
-		options.Logger = &corsLoggerAdapter{logger: opt.Logger}
 
-		debugInfo := fmt.Sprintf("Cors.AllowedOrigins:")
+		opts.Logger.Debug().MsgFunc(
+			func() string {
+				var buf []byte
 
-		for i := range opt.AllowedOrigins {
-			debugInfo = fmt.Sprintf(
-				"%s\n- %s;",
-				debugInfo,
-				opt.AllowedOrigins[i],
-			)
-		}
+				buf = append(buf, "Cors.AllowedOrigins:"...)
 
-		opt.Logger.Debug(debugInfo)
+				for i := range opts.AllowedOrigins {
+					buf = append(buf, "\n- "+opts.AllowedOrigins[i]+";"...)
+				}
+
+				return string(buf)
+			},
+		)
 	}
 
-	return &CorsAdapter{cors: cors.New(options)}
+	return &CorsAdapter{
+		cors: cors.New(options),
+	}
 }
 
 func (c *CorsAdapter) Middleware(next http.Handler) http.Handler {
 	return c.cors.Handler(next)
-}
-
-func (l *corsLoggerAdapter) Printf(message string, args ...any) {
-	l.logger.Debug(message, args...)
 }

@@ -1,50 +1,47 @@
 package mrdebug
 
 import (
+	"context"
 	"mime/multipart"
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrlog"
 )
 
-func MultipartForm(logger mrcore.Logger, form *multipart.Form) {
-	if logger == nil {
-		logger = mrcore.DefaultLogger()
-	}
+func MultipartForm(ctx context.Context, form *multipart.Form) {
+	logger := mrlog.Ctx(ctx).With().Str("func", "MultipartForm").Logger()
 
 	if form == nil {
-		logger.Debug("Param form *multipart.Form is nil")
+		logger.Debug().Msg("Param form is nil")
 		return
 	}
 
 	if form.Value != nil && len(form.Value) > 0 {
 		for key, values := range form.Value {
-			logger.Debug("MultipartForm.Value: key=%s; value=%s", key, strings.Join(values, ", "))
+			logger.Debug().Msgf("key=%s; value=%s", key, strings.Join(values, ", "))
 		}
 	} else {
-		logger.Debug("MultipartForm.Value is EMPTY")
+		logger.Debug().Msg("value is EMPTY")
 	}
 
 	if form.File != nil && len(form.File) > 0 {
 		for key, fhs := range form.File {
-			logger.Debug("MultipartForm.File: key=%s; fhs.len=%d", key, len(fhs))
+			logger.Debug().Msgf("key=%s; fhs.len=%d", key, len(fhs))
 		}
 	} else {
-		logger.Debug("MultipartForm.File is EMPTY")
+		logger.Debug().Msg("form.File is EMPTY")
 	}
 }
 
-func MultipartFileHeader(logger mrcore.Logger, hdr *multipart.FileHeader) {
-	if logger == nil {
-		logger = mrcore.DefaultLogger()
-	}
+func MultipartFileHeader(ctx context.Context, hdr *multipart.FileHeader) {
+	logger := mrlog.Ctx(ctx).With().Str("func", "MultipartFileHeader").Logger()
 
 	if hdr == nil {
-		logger.Debug("Param hdr *multipart.FileHeader is nil")
+		logger.Debug().Msg("Param hdr is nil")
 		return
 	}
 
-	logger.Debug(
+	logger.Debug().Msgf(
 		"uploaded file: name=%s, size=%d, header=%#v",
 		hdr.Filename, hdr.Size, hdr.Header,
 	)

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrctx"
 	"github.com/mondegor/go-webcore/mrdebug"
 )
 
@@ -14,11 +13,11 @@ func FormFile(r *http.Request, key string) (multipart.File, *multipart.FileHeade
 	file, hdr, err := r.FormFile(key)
 
 	if err != nil {
-		mrdebug.MultipartForm(mrctx.Logger(r.Context()), r.MultipartForm)
+		mrdebug.MultipartForm(r.Context(), r.MultipartForm)
 		return nil, nil, mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
 	}
 
-	mrdebug.MultipartFileHeader(mrctx.Logger(r.Context()), hdr)
+	mrdebug.MultipartFileHeader(r.Context(), hdr)
 
 	return file, hdr, nil
 }

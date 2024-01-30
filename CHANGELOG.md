@@ -1,6 +1,26 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-01-30
+### Added
+- в `mrlib` добавлены `CallEachFunc`, `CloseFunc`, `Close` для группового закрытия ресурсов;
+
+### Changed
+- Для многих методов добавлен параметр `ctx context.Context`;
+- Логгер перенесён из `mrcore` в `mrlog`, переработан его интерфейс и добавлен адаптер для `zerolog`.
+  Все текущие вызовы логгера исправлены под новый интерфейс (например заменено `.Info(` на `.Info().Msg(` и т.д.);
+- `EventBox` перенесён из `mrcore` в `mrsender`, переименован в `EventEmitter` и доработан его интерфейс;
+- `MiddlewareFirst` переименован в `MiddlewareGeneral` и доработан, добавлена трассировка запросов,
+  для более подробной статистики добавлен декоратор `StatResponseWriter`;
+- Из `mrcore` перенесены и доработаны интерфейсы связанные с разрешениями в `mrperms`;
+- Переработан `ServerAdapter` добавлен `PrepareToStart` для более гибкого управления его запуском и остановкой;
+- Переименовано:
+  - `mrserver.HandlerAdapter` -> `NewMiddlewareHttpHandlerAdapter`;
+  - `mrcore.Debug` -> `mrcore.IsDebug`;
+  - `ServiceHelper` -> `UsecaseHelper` (для устранения неоднозначности слова `Service`);
+
+### Removed
+
 ## 2024-01-25
 ### Added
 - Добавлено: 
@@ -249,7 +269,7 @@
 - Обновлён `.editorconfig`;
 
 ### Fixed
-- В методах пакета `mrcrypto`: `GenTokenBase64`, `GenTokenHex`, `GenTokenHexWithDelimiter`
+- В методах пакета `mrcrypt`: `GenTokenBase64`, `GenTokenHex`, `GenTokenHexWithDelimiter`
   выдавалось больше символов, чем указывалось в параметре `length`;
 
 ### Removed
@@ -303,7 +323,7 @@
 
 ## 2023-10-08
 ### Added
-- В пакет `mrcrypto` добавлены функции `GenPassword` и `PasswordStrength`;
+- В пакет `mrcrypt` добавлены функции `GenPassword` и `PasswordStrength`;
 
 ### Changed
 - Обновлены зависимости библиотеки;

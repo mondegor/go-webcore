@@ -5,7 +5,7 @@ import (
 )
 
 type (
-	AppSection struct {
+	appSection struct {
 		caption   string
 		rootPath  string
 		privilege string
@@ -22,38 +22,38 @@ type (
 	}
 )
 
-func NewAppSection(opt AppSectionOptions) *AppSection {
-	rootPath := "/" + strings.Trim(opt.RootPath, "/")
+func NewAppSection(opts AppSectionOptions) AppSection {
+	rootPath := "/" + strings.Trim(opts.RootPath, "/")
 
 	if rootPath != "/" {
 		rootPath += "/"
 	}
 
-	return &AppSection{
-		caption:   opt.Caption,
+	return &appSection{
+		caption:   opts.Caption,
 		rootPath:  rootPath,
-		privilege: opt.Privilege,
-		secret:    opt.AuthSecret,
-		audience:  opt.AuthAudience,
+		privilege: opts.Privilege,
+		secret:    opts.AuthSecret,
+		audience:  opts.AuthAudience,
 	}
 }
 
-func (s *AppSection) Caption() string {
+func (s *appSection) Caption() string {
 	return s.caption
 }
 
-func (s *AppSection) Path(actionPath string) string {
+func (s *appSection) Path(actionPath string) string {
 	return s.rootPath + strings.TrimLeft(actionPath, "/")
 }
 
-func (s *AppSection) Privilege() string {
+func (s *appSection) Privilege() string {
 	return s.privilege
 }
 
-func (s *AppSection) Secret() string {
+func (s *appSection) Secret() string {
 	return s.secret
 }
 
-func (s *AppSection) Audience() string {
+func (s *appSection) Audience() string {
 	return s.audience
 }

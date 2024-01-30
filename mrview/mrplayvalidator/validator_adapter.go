@@ -2,13 +2,15 @@ package mrplayvalidator
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrctx"
+
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrview"
 )
 
@@ -70,7 +72,7 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 	}
 
 	fields := make([]*mrerr.CustomError, len(errors))
-	logger := mrctx.Logger(ctx)
+	logger := mrlog.Ctx(ctx)
 
 	for i, errField := range errors {
 		fields[i] = mrerr.NewCustomErrorAppError(
@@ -78,27 +80,29 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 			v.createAppError(errField),
 		)
 
-		logger.Debug(
-			"{Namespace: %s, "+
-				"Field: %s, "+
-				"StructNamespace: %s, "+
-				"StructField: %s, "+
-				"Tag: %s, "+
-				"ActualTag: %s, "+
-				"Kind: %v, "+
-				"Type: %v, "+
-				"Value: %v, "+
-				"Param: %s}",
-			errField.Namespace(),
-			errField.Field(),
-			errField.StructNamespace(),
-			errField.StructField(),
-			errField.Tag(),
-			errField.ActualTag(),
-			errField.Kind(),
-			errField.Type(),
-			errField.Value(),
-			errField.Param(),
+		logger.Debug().Str("validate.field", errField.Namespace()).MsgFunc(
+			func() string {
+				return fmt.Sprintf(
+					"{Field: %s, "+
+						"StructNamespace: %s, "+
+						"StructField: %s, "+
+						"Tag: %s, "+
+						"ActualTag: %s, "+
+						"Kind: %v, "+
+						"Type: %v, "+
+						"Value: %v, "+
+						"Param: %s}",
+					errField.Field(),
+					errField.StructNamespace(),
+					errField.StructField(),
+					errField.Tag(),
+					errField.ActualTag(),
+					errField.Kind(),
+					errField.Type(),
+					errField.Value(),
+					errField.Param(),
+				)
+			},
 		)
 	}
 

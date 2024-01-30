@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrdebug"
 )
 
 type (
@@ -36,7 +36,7 @@ func HandlerGetServiceInfoAsJson(cfg ConfigServiceInfo) (func(w http.ResponseWri
 			Name:      cfg.Name,
 			Version:   cfg.Version,
 			HostName:  hostName,
-			IsDebug:   mrcore.Debug(),
+			IsDebug:   mrdebug.IsDebug(),
 			StartedAt: cfg.StartedAt.Format(time.RFC3339Nano),
 		},
 		http.StatusOK,

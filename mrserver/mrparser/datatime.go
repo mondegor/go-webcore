@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrctx"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
@@ -25,7 +25,7 @@ func (p *DateTime) FilterDateTime(r *http.Request, key string) time.Time {
 	value, err := mrreq.ParseDateTime(r, key, false)
 
 	if err != nil {
-		mrctx.Logger(r.Context()).Warn(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err)
 		return time.Time{}
 	}
 

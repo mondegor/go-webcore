@@ -3,21 +3,22 @@ package main
 import (
 	"context"
 
-	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrtool"
+	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-webcore/mrserver"
 )
 
 func main() {
-	logger := mrcore.DefaultLogger().With("shutdown")
-	appHelper := mrtool.NewAppHelper(logger)
+	logger := mrlog.New(mrlog.DebugLevel).With().Str("example", "shutdown").Logger()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(logger.WithContext(context.Background()))
 	defer cancel()
 
-	go appHelper.GracefulShutdown(cancel)
+	exec, intr := mrserver.PrepareAppToStart(ctx)
+	defer intr(nil)
 
-	logger.Info("Waiting for command. To exit press CTRL+C")
-
-	<-ctx.Done()
-	logger.Info("Application stopped")
+	if err := exec(); err != nil {
+		logger.Info().Msg("Application stopped with error")
+	} else {
+		logger.Info().Msg("Application stopped")
+	}
 }
