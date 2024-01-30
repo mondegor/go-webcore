@@ -37,7 +37,7 @@ func (l *mutexLocker) LockWithExpiry(ctx context.Context, key string, expiry tim
 		expiry = DefaultExpiry
 	}
 
-	l.debugCmd(ctx, "Lock:"+expiry.String()+", keys-len="+strconv.Itoa(len(l.keys)), key)
+	l.traceCmd(ctx, "Lock:"+expiry.String()+", keys-len="+strconv.Itoa(len(l.keys)), key)
 
 	l.keysMu.Lock()
 	defer l.keysMu.Unlock()
@@ -49,7 +49,7 @@ func (l *mutexLocker) LockWithExpiry(ctx context.Context, key string, expiry tim
 	l.keys[key] = time.Now().UnixNano() + expiry.Nanoseconds()
 
 	return func() {
-		l.debugCmd(ctx, "Unlock", key)
+		l.traceCmd(ctx, "Unlock", key)
 
 		l.keysMu.Lock()
 		delete(l.keys, key)
@@ -57,11 +57,11 @@ func (l *mutexLocker) LockWithExpiry(ctx context.Context, key string, expiry tim
 	}, nil
 }
 
-func (l *mutexLocker) debugCmd(ctx context.Context, command, key string) {
-	mrlog.Ctx(ctx).Debug().Msgf(
-		"%s: cmd=%s, key=%s",
-		mutexLockerName,
-		command,
-		key,
-	)
+func (l *mutexLocker) traceCmd(ctx context.Context, command, key string) {
+	mrlog.Ctx(ctx).
+		Trace().
+		Str("source", mutexLockerName).
+		Str("cmd", command).
+		Str("key", key).
+		Send()
 }

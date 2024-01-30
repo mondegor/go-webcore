@@ -41,7 +41,7 @@ func MultipartFileHeader(ctx context.Context, hdr *multipart.FileHeader) {
 		return
 	}
 
-	logger.Debug().Msgf(
+	logger.Trace().Msgf(
 		"uploaded file: name=%s, size=%d, header=%#v",
 		hdr.Filename, hdr.Size, hdr.Header,
 	)

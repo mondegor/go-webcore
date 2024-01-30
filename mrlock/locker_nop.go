@@ -30,18 +30,18 @@ func (l *nopLocker) LockWithExpiry(ctx context.Context, key string, expiry time.
 		expiry = DefaultExpiry
 	}
 
-	l.debugCmd(ctx, "Lock:"+expiry.String(), key)
+	l.traceCmd(ctx, "Lock:"+expiry.String(), key)
 
 	return func() {
-		l.debugCmd(ctx, "Unlock", key)
+		l.traceCmd(ctx, "Unlock", key)
 	}, nil
 }
 
-func (l *nopLocker) debugCmd(ctx context.Context, command, key string) {
-	mrlog.Ctx(ctx).Debug().Msgf(
-		"%s: cmd=%s, key=%s",
-		nopLockerName,
-		command,
-		key,
-	)
+func (l *nopLocker) traceCmd(ctx context.Context, command, key string) {
+	mrlog.Ctx(ctx).
+		Trace().
+		Str("source", nopLockerName).
+		Str("cmd", command).
+		Str("key", key).
+		Send()
 }

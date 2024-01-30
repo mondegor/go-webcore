@@ -19,8 +19,6 @@
   - `mrcore.Debug` -> `mrcore.IsDebug`;
   - `ServiceHelper` -> `UsecaseHelper` (для устранения неоднозначности слова `Service`);
 
-### Removed
-
 ## 2024-01-25
 ### Added
 - Добавлено: 
