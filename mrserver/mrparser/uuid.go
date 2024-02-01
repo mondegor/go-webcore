@@ -29,7 +29,7 @@ func (p *UUID) PathParamUUID(r *http.Request, name string) uuid.UUID {
 	value, err := uuid.Parse(p.pathFunc(r, name))
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return uuid.Nil
 	}
 
@@ -40,7 +40,7 @@ func (p *UUID) FilterUUID(r *http.Request, key string) uuid.UUID {
 	value, err := mrreq.ParseUUID(r, key, true)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return uuid.Nil
 	}
 

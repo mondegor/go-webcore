@@ -42,7 +42,7 @@ func (p *String) FilterString(r *http.Request, key string) string {
 	value, err := mrreq.ParseStr(r, key, false)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return ""
 	}
 

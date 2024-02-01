@@ -25,7 +25,11 @@ func Close(ctx context.Context, object io.Closer) {
 	logger := mrlog.Ctx(ctx)
 
 	if err := object.Close(); err != nil {
-		logger.Error().Caller(1).Str("io.Closer", fmt.Sprintf("%#v", object)).Err(mrcore.FactoryErrInternalFailedToClose.Wrap(err))
+		logger.Error().
+			Caller(1).
+			Str("io.Closer", fmt.Sprintf("%#v", object)).
+			Err(mrcore.FactoryErrInternalFailedToClose.Wrap(err)).
+			Send()
 	} else {
 		logger.Info().Msgf("Object %T was closed", object)
 	}

@@ -30,12 +30,14 @@ func MiddlewareGeneral(tr *mrlang.Translator) HttpMiddleware {
 			w.Header().Add(mrreq.HeaderKeyCorrelationID, correlationID)
 
 			if err != nil {
-				logger.Warn().Err(err).Msg("mrreq.ParseCorrelationID() error")
+				logger.Warn().Err(err).Msg("mrreq.ParseCorrelationID()")
 			}
 
 			acceptLanguages := mrreq.ParseLanguage(r)
 			locale := tr.FindFirstLocale(acceptLanguages...)
-			logger.Debug().Str("language", locale.LangCode()).Msgf("Accept-Language: %s", strings.Join(acceptLanguages, ", "))
+			logger.Debug().
+				Str("language", locale.LangCode()).
+				Msgf("Accept-Language: %s", strings.Join(acceptLanguages, ", "))
 
 			srw := NewStatResponseWriter(r.Context(), w)
 

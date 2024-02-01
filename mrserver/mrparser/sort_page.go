@@ -44,7 +44,7 @@ func (p *SortPage) SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.
 	)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 	}
 
 	if value.FieldName == "" {
@@ -69,7 +69,7 @@ func (p *SortPage) PageParams(r *http.Request) mrtype.PageParams {
 	// :TODO: вынести параметры p.pageSizeMax и p.pageSizeDefault по аналогии с SortParams
 	if err != nil || value.Size < 1 || value.Size > p.pageSizeMax {
 		if err != nil {
-			mrlog.Ctx(r.Context()).Warn().Err(err)
+			mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		}
 
 		return mrtype.PageParams{

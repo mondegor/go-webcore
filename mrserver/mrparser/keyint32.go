@@ -29,7 +29,7 @@ func (p *KeyInt32) PathKeyInt32(r *http.Request, name string) mrtype.KeyInt32 {
 	value, err := strconv.ParseInt(p.pathFunc(r, name), 10, 32)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return 0
 	}
 
@@ -40,7 +40,7 @@ func (p *KeyInt32) FilterKeyInt32(r *http.Request, key string) mrtype.KeyInt32 {
 	value, err := mrreq.ParseInt64(r, key, false)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return 0
 	}
 
@@ -51,7 +51,7 @@ func (p *KeyInt32) FilterKeyInt32List(r *http.Request, key string) []mrtype.KeyI
 	value, err := mrreq.ParseInt64List(r, key)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return []mrtype.KeyInt32{}
 	}
 

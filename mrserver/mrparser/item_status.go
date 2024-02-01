@@ -32,7 +32,7 @@ func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.Item
 	)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return []mrenum.ItemStatus{}
 	}
 

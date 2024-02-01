@@ -22,7 +22,7 @@ func (p *JsonDecoder) ParseToStruct(r *http.Request, structPointer any) error {
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(structPointer); err != nil {
-		mrlog.Ctx(r.Context()).Warn().Caller(1).Err(err)
+		mrlog.Ctx(r.Context()).Warn().Caller(1).Err(err).Send()
 		return mrcore.FactoryErrHttpRequestParseData.Wrap(err)
 	}
 

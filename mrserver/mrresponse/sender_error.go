@@ -75,6 +75,10 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 
 	status, appError := rs.overrideFunc(appError)
 
+	if appError.Kind() != mrerr.ErrorKindUser {
+		mrlog.Ctx(r.Context()).Error().Err(appError).Send()
+	}
+
 	rs.sendStructResponse(
 		r.Context(),
 		w,
@@ -96,7 +100,10 @@ func (rs *ErrorSender) sendStructResponse(
 	if err != nil {
 		status = http.StatusTeapot
 		bytes = []byte{}
-		mrlog.Ctx(ctx).Error().Err(mrcore.FactoryErrHttpResponseParseData.Caller(1).Wrap(err))
+		mrlog.Ctx(ctx).
+			Error().
+			Err(mrcore.FactoryErrHttpResponseParseData.Caller(1).Wrap(err)).
+			Send()
 	}
 
 	w.Header().Set("Content-Type", contentType)
@@ -143,7 +150,6 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.
 
 	if appError.Kind() != mrerr.ErrorKindUser {
 		response.ErrorTraceID = appError.TraceID()
-		mrlog.Ctx(r.Context()).Error().Err(appError)
 	}
 
 	return response

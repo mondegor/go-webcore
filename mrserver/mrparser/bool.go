@@ -24,7 +24,7 @@ func (p *Bool) FilterNullableBool(r *http.Request, key string) *bool {
 	value, err := mrreq.ParseNullableBool(r, key)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return nil
 	}
 

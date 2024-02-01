@@ -25,7 +25,7 @@ func (p *DateTime) FilterDateTime(r *http.Request, key string) time.Time {
 	value, err := mrreq.ParseDateTime(r, key, false)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err)
+		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return time.Time{}
 	}
 
