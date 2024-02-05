@@ -1,6 +1,7 @@
 package mrreq
 
 import (
+	"errors"
 	"mime/multipart"
 	"net/http"
 
@@ -14,6 +15,11 @@ func FormFile(r *http.Request, key string) (multipart.File, *multipart.FileHeade
 
 	if err != nil {
 		mrdebug.MultipartForm(r.Context(), r.MultipartForm)
+
+		if errors.Is(err, http.ErrMissingFile) {
+			return nil, nil, mrcore.FactoryErrHttpFileUpload.Wrap(err, key)
+		}
+
 		return nil, nil, mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
 	}
 
