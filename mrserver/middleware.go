@@ -7,6 +7,7 @@ import (
 
 	"github.com/mondegor/go-sysmess/mrlang"
 	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrperms"
 	"github.com/rs/xid"
@@ -56,6 +57,50 @@ func MiddlewareGeneral(tr *mrlang.Translator) HttpMiddleware {
 			next.ServeHTTP(srw, r.WithContext(locale.WithContext(r.Context())))
 		})
 	})
+}
+
+func MiddlewareIdempotency(provider mridempotency.Provider, sender ResponseSender, next HttpHandlerFunc) HttpHandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		idempotencyKey := r.Header.Get(mrreq.HeaderKeyIdempotencyKey)
+
+		if idempotencyKey == "" {
+			return next(w, r)
+		}
+
+		if err := provider.Validate(idempotencyKey); err != nil {
+			return err
+		}
+
+		if cachedResponse, err := provider.Get(r.Context(), idempotencyKey); err != nil {
+			return err
+		} else if cachedResponse != nil {
+			return sender.SendBytes(
+				w,
+				cachedResponse.StatusCode(),
+				cachedResponse.Body(),
+			)
+		}
+
+		unlock, err := provider.Lock(r.Context(), idempotencyKey)
+
+		if err != nil {
+			return err
+		}
+
+		defer unlock()
+
+		sw := NewCacheableResponseWriter(w)
+
+		if err = next(sw, r); err != nil {
+			return err
+		}
+
+		if err = provider.Store(r.Context(), idempotencyKey, sw); err != nil {
+			mrlog.Ctx(r.Context()).Error().Err(err).Send()
+		}
+
+		return nil
+	}
 }
 
 func MiddlewareCheckAccess(

@@ -8,6 +8,7 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrserver"
+	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
@@ -27,9 +28,8 @@ type (
 	}
 
 	imageMeta struct {
-		contentType string
-		width       int32
-		height      int32
+		width  int32
+		height int32
 	}
 )
 
@@ -38,7 +38,7 @@ var _ mrserver.RequestParserImage = (*Image)(nil)
 
 func NewImage(opts ImageOptions) *Image {
 	if len(opts.File.AllowedExts) == 0 {
-		opts.File.AllowedExts = []string{".jpeg", ".jpg", ".gif", ".png"}
+		opts.File.AllowedExts = []string{".gif", ".jpeg", ".jpg", ".png"}
 	}
 
 	return &Image{
@@ -51,27 +51,39 @@ func NewImage(opts ImageOptions) *Image {
 
 // FormImage - WARNING you don't forget to call result.Body.Close()
 func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
-	raw, err := p.file.raw(r, key)
+	hdr, err := mrreq.FormFile(r, key)
 
 	if err != nil {
 		return mrtype.Image{}, err
 	}
 
-	meta, err := p.decode(raw.file, raw.contentType)
+	if err = p.file.checkFile(hdr); err != nil {
+		return mrtype.Image{}, err
+	}
+
+	file, err := hdr.Open()
 
 	if err != nil {
+		return mrtype.Image{}, mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
+	}
+
+	contentType := p.file.detectedContentType(hdr)
+	meta, err := p.decode(file, contentType)
+
+	if err != nil {
+		file.Close()
 		return mrtype.Image{}, err
 	}
 
 	return mrtype.Image{
 		ImageInfo: mrtype.ImageInfo{
-			ContentType:  meta.contentType,
-			OriginalName: raw.hdr.Filename,
+			ContentType:  contentType,
+			OriginalName: hdr.Filename,
 			Width:        meta.width,
 			Height:       meta.height,
-			Size:         raw.hdr.Size,
+			Size:         hdr.Size,
 		},
-		Body: raw.file,
+		Body: file,
 	}, nil
 }
 
@@ -97,6 +109,64 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageConte
 	}, nil
 }
 
+func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, error) {
+	fds, err := mrreq.FormFiles(r, key, 0)
+
+	if len(fds) == 0 {
+		return nil, nil
+	}
+
+	countFiles := p.file.allowedFiles(len(fds))
+
+	if err = p.file.checkTotalSize(fds, countFiles); err != nil {
+		return nil, err
+	}
+
+	images := make([]mrtype.ImageHeader, countFiles)
+
+	for i := 0; i < countFiles; i++ {
+		err = func() error { // for defer file.Close()
+			if err := p.file.checkFile(fds[i]); err != nil {
+				return err
+			}
+
+			file, err := fds[i].Open()
+
+			if err != nil {
+				return mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
+			}
+
+			defer file.Close()
+
+			contentType := p.file.detectedContentType(fds[i])
+			meta, err := p.decode(file, contentType)
+
+			if err != nil {
+				return err
+			}
+
+			images[i] = mrtype.ImageHeader{
+				ImageInfo: mrtype.ImageInfo{
+					ContentType:  contentType,
+					OriginalName: fds[i].Filename,
+					Width:        meta.width,
+					Height:       meta.height,
+					Size:         fds[i].Size,
+				},
+				Header: fds[i],
+			}
+
+			return nil
+		}()
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return images, nil
+}
+
 func (p *Image) decode(file multipart.File, contentType string) (imageMeta, error) {
 	cfg, err := mrlib.DecodeImageConfig(file, contentType)
 
@@ -119,8 +189,7 @@ func (p *Image) decode(file multipart.File, contentType string) (imageMeta, erro
 	}
 
 	return imageMeta{
-		contentType: contentType,
-		width:       int32(cfg.Width),
-		height:      int32(cfg.Height),
+		width:  int32(cfg.Width),
+		height: int32(cfg.Height),
 	}, nil
 }

@@ -9,21 +9,50 @@ import (
 	"github.com/mondegor/go-webcore/mrdebug"
 )
 
-// FormFile - WARNING you don't forget to call file.Close()
-func FormFile(r *http.Request, key string) (multipart.File, *multipart.FileHeader, error) {
-	file, hdr, err := r.FormFile(key)
+const (
+	defaultMaxMemory = 32 << 20 // 32 MB
+)
 
-	if err != nil {
-		mrdebug.MultipartForm(r.Context(), r.MultipartForm)
-
-		if errors.Is(err, http.ErrMissingFile) {
-			return nil, nil, mrcore.FactoryErrHttpFileUpload.Wrap(err, key)
-		}
-
-		return nil, nil, mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
+func FormFiles(r *http.Request, key string, maxMemory int64) ([]*multipart.FileHeader, error) {
+	if maxMemory < 1 {
+		maxMemory = defaultMaxMemory
 	}
 
-	mrdebug.MultipartFileHeader(r.Context(), hdr)
+	if r.MultipartForm == nil {
+		if err := r.ParseMultipartForm(maxMemory); err != nil {
+			mrdebug.MultipartForm(r.Context(), r.MultipartForm)
 
-	return file, hdr, nil
+			if errors.Is(err, http.ErrMissingBoundary) {
+				return nil, mrcore.FactoryErrHttpFileUpload.Wrap(err, key)
+			}
+
+			return nil, mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
+		}
+	}
+
+	if r.MultipartForm != nil && r.MultipartForm.File != nil {
+		if fhs, ok := r.MultipartForm.File[key]; ok {
+			for i := range fhs {
+				mrdebug.MultipartFileHeader(r.Context(), fhs[i])
+			}
+
+			return fhs, nil
+		}
+	}
+
+	return nil, nil
+}
+
+func FormFile(r *http.Request, key string) (*multipart.FileHeader, error) {
+	fhs, err := FormFiles(r, key, 0)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(fhs) == 0 {
+		return nil, mrcore.FactoryErrHttpFileUpload.Wrap(http.ErrMissingFile, key)
+	}
+
+	return fhs[0], nil
 }

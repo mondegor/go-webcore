@@ -38,7 +38,7 @@ func (h *UsecaseHelper) WrapErrorEntityFailed(err error, entityName string, enti
 
 func (h *UsecaseHelper) WrapErrorEntityNotFoundOrFailed(err error, entityName string, entityData any) error {
 	if h.IsNotFoundError(err) {
-		return FactoryErrServiceEntityNotFound.Wrap(err)
+		return FactoryErrUseCaseEntityNotFound.Wrap(err)
 	}
 
 	return h.wrapErrorFailed(err, entityName, entityData)
@@ -46,8 +46,8 @@ func (h *UsecaseHelper) WrapErrorEntityNotFoundOrFailed(err error, entityName st
 
 func (h *UsecaseHelper) wrapErrorFailed(err error, name string, data any) error {
 	if FactoryErrStorageQueryFailed.Is(err) {
-		return FactoryErrServiceOperationFailed.WithAttr(name, data).Wrap(err)
+		return FactoryErrUseCaseOperationFailed.WithAttr(name, data).Wrap(err)
 	}
 
-	return FactoryErrServiceTemporarilyUnavailable.WithAttr(name, data).Caller(h.callerSkip).Wrap(err)
+	return FactoryErrUseCaseTemporarilyUnavailable.WithAttr(name, data).Caller(h.callerSkip).Wrap(err)
 }

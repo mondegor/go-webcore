@@ -35,6 +35,7 @@ type (
 
 	LoggerEvent interface {
 		Caller(skip ...int) LoggerEvent
+		CallerSkipFrame(skip int) LoggerEvent
 		Err(err error) LoggerEvent
 		Str(key, value string) LoggerEvent
 		Bytes(key string, value []byte) LoggerEvent
@@ -52,7 +53,9 @@ type (
 		JsonFormat      bool
 		TimestampFormat string
 		ConsoleColor    bool
-		BehaviorFunc    func(err error) bool
+
+		// only if log level: Error, Fatal
+		IsAutoCallerOnFunc func(err error) bool
 	}
 
 	ctxKey struct{}

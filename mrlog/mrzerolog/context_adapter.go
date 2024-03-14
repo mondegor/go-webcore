@@ -9,36 +9,34 @@ import (
 
 type (
 	ContextAdapter struct {
-		zc zerolog.Context
+		zc   zerolog.Context
+		opts loggerOptions
 	}
 )
 
 func (c *ContextAdapter) Logger() mrlog.Logger {
-	l := &LoggerAdapter{
-		zl: c.zc.Logger(),
+	return &LoggerAdapter{
+		zl:   c.zc.Logger(),
+		opts: c.opts,
 	}
-
-	l.level = mrlog.Level(l.zl.GetLevel())
-
-	return l
 }
 
 func (c *ContextAdapter) CallerWithSkipFrame(count int) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.CallerWithSkipFrameCount(count)}
+	return &ContextAdapter{zc: c.zc.CallerWithSkipFrameCount(count + 1), opts: c.opts}
 }
 
 func (c *ContextAdapter) Str(key, value string) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.Str(key, value)}
+	return &ContextAdapter{zc: c.zc.Str(key, value), opts: c.opts}
 }
 
 func (c *ContextAdapter) Bytes(key string, value []byte) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.Bytes(key, value)}
+	return &ContextAdapter{zc: c.zc.Bytes(key, value), opts: c.opts}
 }
 
 func (c *ContextAdapter) Int(key string, value int) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.Int(key, value)}
+	return &ContextAdapter{zc: c.zc.Int(key, value), opts: c.opts}
 }
 
 func (c *ContextAdapter) Any(key string, value any) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.Any(key, value)}
+	return &ContextAdapter{zc: c.zc.Any(key, value), opts: c.opts}
 }

@@ -14,8 +14,13 @@ import (
 
 type (
 	LoggerAdapter struct {
-		zl    zerolog.Logger
-		level mrlog.Level
+		zl   zerolog.Logger
+		opts loggerOptions
+	}
+
+	loggerOptions struct {
+		level              mrlog.Level
+		isAutoCallerOnFunc func(err error) bool
 	}
 )
 
@@ -51,40 +56,23 @@ func New(opts mrlog.Options) *LoggerAdapter {
 
 	logger = logger.Level(zerolog.Level(opts.Level))
 
-	return &LoggerAdapter{
-		zl:    logger,
-		level: opts.Level,
+	if opts.IsAutoCallerOnFunc == nil {
+		opts.IsAutoCallerOnFunc = func(err error) bool {
+			return true
+		}
 	}
-}
 
-func NewConsoleLogger() *LoggerAdapter {
-	return New(
-		mrlog.Options{
-			Level:           mrlog.DebugLevel,
-			JsonFormat:      false,
-			TimestampFormat: time.TimeOnly,
-			ConsoleColor:    true,
+	return &LoggerAdapter{
+		zl: logger,
+		opts: loggerOptions{
+			level:              opts.Level,
+			isAutoCallerOnFunc: opts.IsAutoCallerOnFunc,
 		},
-	)
-}
-
-func NewZeroLogger(zl zerolog.Logger) *LoggerAdapter {
-	level := zl.GetLevel()
-	fatalLevel := zerolog.Level(mrlog.FatalLevel)
-
-	if level > fatalLevel {
-		level = fatalLevel
-		zl.Level(level)
-	}
-
-	return &LoggerAdapter{
-		zl:    zl,
-		level: mrlog.Level(level),
 	}
 }
 
 func (l *LoggerAdapter) Level() mrlog.Level {
-	return mrlog.Level(l.zl.GetLevel())
+	return l.opts.level
 }
 
 func (l *LoggerAdapter) WithContext(ctx context.Context) context.Context {
@@ -92,55 +80,55 @@ func (l *LoggerAdapter) WithContext(ctx context.Context) context.Context {
 }
 
 func (l *LoggerAdapter) With() mrlog.LoggerContext {
-	return &ContextAdapter{zc: l.zl.With()}
+	return &ContextAdapter{zc: l.zl.With(), opts: l.opts}
 }
 
 func (l *LoggerAdapter) Debug() mrlog.LoggerEvent {
-	if l.level > mrlog.DebugLevel {
+	if l.opts.level > mrlog.DebugLevel {
 		return (*EventAdapter)(nil)
 	}
 
-	return &EventAdapter{ze: l.zl.Debug()}
+	return l.newEventAdapter(l.zl.Debug(), false)
 }
 
 func (l *LoggerAdapter) Info() mrlog.LoggerEvent {
-	if l.level > mrlog.InfoLevel {
+	if l.opts.level > mrlog.InfoLevel {
 		return (*EventAdapter)(nil)
 	}
 
-	return &EventAdapter{ze: l.zl.Info()}
+	return l.newEventAdapter(l.zl.Info(), false)
 }
 
 func (l *LoggerAdapter) Warn() mrlog.LoggerEvent {
-	if l.level > mrlog.WarnLevel {
+	if l.opts.level > mrlog.WarnLevel {
 		return (*EventAdapter)(nil)
 	}
 
-	return &EventAdapter{ze: l.zl.Warn()}
+	return l.newEventAdapter(l.zl.Warn(), false)
 }
 
 func (l *LoggerAdapter) Error() mrlog.LoggerEvent {
-	if l.level > mrlog.ErrorLevel {
+	if l.opts.level > mrlog.ErrorLevel {
 		return (*EventAdapter)(nil)
 	}
 
-	return &EventAdapter{ze: l.zl.Error()}
+	return l.newEventAdapter(l.zl.Error(), true)
 }
 
 func (l *LoggerAdapter) Fatal() mrlog.LoggerEvent {
-	return &EventAdapter{ze: l.zl.Fatal()}
+	return l.newEventAdapter(l.zl.Fatal(), true)
 }
 
 func (l *LoggerAdapter) Panic() mrlog.LoggerEvent {
-	return &EventAdapter{ze: l.zl.Panic()}
+	return l.newEventAdapter(l.zl.Panic(), false)
 }
 
 func (l *LoggerAdapter) Trace() mrlog.LoggerEvent {
-	if l.level > mrlog.TraceLevel {
+	if l.opts.level > mrlog.TraceLevel {
 		return (*EventAdapter)(nil)
 	}
 
-	return &EventAdapter{ze: l.zl.Trace()}
+	return l.newEventAdapter(l.zl.Trace(), false)
 }
 
 func (l *LoggerAdapter) Printf(format string, args ...any) {
@@ -153,4 +141,12 @@ func (l *LoggerAdapter) Emit(ctx context.Context, eventName string, object any) 
 
 func (l *LoggerAdapter) EmitWithSource(ctx context.Context, eventName, source string, object any) {
 	l.zl.Log().Str("event", eventName).Str("source", source).Any("object", object).Send()
+}
+
+func (l *LoggerAdapter) newEventAdapter(ze *zerolog.Event, isAutoCallerAllowed bool) *EventAdapter {
+	return &EventAdapter{
+		ze:                  ze,
+		isAutoCallerAllowed: isAutoCallerAllowed,
+		isAutoCallerOnFunc:  l.opts.isAutoCallerOnFunc,
+	}
 }

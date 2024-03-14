@@ -114,7 +114,7 @@ func getRandValue(max int) int {
 	value, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
 
 	if err != nil {
-		mrlog.Default().Error().Caller().Err(err).Send()
+		mrlog.Default().Error().Err(err).Send()
 		return 0
 	}
 

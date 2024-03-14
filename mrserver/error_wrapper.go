@@ -11,7 +11,7 @@ import (
 func DefaultHttpErrorOverrideFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
 	status := http.StatusInternalServerError
 
-	if mrcore.FactoryErrServiceEntityNotFound.Is(err) ||
+	if mrcore.FactoryErrUseCaseEntityNotFound.Is(err) ||
 		mrcore.FactoryErrHttpResourceNotFound.Is(err) {
 		status = http.StatusNotFound
 	} else if mrcore.FactoryErrHttpClientUnauthorized.Is(err) {

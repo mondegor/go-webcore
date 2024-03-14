@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/mondegor/go-webcore/mrlog"
@@ -20,4 +21,6 @@ func main() {
 
 	logger.Info().Msg("Logger info message - OK!")
 	logger.Debug().Msg("Logger debug message skipped")
+	logger.Error().Err(fmt.Errorf("my error")).Msg("Error with auto caller")
+	logger.Info().Caller().Msg("Message with caller")
 }

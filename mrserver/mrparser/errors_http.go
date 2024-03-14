@@ -14,6 +14,9 @@ var (
 	FactoryErrHttpRequestFileExtension = NewFactory(
 		"errHttpRequestFileExtension", ErrorKindUser, "invalid file extension: {{ .value }}")
 
+	FactoryErrHttpRequestFileTotalSizeMax = NewFactory(
+		"errHttpRequestFileTotalSizeMax", ErrorKindUser, "invalid file total size, max total size = {{ .value }}b")
+
 	FactoryErrHttpRequestFileContentType = NewFactory(
 		"errHttpRequestFileContentType", ErrorKindUser, "the content type '{{ .value }}' does not match the detected type")
 

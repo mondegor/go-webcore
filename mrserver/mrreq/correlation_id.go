@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	HeaderKeyCorrelationID = "X-Correlation-ID"
+	HeaderKeyCorrelationID = "X-Correlation-Id"
 
 	// f7479171-83d2-4f64-84ac-892f8c0aaf48
 	minLenCorrelationID = 16

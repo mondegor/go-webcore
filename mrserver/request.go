@@ -1,6 +1,8 @@
 package mrserver
 
 import (
+	"context"
+	"io"
 	"net/http"
 	"time"
 
@@ -12,7 +14,7 @@ import (
 
 type (
 	RequestDecoder interface {
-		ParseToStruct(r *http.Request, structPointer any) error
+		ParseToStruct(ctx context.Context, content io.Reader, structPointer any) error
 	}
 
 	RequestParserString interface {
@@ -24,6 +26,7 @@ type (
 
 	RequestParserValidate interface {
 		Validate(r *http.Request, structPointer any) error
+		ValidateContent(ctx context.Context, content []byte, structPointer any) error
 	}
 
 	RequestParserInt64 interface {
@@ -55,15 +58,20 @@ type (
 	RequestParserFile interface {
 		FormFile(r *http.Request, key string) (mrtype.File, error)
 		FormFileContent(r *http.Request, key string) (mrtype.FileContent, error)
+		FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, error)
 	}
 
 	RequestParserImage interface {
 		FormImage(r *http.Request, key string) (mrtype.Image, error)
 		FormImageContent(r *http.Request, key string) (mrtype.ImageContent, error)
+		FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, error)
 	}
 
-	RequestParserSortPage interface {
+	RequestParserListSorter interface {
 		SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams
+	}
+
+	RequestParserListPager interface {
 		PageParams(r *http.Request) mrtype.PageParams
 	}
 

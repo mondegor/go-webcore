@@ -2,16 +2,10 @@ package mrserver
 
 import (
 	"context"
-	"io"
 	"net/http"
 
 	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrtype"
-)
-
-const (
-	traceResponseMaxLen = 1024
 )
 
 type (
@@ -23,12 +17,14 @@ type (
 
 	ResponseSender interface {
 		Send(w http.ResponseWriter, status int, structure any) error
+		SendBytes(w http.ResponseWriter, status int, body []byte) error
 		SendNoContent(w http.ResponseWriter) error
 	}
 
 	FileResponseSender interface {
 		ResponseSender
-		SendFile(w http.ResponseWriter, info mrtype.FileInfo, attachmentName string, file io.Reader) error
+		SendFile(ctx context.Context, w http.ResponseWriter, file mrtype.File) error
+		SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrtype.File) error
 	}
 
 	ErrorResponseSender interface {
@@ -36,33 +32,4 @@ type (
 	}
 
 	HttpErrorOverrideFunc func(err *mrerr.AppError) (int, *mrerr.AppError)
-
-	StatResponseWriter struct {
-		http.ResponseWriter
-		ctx        context.Context
-		statusCode int
-		bytes      int
-	}
 )
-
-func NewStatResponseWriter(ctx context.Context, w http.ResponseWriter) *StatResponseWriter {
-	return &StatResponseWriter{w, ctx, http.StatusOK, 0}
-}
-
-func (w *StatResponseWriter) WriteHeader(statusCode int) {
-	w.statusCode = statusCode
-	w.ResponseWriter.WriteHeader(statusCode)
-}
-
-func (w *StatResponseWriter) Write(buf []byte) (int, error) {
-	bytes, err := w.ResponseWriter.Write(buf)
-	w.bytes += bytes
-
-	if len(buf) > traceResponseMaxLen {
-		buf = buf[0:traceResponseMaxLen]
-	}
-
-	mrlog.Ctx(w.ctx).Trace().Bytes("response", buf).Msg("write response")
-
-	return bytes, err
-}

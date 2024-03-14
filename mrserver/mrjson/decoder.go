@@ -1,8 +1,9 @@
 package mrjson
 
 import (
+	"context"
 	"encoding/json"
-	"net/http"
+	"io"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlog"
@@ -17,12 +18,12 @@ func NewDecoder() *JsonDecoder {
 	return &JsonDecoder{}
 }
 
-func (p *JsonDecoder) ParseToStruct(r *http.Request, structPointer any) error {
-	dec := json.NewDecoder(r.Body)
+func (p *JsonDecoder) ParseToStruct(ctx context.Context, content io.Reader, structPointer any) error {
+	dec := json.NewDecoder(content)
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(structPointer); err != nil {
-		mrlog.Ctx(r.Context()).Warn().Caller(1).Err(err).Send()
+		mrlog.Ctx(ctx).Warn().Caller(1).Err(err).Send()
 		return mrcore.FactoryErrHttpRequestParseData.Wrap(err)
 	}
 

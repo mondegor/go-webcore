@@ -1,6 +1,49 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-03-14
+### Added
+- Добавлены стандартные обработчики ошибок приложения (404 и 405);
+    - `HandlerGetMethodNotAllowedAsJson()`;
+    - `HandlerGetNotFoundAsJson()`;
+- Добавлен обработчик для вывода системной информации:
+    - `HandlerGetSystemInfoAsJson()`;
+- Добавлена проверка общего размера загружаемых файлов;
+    - добавлена ошибка `FactoryErrHttpRequestFileTotalSizeMax`;
+- Добавлена обработка нескольких загруженных файлов `mrreq.FormFiles`;
+- Добавлена ошибка `FactoryErrInternalFailedToOpen`;
+- Добавлен агрегатор парсеров `mrparser.Parser`;
+- В `mrserver.RequestParserValidate` добавлен метод `ValidateContent`;
+- Добавлены `mrtype.FileHeader` и `mrtype.ImageHeader`;
+- В `mrminio.DownloadFile` добавлена проверка на успешную загрузку файла;
+- Добавление обработки `http.ErrMissingBoundary` для отображения пользовательской ошибки,
+  что файл не был загружен на сервер;
+- Добавлена функциональность связанная с идемпотентностью операций:
+    - добавлены `mridempotency.Provider` и `mridempotency.Response`;
+    - добавлен метод `ResponseSender.SendBytes`;
+    - добавлен прокси `NewCacheableResponseWriter` для возможности кэширования ответов запросов;
+    - добавлен `MiddlewareIdempotency`;
+
+### Changed
+- Рефакторинг:
+    - переименование `FactoryErrService*` -> `FactoryErrUseCase*`, `errService*` -> `errUseCase*`;
+    - переименование интерфейсов `*Service` -> `*UseCase`;
+    - переименование `X-Correlation-ID` -> `X-Correlation-Id`;
+    - переименовано (`lastModified`, `ModifiedAt`) -> `UpdatedAt`;
+- Настройки `PageSizeMax` и `PageSizeDefault` вынесены в общие настройки модулей `ModulesSettings.General`;
+- Парсер `SortPage` разделён на два: `ListSorter`, `ListPager`;
+- `mrparser.FormFileContents` -> `mrparser.FormFiles`, теперь возвращается список загруженных файлов без их открытия;
+- В `FileResponseSender` изменился интерфейс методов `SendFile` и `SendAttachmentFile`;
+- Переработан механизм загрузки файлов;
+- Изменился интерфейс `mrserver.RequestDecoder`, `*http.Request` заменён `content io.Reader` и добавлен контекст;
+- `mrserver.NewStatResponseWriter` вынесен в отдельный файл;
+- Доработан адаптер `mrzerolog.LoggerAdapter`, добавлена поддержка `Auto Caller`;
+- В `mrzerolog.Caller` поправлен skip параметр;
+- `Error().Caller().Err(err)` -> `Error().Err(err)`;
+
+### Fixed
+- При обработке файлов исправлено `WrapImageError` на `WrapFileError`;
+
 ## 2024-02-05
 ### Added
 - Добавлена новая пользовательская ошибка `mrcore.FactoryErrHttpFileUpload`;

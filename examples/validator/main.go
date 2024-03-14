@@ -26,9 +26,9 @@ func main() {
 		return
 	}
 
-	user := User{Login: "valid-login"}
+	user1 := User{Login: "valid-login"}
 
-	if err := validator.Validate(context.Background(), &user); err != nil {
+	if err := validator.Validate(context.Background(), &user1); err != nil {
 		fmt.Println(err)
 	}
 

@@ -72,7 +72,7 @@ func (s *ServerAdapter) PrepareToStart(ctx context.Context) (execute func() erro
 			return s.Start(ctx)
 		}, func(err error) {
 			if err := s.Shutdown(ctx); err != nil {
-				mrlog.Ctx(ctx).Error().Caller().Err(err).Send()
+				mrlog.Ctx(ctx).Error().Err(err).Send()
 			}
 		}
 }

@@ -18,6 +18,9 @@ var (
 	FactoryErrInternalInvalidType = NewFactory(
 		"errInternalInvalidType", ErrorKindInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
 
+	FactoryErrInternalFailedToOpen = NewFactory(
+		"errInternalFailedToOpen", ErrorKindInternal, "failed to open object")
+
 	FactoryErrInternalFailedToClose = NewFactory(
 		"errInternalFailedToClose", ErrorKindInternal, "failed to close object")
 

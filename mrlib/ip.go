@@ -20,7 +20,7 @@ func Ip2intMust(ip net.IP) uint32 {
 	value, err := Ip2int(ip)
 
 	if err != nil {
-		mrlog.Default().Error().Caller().Err(err).Send()
+		mrlog.Default().Error().Err(err).Send()
 		return 0
 	}
 

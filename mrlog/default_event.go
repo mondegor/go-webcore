@@ -22,6 +22,15 @@ func (e *defaultEvent) Caller(skip ...int) LoggerEvent {
 	return &c
 }
 
+func (e *defaultEvent) CallerSkipFrame(count int) LoggerEvent {
+	if e == nil {
+		return e
+	}
+
+	c := *e
+	return &c
+}
+
 func (e *defaultEvent) Err(err error) LoggerEvent {
 	if e == nil {
 		return e

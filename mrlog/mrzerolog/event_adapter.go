@@ -9,7 +9,9 @@ import (
 
 type (
 	EventAdapter struct {
-		ze *zerolog.Event
+		ze                  *zerolog.Event
+		isAutoCallerAllowed bool
+		isAutoCallerOnFunc  func(err error) bool
 	}
 )
 
@@ -18,7 +20,22 @@ func (e *EventAdapter) Caller(skip ...int) mrlog.LoggerEvent {
 		return e
 	}
 
-	return &EventAdapter{ze: e.ze.Caller(skip...)}
+	if len(skip) > 0 {
+		skip[0]++
+	}
+
+	ev := e.newEventAdapter(e.ze.Caller(skip...))
+	ev.isAutoCallerAllowed = false
+
+	return ev
+}
+
+func (e *EventAdapter) CallerSkipFrame(count int) mrlog.LoggerEvent {
+	if e == nil {
+		return e
+	}
+
+	return e.newEventAdapter(e.ze.CallerSkipFrame(count + 1))
 }
 
 func (e *EventAdapter) Err(err error) mrlog.LoggerEvent {
@@ -26,7 +43,15 @@ func (e *EventAdapter) Err(err error) mrlog.LoggerEvent {
 		return e
 	}
 
-	return &EventAdapter{ze: e.ze.Err(err)}
+	ev := e.newEventAdapter(e.ze.Err(err))
+
+	if ev.isAutoCallerAllowed {
+		if e.isAutoCallerOnFunc == nil || !e.isAutoCallerOnFunc(err) {
+			ev.isAutoCallerAllowed = false
+		}
+	}
+
+	return ev
 }
 
 func (e *EventAdapter) Str(key, value string) mrlog.LoggerEvent {
@@ -34,7 +59,7 @@ func (e *EventAdapter) Str(key, value string) mrlog.LoggerEvent {
 		return e
 	}
 
-	return &EventAdapter{ze: e.ze.Str(key, value)}
+	return e.newEventAdapter(e.ze.Str(key, value))
 }
 
 func (e *EventAdapter) Bytes(key string, value []byte) mrlog.LoggerEvent {
@@ -42,7 +67,7 @@ func (e *EventAdapter) Bytes(key string, value []byte) mrlog.LoggerEvent {
 		return e
 	}
 
-	return &EventAdapter{ze: e.ze.Bytes(key, value)}
+	return e.newEventAdapter(e.ze.Bytes(key, value))
 }
 
 func (e *EventAdapter) Int(key string, value int) mrlog.LoggerEvent {
@@ -50,7 +75,7 @@ func (e *EventAdapter) Int(key string, value int) mrlog.LoggerEvent {
 		return e
 	}
 
-	return &EventAdapter{ze: e.ze.Int(key, value)}
+	return e.newEventAdapter(e.ze.Int(key, value))
 }
 
 func (e *EventAdapter) Any(key string, value any) mrlog.LoggerEvent {
@@ -58,7 +83,7 @@ func (e *EventAdapter) Any(key string, value any) mrlog.LoggerEvent {
 		return e
 	}
 
-	return &EventAdapter{ze: e.ze.Any(key, value)}
+	return e.newEventAdapter(e.ze.Any(key, value))
 }
 
 func (e *EventAdapter) Msg(message string) {
@@ -66,7 +91,7 @@ func (e *EventAdapter) Msg(message string) {
 		return
 	}
 
-	e.ze.Msg(message)
+	e.prepareEvent().Msg(message)
 }
 
 func (e *EventAdapter) Msgf(format string, args ...any) {
@@ -74,7 +99,7 @@ func (e *EventAdapter) Msgf(format string, args ...any) {
 		return
 	}
 
-	e.ze.Msgf(format, args...)
+	e.prepareEvent().Msgf(format, args...)
 }
 
 func (e *EventAdapter) MsgFunc(createMsg func() string) {
@@ -82,7 +107,7 @@ func (e *EventAdapter) MsgFunc(createMsg func() string) {
 		return
 	}
 
-	e.ze.MsgFunc(createMsg)
+	e.prepareEvent().MsgFunc(createMsg)
 }
 
 func (e *EventAdapter) Send() {
@@ -90,5 +115,20 @@ func (e *EventAdapter) Send() {
 		return
 	}
 
-	e.ze.Send()
+	e.prepareEvent().Send()
+}
+
+func (e *EventAdapter) newEventAdapter(ze *zerolog.Event) *EventAdapter {
+	c := *e
+	c.ze = ze
+
+	return &c
+}
+
+func (e *EventAdapter) prepareEvent() *zerolog.Event {
+	if e.isAutoCallerAllowed {
+		return e.ze.Caller(2)
+	}
+
+	return e.ze
 }

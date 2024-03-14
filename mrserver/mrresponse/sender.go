@@ -34,6 +34,12 @@ func (rs *Sender) Send(w http.ResponseWriter, status int, structure any) error {
 	return nil
 }
 
+func (rs *Sender) SendBytes(w http.ResponseWriter, status int, body []byte) error {
+	rs.sendResponse(w, status, rs.encoder.ContentType(), body)
+
+	return nil
+}
+
 func (rs *Sender) SendNoContent(w http.ResponseWriter) error {
 	w.WriteHeader(http.StatusNoContent)
 

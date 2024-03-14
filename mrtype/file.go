@@ -2,6 +2,8 @@ package mrtype
 
 import (
 	"io"
+	"mime/multipart"
+	"path"
 	"time"
 )
 
@@ -13,8 +15,8 @@ type (
 		Path         string     `json:"-"`
 		URL          string     `json:"url,omitempty"`
 		Size         int64      `json:"size,omitempty"`
-		CreatedAt    *time.Time `json:"created,omitempty"`
-		ModifiedAt   *time.Time `json:"lastModified,omitempty"`
+		CreatedAt    *time.Time `json:"createdAt,omitempty"`
+		UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
 	}
 
 	File struct {
@@ -26,4 +28,21 @@ type (
 		FileInfo
 		Body []byte
 	}
+
+	FileHeader struct {
+		FileInfo
+		Header *multipart.FileHeader
+	}
 )
+
+func (f *FileInfo) Original() string {
+	if f.OriginalName != "" {
+		return f.OriginalName
+	}
+
+	if f.Name != "" {
+		return f.Name
+	}
+
+	return path.Base(f.Path)
+}

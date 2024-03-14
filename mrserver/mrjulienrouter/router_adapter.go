@@ -28,12 +28,18 @@ var _ mrserver.HttpRouter = (*RouterAdapter)(nil)
 func New(
 	logger mrlog.Logger,
 	handlerAdapterFunc mrserver.HttpHandlerAdapterFunc,
+	handlerNotFoundFunc http.HandlerFunc,
+	handlerMethodNotAllowedFunc http.HandlerFunc,
 ) *RouterAdapter {
 	router := httprouter.New()
 
-	// r.GlobalOPTIONS
-	// rt.router.MethodNotAllowed
-	// rt.router.NotFound
+	if handlerNotFoundFunc != nil {
+		router.NotFound = handlerNotFoundFunc
+	}
+
+	if handlerMethodNotAllowedFunc != nil {
+		router.MethodNotAllowed = handlerMethodNotAllowedFunc
+	}
 
 	return &RouterAdapter{
 		router:             router,

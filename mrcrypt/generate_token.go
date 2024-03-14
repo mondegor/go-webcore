@@ -51,9 +51,7 @@ func genToken(length int) []byte {
 
 	value := make([]byte, length)
 
-	_, err := rand.Read(value)
-
-	if err != nil {
+	if _, err := rand.Read(value); err != nil {
 		log.Print(err)
 		return []byte{}
 	}
