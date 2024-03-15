@@ -19,7 +19,7 @@ func ParseRangeInt64(r *http.Request, key string) (mrtype.RangeInt64, error) {
 		return mrtype.RangeInt64{}, err
 	}
 
-	if minValue > maxValue { // change
+	if maxValue > 0 && minValue > maxValue { // change
 		return mrtype.RangeInt64{
 			Min: maxValue,
 			Max: minValue,
