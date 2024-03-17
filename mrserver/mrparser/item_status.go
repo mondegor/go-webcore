@@ -11,6 +11,7 @@ import (
 
 type (
 	ItemStatus struct {
+		defaultItems []mrenum.ItemStatus
 	}
 )
 
@@ -21,20 +22,39 @@ func NewItemStatus() *ItemStatus {
 	return &ItemStatus{}
 }
 
+func NewItemStatusWithDefault(items []mrenum.ItemStatus) *ItemStatus {
+	return &ItemStatus{
+		defaultItems: items,
+	}
+}
+
 func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.ItemStatus {
-	items, err := mrreq.ParseItemStatusList(
-		r,
-		key,
-		[]mrenum.ItemStatus{
-			// :TODO: добавить значение по умолчнию в настройки
-			mrenum.ItemStatusEnabled,
-		},
-	)
+	items, err := p.parseList(r, key)
 
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
-		return []mrenum.ItemStatus{}
+		return p.defaultItems
+	}
+
+	if len(items) == 0 {
+		return p.defaultItems
 	}
 
 	return items
+}
+
+func (p *ItemStatus) parseList(r *http.Request, key string) ([]mrenum.ItemStatus, error) {
+	enumList, err := mrreq.ParseEnumList(r, key)
+
+	if err != nil {
+		return []mrenum.ItemStatus{}, err
+	}
+
+	items, err := mrenum.ParseItemStatusList(enumList)
+
+	if err != nil {
+		return []mrenum.ItemStatus{}, err
+	}
+
+	return items, nil
 }
