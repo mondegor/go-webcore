@@ -75,7 +75,7 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 
 	status, appError := rs.overrideFunc(appError)
 
-	if appError.Kind() != mrerr.ErrorKindUser {
+	if appError.HasCallStack() {
 		mrlog.Ctx(r.Context()).Error().Err(appError).Send()
 	}
 
@@ -102,7 +102,7 @@ func (rs *ErrorSender) sendStructResponse(
 		bytes = []byte{}
 		mrlog.Ctx(ctx).
 			Error().
-			Err(mrcore.FactoryErrHttpResponseParseData.Caller(1).Wrap(err)).
+			Err(mrcore.FactoryErrHttpResponseParseData.Wrap(err)).
 			Send()
 	}
 
@@ -134,10 +134,11 @@ func (rs *ErrorSender) getErrorListResponse(ctx context.Context, errors ...*mrer
 func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.AppError) ErrorDetailsResponse {
 	errMessage := appError.Translate(mrlang.Ctx(r.Context()))
 	response := ErrorDetailsResponse{
-		Title:   errMessage.Reason,
-		Details: errMessage.DetailsToString(),
-		Request: r.URL.Path,
-		Time:    time.Now().UTC().Format(time.RFC3339),
+		Title:        errMessage.Reason,
+		Details:      errMessage.DetailsToString(),
+		Request:      r.URL.Path,
+		Time:         time.Now().UTC().Format(time.RFC3339),
+		ErrorTraceID: appError.TraceID(),
 	}
 
 	if mrdebug.IsDebug() {
@@ -146,10 +147,6 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.
 		}
 
 		response.Details += "DebugInfo: " + rs.debugInfo(appError)
-	}
-
-	if appError.Kind() != mrerr.ErrorKindUser {
-		response.ErrorTraceID = appError.TraceID()
 	}
 
 	return response

@@ -3,27 +3,27 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrInternal = NewFactory(
+	FactoryErrInternal = NewFactoryWithCaller(
 		ErrorCodeInternal, ErrorKindInternal, "internal server error")
 
 	FactoryErrInternalNotice = NewFactory(
-		ErrorCodeInternal, ErrorKindInternalNotice, "internal server error")
+		ErrorCodeInternal, ErrorKindInternal, "internal server error")
 
-	FactoryErrInternalNilPointer = NewFactory(
+	FactoryErrInternalNilPointer = NewFactoryWithCaller(
 		"errInternalNilPointer", ErrorKindInternal, "nil pointer")
 
-	FactoryErrInternalTypeAssertion = NewFactory(
+	FactoryErrInternalTypeAssertion = NewFactoryWithCaller(
 		"errInternalTypeAssertion", ErrorKindInternal, "invalid type '{{ .type }}' assertion (value: {{ .value }})")
 
-	FactoryErrInternalInvalidType = NewFactory(
+	FactoryErrInternalInvalidType = NewFactoryWithCaller(
 		"errInternalInvalidType", ErrorKindInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
 
-	FactoryErrInternalFailedToOpen = NewFactory(
+	FactoryErrInternalFailedToOpen = NewFactoryWithCaller(
 		"errInternalFailedToOpen", ErrorKindInternal, "failed to open object")
 
-	FactoryErrInternalFailedToClose = NewFactory(
+	FactoryErrInternalFailedToClose = NewFactoryWithCaller(
 		"errInternalFailedToClose", ErrorKindInternal, "failed to close object")
 
 	FactoryErrWithData = NewFactory(
-		"errWithData", ErrorKindInternalNotice, "{{ .key }}={{ .data }}")
+		"errWithData", ErrorKindInternal, "{{ .key }}={{ .data }}")
 )

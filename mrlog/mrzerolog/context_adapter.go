@@ -22,7 +22,13 @@ func (c *ContextAdapter) Logger() mrlog.Logger {
 }
 
 func (c *ContextAdapter) CallerWithSkipFrame(count int) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.CallerWithSkipFrameCount(count + 1), opts: c.opts}
+	return &ContextAdapter{
+		zc: c.zc.CallerWithSkipFrameCount(count + 3), // +2 zerolog infra
+		opts: loggerOptions{
+			level: c.opts.level,
+			// set isAutoCallerOnFunc = nil
+		},
+	}
 }
 
 func (c *ContextAdapter) Str(key, value string) mrlog.LoggerContext {

@@ -21,7 +21,7 @@ func (e *EventAdapter) Caller(skip ...int) mrlog.LoggerEvent {
 	}
 
 	if len(skip) > 0 {
-		skip[0]++
+		skip[0]++ // skip: Caller()
 	}
 
 	ev := e.newEventAdapter(e.ze.Caller(skip...))
@@ -127,7 +127,7 @@ func (e *EventAdapter) newEventAdapter(ze *zerolog.Event) *EventAdapter {
 
 func (e *EventAdapter) prepareEvent() *zerolog.Event {
 	if e.isAutoCallerAllowed {
-		return e.ze.Caller(2)
+		return e.ze.Caller(2) // skip: prepareEvent() + parent function
 	}
 
 	return e.ze

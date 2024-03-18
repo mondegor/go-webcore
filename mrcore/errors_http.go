@@ -3,13 +3,13 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrHttpResponseParseData = NewFactory(
+	FactoryErrHttpResponseParseData = NewFactoryWithCaller(
 		"errHttpResponseParseData", ErrorKindInternal, "response data is not valid")
 
 	FactoryErrHttpFileUpload = NewFactory(
 		"errHttpFileUpload", ErrorKindUser, "the file with the specified key '{{ .key }}' was not uploaded")
 
-	FactoryErrHttpMultipartFormFile = NewFactory(
+	FactoryErrHttpMultipartFormFile = NewFactoryWithCaller(
 		"errHttpMultipartFormFile", ErrorKindSystem, "the file with the specified key '{{ .key }}' cannot be processed")
 
 	FactoryErrHttpClientUnauthorized = NewFactory(

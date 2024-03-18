@@ -35,7 +35,7 @@ func WithMiddlewareCheckAccess(
 
 		for j := range handlers {
 			if !access.HasPermission(handlers[j].Permission) {
-				mrlog.Ctx(ctx).Warn().Msgf(
+				mrlog.Ctx(ctx).Warn().Caller(1).Msgf(
 					"Permission '%s' is not registered for handler '%s %s', perhaps, it is not registered in the config or is not associated with any role",
 					handlers[j].Permission,
 					handlers[j].Method,

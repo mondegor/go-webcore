@@ -10,12 +10,12 @@ import (
 
 func GenDigitCode(length int) string {
 	if length < 1 {
-		mrlog.Default().Warn().Caller().Msgf("param 'length': %d < 1", length)
+		mrlog.Default().Warn().Caller(1).Msgf("param 'length': %d < 1", length)
 		length = 1
 	}
 
 	if length > 19 {
-		mrlog.Default().Warn().Caller().Msgf("param 'length': %d > 19", length)
+		mrlog.Default().Warn().Caller(1).Msgf("param 'length': %d > 19", length)
 		length = 19
 	}
 

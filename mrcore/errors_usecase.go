@@ -3,14 +3,14 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrUseCaseOperationFailed = NewFactory(
+	FactoryErrUseCaseOperationFailed = NewFactoryWithCaller(
 		"errUseCaseOperationFailed", ErrorKindInternal, "operation failed")
 
-	FactoryErrUseCaseTemporarilyUnavailable = NewFactory(
+	FactoryErrUseCaseTemporarilyUnavailable = NewFactoryWithCaller(
 		"errUseCaseTemporarilyUnavailable", ErrorKindSystem, "system is temporarily unavailable")
 
 	FactoryErrUseCaseIncorrectInputData = NewFactory(
-		"errUseCaseIncorrectInputData", ErrorKindInternalNotice, "{{ .key }}={{ .data }} is incorrect")
+		"errUseCaseIncorrectInputData", ErrorKindInternal, "{{ .key }}={{ .data }} is incorrect")
 
 	FactoryErrUseCaseEntityNotFound = NewFactory(
 		"errUseCaseEntityNotFound", ErrorKindUser, "entity not found")

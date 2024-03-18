@@ -2,23 +2,23 @@ package mrcore
 
 type (
 	UsecaseHelper struct {
-		callerSkip int
+		callerSkipFrame int
 	}
 )
 
 func NewUsecaseHelper() *UsecaseHelper {
 	return &UsecaseHelper{
-		callerSkip: 2, // skip: wrapErrorFailed and parent function
+		callerSkipFrame: 2, // skip: wrapErrorFailed() + parent function
 	}
 }
 
-func (h *UsecaseHelper) Caller(skip int) *UsecaseHelper {
-	if skip == 0 {
+func (h *UsecaseHelper) Caller(skipFrame int) *UsecaseHelper {
+	if skipFrame == 0 {
 		return h
 	}
 
 	c := *h
-	c.callerSkip += skip
+	c.callerSkipFrame += skipFrame
 
 	return &c
 }
@@ -45,9 +45,11 @@ func (h *UsecaseHelper) WrapErrorEntityNotFoundOrFailed(err error, entityName st
 }
 
 func (h *UsecaseHelper) wrapErrorFailed(err error, name string, data any) error {
+	factory := FactoryErrUseCaseTemporarilyUnavailable
+
 	if FactoryErrStorageQueryFailed.Is(err) {
-		return FactoryErrUseCaseOperationFailed.WithAttr(name, data).Wrap(err)
+		factory = FactoryErrUseCaseOperationFailed
 	}
 
-	return FactoryErrUseCaseTemporarilyUnavailable.WithAttr(name, data).Caller(h.callerSkip).Wrap(err)
+	return factory.WithAttr(name, data).WithCaller(h.callerSkipFrame).Wrap(err)
 }

@@ -20,12 +20,12 @@ func GenTokenHex(length int) string {
 
 func GenTokenHexWithDelimiter(length, repeat int) string {
 	if repeat < 1 {
-		mrlog.Default().Warn().Caller().Msgf("param 'repeat': %d < 1", repeat)
+		mrlog.Default().Warn().Caller(1).Msgf("param 'repeat': %d < 1", repeat)
 		repeat = 1
 	}
 
 	if repeat > 16 {
-		mrlog.Default().Warn().Caller().Msgf("param 'repeat': %d > 16", repeat)
+		mrlog.Default().Warn().Caller(1).Msgf("param 'repeat': %d > 16", repeat)
 		repeat = 16
 	}
 
@@ -40,12 +40,12 @@ func GenTokenHexWithDelimiter(length, repeat int) string {
 
 func genToken(length int) []byte {
 	if length < 1 {
-		mrlog.Default().Warn().Caller(1).Msgf("param 'length': %d < 1", length)
+		mrlog.Default().Warn().Caller(2).Msgf("param 'length': %d < 1", length)
 		length = 1
 	}
 
 	if length > 256 {
-		mrlog.Default().Warn().Caller(1).Msgf("param 'length': %d > 256", length)
+		mrlog.Default().Warn().Caller(2).Msgf("param 'length': %d > 256", length)
 		length = 256
 	}
 
