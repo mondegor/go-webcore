@@ -7,6 +7,7 @@ import (
 var (
 	regexpAnyNotSpaceSymbol = regexp.MustCompile(`^\S+$`)
 	regexpArticle           = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9_.+-]*[a-zA-Z0-9]$`)
+	regexpRewriteName       = regexp.MustCompile(`^[a-z][a-z0-9-]*[a-z0-9]$`)
 	regexpVariable          = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]+$`)
 )
 
@@ -16,6 +17,10 @@ func ValidateAnyNotSpaceSymbol(value string) bool {
 
 func ValidateArticle(value string) bool {
 	return regexpArticle.MatchString(value)
+}
+
+func ValidateRewriteName(value string) bool {
+	return regexpRewriteName.MatchString(value)
 }
 
 func ValidateVariable(value string) bool {

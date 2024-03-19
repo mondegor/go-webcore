@@ -2,13 +2,17 @@
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
 ## 2024-03-18
+### Added
+- Добавлена функция `ValidateRewriteName`;
+
 ### Changed
 - Внедрена новая версия библиотеки `go-sysmess`, в связи с этим:
-  - всем ошибкам с типами `ErrorKindInternal` и `ErrorKindSystem` конструктор заменён на `NewFactoryWithCaller()`;
-  - константа `ErrorKindInternalNotice` переименована в `ErrorKindInternal`;
-  - централизовано логируются ошибки, у которых `appError.HasCallStack() == true`;
+    - всем ошибкам с типами `ErrorKindInternal` и `ErrorKindSystem` конструктор заменён на `NewFactoryWithCaller()`;
+    - константа `ErrorKindInternalNotice` переименована в `ErrorKindInternal`;
+    - централизовано логируются ошибки, у которых `appError.HasCallStack() == true`;
 - В `mrzerolog.CallerWithSkipFrame` добавлена логика отключающая автоматический вызов `CallStack()`;
 - Поправлены `skipFrame` в некоторых вызовах `Caller()`;
+- Поправлено форматирование документации;
 
 ## 2024-03-17
 ### Changed
@@ -45,20 +49,20 @@
 
 ### Changed
 - Рефакторинг:
-    - переименование `FactoryErrService*` -> `FactoryErrUseCase*`, `errService*` -> `errUseCase*`;
-    - переименование интерфейсов `*Service` -> `*UseCase`;
-    - переименование `X-Correlation-ID` -> `X-Correlation-Id`;
+    - переименование `FactoryErrService* -> FactoryErrUseCase*`, `errService* -> errUseCase*`;
+    - переименование интерфейсов `*Service -> *UseCase`;
+    - переименование `X-Correlation-ID -> X-Correlation-Id`;
     - переименовано (`lastModified`, `ModifiedAt`) -> `UpdatedAt`;
 - Настройки `PageSizeMax` и `PageSizeDefault` вынесены в общие настройки модулей `ModulesSettings.General`;
 - Парсер `SortPage` разделён на два: `ListSorter`, `ListPager`;
-- `mrparser.FormFileContents` -> `mrparser.FormFiles`, теперь возвращается список загруженных файлов без их открытия;
+- `mrparser.FormFileContents -> mrparser.FormFiles`, теперь возвращается список загруженных файлов без их открытия;
 - В `FileResponseSender` изменился интерфейс методов `SendFile` и `SendAttachmentFile`;
 - Переработан механизм загрузки файлов;
 - Изменился интерфейс `mrserver.RequestDecoder`, `*http.Request` заменён `content io.Reader` и добавлен контекст;
 - `mrserver.NewStatResponseWriter` вынесен в отдельный файл;
 - Доработан адаптер `mrzerolog.LoggerAdapter`, добавлена поддержка `Auto Caller`;
 - В `mrzerolog.Caller` поправлен skip параметр;
-- `Error().Caller().Err(err)` -> `Error().Err(err)`;
+- `Error().Caller().Err(err) -> Error().Err(err)`;
 
 ### Fixed
 - При обработке файлов исправлено `WrapImageError` на `WrapFileError`;
@@ -86,9 +90,9 @@
 - Из `mrcore` перенесены и доработаны интерфейсы связанные с разрешениями в `mrperms`;
 - Переработан `ServerAdapter` добавлен `PrepareToStart` для более гибкого управления его запуском и остановкой;
 - Переименовано:
-  - `mrserver.HandlerAdapter` -> `NewMiddlewareHttpHandlerAdapter`;
-  - `mrcore.Debug` -> `mrcore.IsDebug`;
-  - `ServiceHelper` -> `UsecaseHelper` (для устранения неоднозначности слова `Service`);
+    - `mrserver.HandlerAdapter -> NewMiddlewareHttpHandlerAdapter`;
+    - `mrcore.Debug -> mrcore.IsDebug`;
+    - `ServiceHelper -> UsecaseHelper` (для устранения неоднозначности слова `Service`);
 
 ## 2024-01-25
 ### Added
@@ -99,18 +103,18 @@
 - Разработаны парсеры для получения файлов и изображений из `multipart` формы.
   Они реализуют следующие интерфейсы `mrserver.RequestParserFile`, `mrserver.RequestParserImage`.
   Также для них были добавлены:
-  - функция `mrreq.FormFile()` для извлечения файла из `multipart` формы;
-  - типы `mrtype.Image`,`mrtype.ImageContent` подобные `mrtype.File`;
-  - функции для работы с изображениями: `mrlib.DecodeImageConfig()`, `mrlib.CheckImage()`, `DecodeImage()`;
-  - новые типы пользовательских ошибок `FactoryErrHttpRequestFile*`, `FactoryErrHttpRequestImage*`;
+    - функция `mrreq.FormFile()` для извлечения файла из `multipart` формы;
+    - типы `mrtype.Image`,`mrtype.ImageContent` подобные `mrtype.File`;
+    - функции для работы с изображениями: `mrlib.DecodeImageConfig()`, `mrlib.CheckImage()`, `DecodeImage()`;
+    - новые типы пользовательских ошибок `FactoryErrHttpRequestFile*`, `FactoryErrHttpRequestImage*`;
 
 ### Changed
-- Переименовано `ErrorAttributeNameByDefault` -> `ErrorAttributeIDByDefault`;
+- Переименовано `ErrorAttributeNameByDefault -> ErrorAttributeIDByDefault`;
 - Интерфейс `mrserver.RequestParser` и его реализации были разложены на следующие интерфейсы:
-  - `mrserver.RequestParserString`;
-  - `mrserver.RequestParserInt64`;
-  - `mrserver.RequestParserBool`;
-  - `mrserver.RequestParserDateTime`;
+    - `mrserver.RequestParserString`;
+    - `mrserver.RequestParserInt64`;
+    - `mrserver.RequestParserBool`;
+    - `mrserver.RequestParserDateTime`;
 
 ### Removed
 - `mrserver.RequestParserPath` удалён вместо него используется `mrserver.RequestParserParamFunc`;
@@ -121,37 +125,37 @@
 
 ### Changed
 - Расформирован объект `ClientContext` и его одноименный интерфейс, в результате:
-  - Изменена сигнатура обработчиков с `func(c mrcore.ClientContext)` на `func(w http.ResponseWriter, r *http.Request) error`;
-  - С помощью интерфейсов `RequestDecoder`, `ResponseEncoder` можно задавать различные форматы
-    принимаемых и отправляемых данных (сейчас реализован только формат `JSON`);
-  - Запросы обрабатываются встраиваемыми в обработчики объектов `mrparser.*` через интерфейсы:
-    `mrserver.RequestParserPath`, `RequestParser`, `RequestParserItemStatus`, `RequestParserKeyInt32`,
-    `RequestParserSortPage`, `RequestParserUUID`, `RequestParserValidate`;
-  - Ответы отправляются встраиваемыми в обработчики объекты `mrresponse.*` через интерфейсы:
-    `mrserver.ResponseSender`, `FileResponseSender`, `ErrorResponseSender`;
-  - Вместо метода `Validate(structRequest any)` используется объект `mrparser.Validator`;
+    - изменена сигнатура обработчиков с `func(c mrcore.ClientContext)` на `func(w http.ResponseWriter, r *http.Request) error`;
+    - с помощью интерфейсов `RequestDecoder`, `ResponseEncoder` можно задавать различные форматы
+      принимаемых и отправляемых данных (сейчас реализован только формат `JSON`);
+    - запросы обрабатываются встраиваемыми в обработчики объектов `mrparser.*` через интерфейсы:
+      `mrserver.RequestParserPath`, `RequestParser`, `RequestParserItemStatus`, `RequestParserKeyInt32`,
+      `RequestParserSortPage`, `RequestParserUUID`, `RequestParserValidate`;
+    - ответы отправляются встраиваемыми в обработчики объекты `mrresponse.*` через интерфейсы:
+      `mrserver.ResponseSender`, `FileResponseSender`, `ErrorResponseSender`;
+    - вместо метода `Validate(structRequest any)` используется объект `mrparser.Validator`;
 - Произведены следующие замены:
-  - `HttpController.AddHandlers` -> `Handlers() []HttpHandler`.
-    Убрана зависимость контроллера от роутера и секции.
-    Для установки стандартных разрешений добавлены следующие методы
-    `mrfactory.WithPermission`, `mrfactory.WithMiddlewareCheckAccess`; 
-  - `ModulesAccess` -> `AccessControl` и добавлен интерфейс `mrcore.AccessControl`;
-  - `AccessObject` -> `AccessRights`;
-  - `ClientSection` -> AppSection удалена зависимость от `AccessControl`;
-  - `DefaultWrapErrorFunc` -> `DefaultHttpErrorOverrideFunc`;
-  - `IsAuthorized` -> `IsGuestAccess` (с инверсией флага);
+    - `HttpController.AddHandlers -> Handlers() []HttpHandler`.
+      Убрана зависимость контроллера от роутера и секции.
+      Для установки стандартных разрешений добавлены следующие методы
+      `mrfactory.WithPermission`, `mrfactory.WithMiddlewareCheckAccess`; 
+    - `ModulesAccess -> AccessControl` и добавлен интерфейс `mrcore.AccessControl`;
+    - `AccessObject -> AccessRights`;
+    - `ClientSection` -> AppSection удалена зависимость от `AccessControl`;
+    - `DefaultWrapErrorFunc -> DefaultHttpErrorOverrideFunc`;
+    - `IsAuthorized -> IsGuestAccess` (с инверсией флага);
 - Перенесены следующие библиотеки:
-  - `rs/cors` -> `mrserver/mrrscors`;
-  - `julienschmidt/httprouter` -> `mrserver/mrjulienrouter`;
-  - `go-playground/validator` -> `mrview/mrplayvalidator`;
-  - `mrreq` -> `mrserver/mrreq`;
+    - `rs/cors -> mrserver/mrrscors`;
+    - `julienschmidt/httprouter -> mrserver/mrjulienrouter`;
+    - `go-playground/validator -> mrview/mrplayvalidator`;
+    - `mrreq -> mrserver/mrreq`;
 - Загрузка ролей (`loadRoleConfig`) происходит через библиотеку `yaml`, удалена зависимость от `ilyakaznacheev/cleanenv`;
 - Расформирован объект `ClientContext` и его одноименный интерфейс, в результате;
 - При внедрении новой версии библиотеки `go-sysmess` было заменено:
-  - `ErrorInternalID` -> `ErrorCodeInternal`;
-  - `mrerr.FieldError` -> `CustomError`;
-  - `mrerr.FieldErrorList` -> `CustomErrorList`;
-  - `FactoryErrInternalWithData` было удалено, вместо неё используется `FactoryErrInternal.WithAttr(...)`;
+    - `ErrorInternalID -> ErrorCodeInternal`;
+    - `mrerr.FieldError -> CustomError`;
+    - `mrerr.FieldErrorList -> CustomErrorList`;
+    - `FactoryErrInternalWithData` было удалено, вместо неё используется `FactoryErrInternal.WithAttr(...)`;
 
 ### Removed
 - Удалёно `FactoryErrHttpResponseSendData`;
@@ -178,8 +182,8 @@
 ### Changed
 - Тип `mrtype.NullableBool` заменён на `*bool`;
 - Переименовано:
-  - `mrlib.MimeTypeByExt` -> `MimeTypeByFile`;
-  - `ServiceHelper.IsNotFound` -> `IsNotFoundError`;
+    - `mrlib.MimeTypeByExt -> MimeTypeByFile`;
+    - `ServiceHelper.IsNotFound -> IsNotFoundError`;
 - Доработки для поддержки `mrerr.CallerOptions`;
 
 ### Removed
@@ -228,8 +232,8 @@
 - Удалён параметр из `mrcore.FactoryErrServiceTemporarilyUnavailable`;
 - Теперь поле `ErrorDetailsResponse.ErrorTraceID` отображается пользователю только тогда, когда связанное
   с ней ошибка записывается в лог;
-- Переименован метод `mrcore.ClientErrorWrapperFunc` -> `mrcore.ClientWrapErrorFunc`;
-- Переименован метод `mrcore.FactoryErrServiceEntitySwitchStatusImpossible` -> `FactoryErrServiceSwitchStatusRejected`,
+- Переименован метод `mrcore.ClientErrorWrapperFunc -> mrcore.ClientWrapErrorFunc`;
+- Переименован метод `mrcore.FactoryErrServiceEntitySwitchStatusImpossible -> FactoryErrServiceSwitchStatusRejected`,
   а также изменено в нём кол-во параметров;
 - переработан `mrtool.ServiceHelper`:
     - добавлен метод `IsNotFound` - для определения, что указанная ошибка связана с тем, что запись не найдена;
@@ -269,13 +273,13 @@
 - Переработан механизм отправки ответа в sendErrorResponse в ClientContext;
 - Доработан механизм обработки ошибок, в результате:
     - обновлены и переименованы следующие сущности:
-        - `mrserver.AppErrorListResponse` -> `ErrorListResponse`;
-        - `mrserver.AppErrorAttribute` -> `ErrorAttribute`;
-        - `mrserver.AppErrorAttributeNameSystem` -> `ErrorAttributeNameByDefault`;
-        - `mrcore.FactoryErrServiceEntityNotUpdated` -> `FactoryErrServiceEntityNotStored`;
-        - `mrcore.FactoryErrServiceIncorrectSwitchStatus` -> `FactoryErrServiceEntitySwitchStatusImpossible`,
+        - `mrserver.AppErrorListResponse -> ErrorListResponse`;
+        - `mrserver.AppErrorAttribute -> ErrorAttribute`;
+        - `mrserver.AppErrorAttributeNameSystem -> ErrorAttributeNameByDefault`;
+        - `mrcore.FactoryErrServiceEntityNotUpdated -> FactoryErrServiceEntityNotStored`;
+        - `mrcore.FactoryErrServiceIncorrectSwitchStatus -> FactoryErrServiceEntitySwitchStatusImpossible`,
           также изменился порядок и кол-во параметров;
-        - `mrcore.FactoryErrInternalNoticeDataContainer` -> `FactoryErrStorageQueryDataContainer`
+        - `mrcore.FactoryErrInternalNoticeDataContainer -> FactoryErrStorageQueryDataContainer`
           (и перенесён в `errors_storage.go`);
         - `mrcore.FactoryErrInternalParseData` удалён;
         - `mrcore.FactoryErrServiceEntityVersionIsIncorrect` удалён, вместо него следует
@@ -287,12 +291,12 @@
     - переработан `mrtool.ServiceHelper`, в котором:
         - добавлен метод `WrapErrorEntityInsert`;
         - обновлены и переименованы следующие методы:
-            - `WrapErrorForSelect` -> `WrapErrorEntityFetch` + добавлен параметр `entityData`;
-            - `WrapErrorForUpdate` -> `WrapErrorEntityUpdate` + добавлен параметр `entityData`;
-            - `WrapErrorForRemove` -> `WrapErrorEntityDelete` + добавлен параметр `entityData`;
+            - `WrapErrorForSelect -> WrapErrorEntityFetch` + добавлен параметр `entityData`;
+            - `WrapErrorForUpdate -> WrapErrorEntityUpdate` + добавлен параметр `entityData`;
+            - `WrapErrorForRemove -> WrapErrorEntityDelete` + добавлен параметр `entityData`;
             - `ReturnErrorIfItemNotFound` удалён, вместо него следует использовать `WrapErrorEntityFetch`;
     - изменено формирование идентификаторов валидаторов, которые проверяют пользовательские поля:
-        - `errValidation{Name}` -> `validator_err_{name}` (пример: `errValidationGte` -> `validator_err_gte`);
+        - `errValidation{Name} -> validator_err_{name}` (пример: `errValidationGte -> validator_err_gte`);
         - новые идентификаторы также участвуют для описания пользовательских ошибок (в yaml файлах на разных языках);
 - В `mrserver.corsAdapter` вместо передачи параметра `Debug` теперь передаётся `Logger` системы,
   и в зависимости от его настроек решается, включать `Debug` режим или нет;
@@ -325,11 +329,11 @@
 ### Changed
 - Доработан `NewBuilderPath`, добавлена возможность указания собственного названия плейсхолдера для части пути;
 - Переименовано:
-    - `mrcore.ClientData` -> `mrcore.ClientContext`;
-    - `ClientContext::ParseAndValidate` -> `ClientContext::Validate` (удалён `ClientContext::Parse`);
-    - `mrcore.Log()` -> `mrcore.DefaultLogger()`;
-    - `ModulesAccess::DefaultRole` -> `GuestRole`;
-- Объединено: `MiddlewareFirst` + `MiddlewareAcceptLanguage` -> `MiddlewareFirst`, выделен объект `ClientTools`;
+    - `mrcore.ClientData -> mrcore.ClientContext`;
+    - `ClientContext::ParseAndValidate -> ClientContext::Validate` (удалён `ClientContext::Parse`);
+    - `mrcore.Log() -> mrcore.DefaultLogger()`;
+    - `ModulesAccess::DefaultRole -> GuestRole`;
+- Объединено: `MiddlewareFirst` + `MiddlewareAcceptLanguage -> MiddlewareFirst`, выделен объект `ClientTools`;
 - В `ServiceHelper` доработаны `WrapErrorForUpdate` и `WrapErrorForRemove`, добавлен метод `WrapErrorForUpdateWithVersion`;
 - Удалён интерфейс `RequestPath`, теперь значение из пути можно получать методом `ClientContext::ParamFromPath`;
 - В `clientContext` преобразована функция преобразования ошибок `wrapErrorFunc` во внешнюю функцию,
@@ -359,9 +363,9 @@
 - В логгере изменён `callerSkip` с 3 на 4, для того чтобы в логах выводить путь
   к родительской функции, откуда этот лог был вызван;
 - Переименованы некоторые переменные и функции (типа Id -> ID) в соответствии с code style языка go;
-- Переименовано: `mrcore.DefaultLogger()` -> `mrcore.Log()`
+- Переименовано: `mrcore.DefaultLogger() -> mrcore.Log()`
 - Часть простых типов переехала из библиотеки `mrstorage` пакета `mrentity` в пакет `mrtype` ядра;
-- В `RequestPath` переименован метод `GetInt` -> `GetInt64`;
+- В `RequestPath` переименован метод `GetInt -> GetInt64`;
 - Удалены зависимости пакета `mrenum` от пакета `mrcore`;
 - Доработана отправка файла, добавлены заголовки `Content-Length`, `Content-Disposition`;
 - Обновлены зависимости библиотеки;
@@ -379,12 +383,12 @@
 - Добавлен пакет `mrperms` для работы с пользовательскими разрешениями и привилегиями.
   Основные сущности: `ClientSection`, `ModulesAccess`, `RoleGroup`;
 - Переименованы следующие функции:
-    - `mrcore.FactoryErrHttpRequestParamLen` -> `mrcore.FactoryErrHttpRequestParamLenMax`;
-    - `mrreq.CorrelationId` -> `ParseCorrelationId`;
-    - `mrreq.Enum` -> `ParseEnum`;
-    - `mrreq.EnumList` -> `ParseEnumList`;
-    - `mrreq.Int64` -> `ParseInt64`;
-    - `mrreq.Int64List` -> `ParseInt64List`;
+    - `mrcore.FactoryErrHttpRequestParamLen -> mrcore.FactoryErrHttpRequestParamLenMax`;
+    - `mrreq.CorrelationId -> ParseCorrelationId`;
+    - `mrreq.Enum -> ParseEnum`;
+    - `mrreq.EnumList -> ParseEnumList`;
+    - `mrreq.Int64 -> ParseInt64`;
+    - `mrreq.Int64List -> ParseInt64List`;
 - Перенесен `mrenum.ItemStatus` из библиотеки `go-components`;
 
 ### Removed
@@ -404,7 +408,7 @@
 - Добавлен парсинг `mrreq.Int64`;
 
 ### Changed
-- Переименовано `FactoryErrServiceEntityTemporarilyUnavailable` -> `FactoryErrServiceTemporarilyUnavailable`;
+- Переименовано `FactoryErrServiceEntityTemporarilyUnavailable -> FactoryErrServiceTemporarilyUnavailable`;
 - Заменены tabs на пробелы в коде;
 - При парсинге `mrreq.Enum`, если он пустой, возвращается ошибка;
 
@@ -441,15 +445,15 @@
 - Обновлены списки часто используемых ошибок, некоторые названия ошибок переименованы;
 
 ### Fixed
-- Исправлен баг: package `mrenv` -> `package mrctx`
+- Исправлен баг: package `mrenv -> package mrctx`
 
 ## 2023-09-11
 ### Added
 - Добавлены парсеры данных поступающих из запросов (`enum`, `list` и т.д.);
 
 ### Changed
-- `ExtractLogger` -> `LoggerFromContext`;
-- `ExtractLocale` -> `LocaleFromContext`;
+- `ExtractLogger -> LoggerFromContext`;
+- `ExtractLocale -> LocaleFromContext`;
 - Изменён интерфейс логгера;
 
 ### Fixed
@@ -464,4 +468,4 @@
 - Подключен валидатор `go-playground/validator` через адаптер;
 
 ### Changed
-- Переименован `logger` -> `loggerAdapter`;
+- Переименован `logger -> loggerAdapter`;

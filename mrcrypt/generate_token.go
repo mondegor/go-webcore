@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
-	"log"
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrlog"
@@ -52,7 +51,7 @@ func genToken(length int) []byte {
 	value := make([]byte, length)
 
 	if _, err := rand.Read(value); err != nil {
-		log.Print(err)
+		mrlog.Default().Error().Caller(2).Err(err).Send()
 		return []byte{}
 	}
 
