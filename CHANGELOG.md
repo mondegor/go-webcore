@@ -1,10 +1,14 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
-## 2024-03-18
+## 2024-03-19
 ### Added
 - Добавлена функция `ValidateRewriteName`;
 
+### Changed
+- Поправлено форматирование документации;
+
+## 2024-03-18
 ### Changed
 - Внедрена новая версия библиотеки `go-sysmess`, в связи с этим:
     - всем ошибкам с типами `ErrorKindInternal` и `ErrorKindSystem` конструктор заменён на `NewFactoryWithCaller()`;
@@ -12,7 +16,6 @@
     - централизовано логируются ошибки, у которых `appError.HasCallStack() == true`;
 - В `mrzerolog.CallerWithSkipFrame` добавлена логика отключающая автоматический вызов `CallStack()`;
 - Поправлены `skipFrame` в некоторых вызовах `Caller()`;
-- Поправлено форматирование документации;
 
 ## 2024-03-17
 ### Changed

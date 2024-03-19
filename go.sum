@@ -28,6 +28,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mondegor/go-sysmess v0.8.1 h1:eDhRJsoVLQQY1wrrW86NB4hHvQ14P/hv9IyQcArQIuc=
 github.com/mondegor/go-sysmess v0.8.1/go.mod h1:vWL2CWe0u20l69vQO1RVqMRtL/k+JnXwh+6AcIksoTo=
+github.com/mondegor/go-sysmess v0.8.2 h1:/wq/r4to1tSm5KKeHYn8dKyw7gyzZdcV5hgs07THy7w=
+github.com/mondegor/go-sysmess v0.8.2/go.mod h1:vWL2CWe0u20l69vQO1RVqMRtL/k+JnXwh+6AcIksoTo=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
