@@ -1,6 +1,15 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-03-20
+### Changed
+- Обновлены вспомогательные функции для перевода значений в указатели,
+  а также добавлен `required` параметр:
+    - `mrtype.BoolPointer -> BoolToPointer`;
+    - `StringPointer -> StringToPointer`;
+    - `TimePointer -> TimeToPointer`;
+    - добавлены: `Int32ToPointer`, `Int64ToPointer`;
+
 ## 2024-03-19
 ### Added
 - Добавлена функция `ValidateRewriteName`;

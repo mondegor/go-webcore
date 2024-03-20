@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrtype"
 )
 
 func ParseRequiredBool(r *http.Request, key string) (bool, error) {
@@ -38,5 +37,5 @@ func ParseNullableBool(r *http.Request, key string) (*bool, error) {
 		return nil, mrcore.FactoryErrHttpRequestParseParam.New(key, "NullableBool", value)
 	}
 
-	return mrtype.BoolPointer(item), nil
+	return &item, nil
 }
