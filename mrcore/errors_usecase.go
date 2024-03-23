@@ -15,6 +15,9 @@ var (
 	FactoryErrUseCaseEntityNotFound = NewFactory(
 		"errUseCaseEntityNotFound", ErrorKindUser, "entity not found")
 
+	FactoryErrUseCaseEntityNotAvailable = NewFactory(
+		"errUseCaseEntityNotAvailable", ErrorKindUser, "entity is not available")
+
 	FactoryErrUseCaseEntityVersionInvalid = NewFactory(
 		"errUseCaseEntityVersionInvalid", ErrorKindUser, "entity version is invalid")
 

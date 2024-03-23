@@ -29,7 +29,7 @@ func (p *KeyInt32) PathKeyInt32(r *http.Request, name string) mrtype.KeyInt32 {
 	value, err := strconv.ParseInt(p.pathFunc(r, name), 10, 32)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+		mrlog.Ctx(r.Context()).Warn().Caller(1).Err(err).Send()
 		return 0
 	}
 

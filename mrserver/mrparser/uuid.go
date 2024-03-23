@@ -29,7 +29,7 @@ func (p *UUID) PathParamUUID(r *http.Request, name string) uuid.UUID {
 	value, err := uuid.Parse(p.pathFunc(r, name))
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+		mrlog.Ctx(r.Context()).Warn().Caller(1).Err(err).Send()
 		return uuid.Nil
 	}
 

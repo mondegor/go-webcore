@@ -1,6 +1,29 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-03-23
+### Added
+- Добавлена ошибка `FactoryErrUseCaseEntityNotAvailable`;
+
+### Changed
+- Рефакторинг сборки компонентов системы (factory):
+    - добавлены `mrfactory.PrepareEachController()`, `mrfactory.PrepareController()`;
+    - стандартизованы `mrfactory.WithPermission()` и `mrfactory.WithMiddlewareCheckAccess()`;
+    - заменены `mrserver.HttpMiddleware`, `HttpMiddlewareFunc`, `HttpHandlerAdapterFunc`
+      на нативные варианты;
+    - удален метод `mrserver.HttpRouter.HttpHandlerFunc()`;
+    - `mrrscors.New() + mrrscors.CorsAdapter.Middleware() -> mrrscors.Middleware()`;
+    - переименован и доработан: ;
+    - стандартизованы:
+        - `NewMiddlewareHandlerAdapter() -> MiddlewareHandlerAdapter()`;
+        - `mrserver.MiddlewareCheckAccess`;
+        - `mrserver.MiddlewareIdempotency`;
+
+### Fixed
+- Поправлена передача correlationID в контекст логгера;
+- Исправлен баг в `mrparser.Int64.PathParamInt64`, `mrreq.ParseInt64` заменён на `strconv.ParseInt`;
+- Исправлен баг в `mrserver.MiddlewareCheckAccess` - проверка доступа к обработчику; 
+
 ## 2024-03-20
 ### Changed
 - Обновлены вспомогательные функции для перевода значений в указатели,

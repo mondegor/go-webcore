@@ -2,6 +2,7 @@ package mrparser
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
@@ -25,10 +26,10 @@ func NewInt64(pathFunc mrserver.RequestParserParamFunc) *Int64 {
 }
 
 func (p *Int64) PathParamInt64(r *http.Request, name string) int64 {
-	value, err := mrreq.ParseInt64(r, p.pathFunc(r, name), false)
+	value, err := strconv.ParseInt(p.pathFunc(r, name), 10, 64)
 
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+		mrlog.Ctx(r.Context()).Warn().Caller(1).Err(err).Send()
 		return 0
 	}
 

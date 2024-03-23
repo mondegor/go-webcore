@@ -10,10 +10,6 @@ import (
 // go get -u github.com/rs/cors
 
 type (
-	CorsAdapter struct {
-		cors *cors.Cors
-	}
-
 	Options struct {
 		AllowedOrigins   []string
 		AllowedMethods   []string
@@ -24,7 +20,7 @@ type (
 	}
 )
 
-func New(opts Options) *CorsAdapter {
+func Middleware(opts Options) func(next http.Handler) http.Handler {
 	options := cors.Options{
 		AllowedOrigins:   opts.AllowedOrigins,
 		AllowedMethods:   opts.AllowedMethods,
@@ -51,11 +47,9 @@ func New(opts Options) *CorsAdapter {
 		)
 	}
 
-	return &CorsAdapter{
-		cors: cors.New(options),
-	}
-}
+	cors := cors.New(options)
 
-func (c *CorsAdapter) Middleware(next http.Handler) http.Handler {
-	return c.cors.Handler(next)
+	return func(next http.Handler) http.Handler {
+		return cors.Handler(next)
+	}
 }
