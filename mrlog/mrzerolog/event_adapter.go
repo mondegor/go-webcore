@@ -11,6 +11,7 @@ type (
 	EventAdapter struct {
 		ze                  *zerolog.Event
 		isAutoCallerAllowed bool
+		isAutoCallerEnabled bool
 		isAutoCallerOnFunc  func(err error) bool
 	}
 )
@@ -45,10 +46,8 @@ func (e *EventAdapter) Err(err error) mrlog.LoggerEvent {
 
 	ev := e.newEventAdapter(e.ze.Err(err))
 
-	if ev.isAutoCallerAllowed {
-		if e.isAutoCallerOnFunc == nil || !e.isAutoCallerOnFunc(err) {
-			ev.isAutoCallerAllowed = false
-		}
+	if e.isAutoCallerAllowed {
+		ev.isAutoCallerEnabled = e.isAutoCallerOnFunc != nil && e.isAutoCallerOnFunc(err)
 	}
 
 	return ev
@@ -126,7 +125,7 @@ func (e *EventAdapter) newEventAdapter(ze *zerolog.Event) *EventAdapter {
 }
 
 func (e *EventAdapter) prepareEvent() *zerolog.Event {
-	if e.isAutoCallerAllowed {
+	if e.isAutoCallerAllowed && e.isAutoCallerEnabled {
 		return e.ze.Caller(2) // skip: prepareEvent() + parent function
 	}
 

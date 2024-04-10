@@ -1,7 +1,10 @@
 package mrserver
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -17,7 +20,10 @@ import (
 
 // go get -u github.com/rs/xid
 
-func MiddlewareGeneral(tr *mrlang.Translator) func(next http.Handler) http.Handler {
+func MiddlewareGeneral(
+	tr *mrlang.Translator,
+	statFunc func(l mrlog.Logger, start time.Time, sr *StatRequest, sw *StatResponseWriter),
+) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
@@ -41,22 +47,56 @@ func MiddlewareGeneral(tr *mrlang.Translator) func(next http.Handler) http.Handl
 				Msgf("Accept-Language: %s", strings.Join(acceptLanguages, ", "))
 
 			r = r.WithContext(locale.WithContext(logger.WithContext(r.Context())))
-			srw := NewStatResponseWriter(r.Context(), w)
+
+			sr := NewStatRequest(r)
+			sw := NewStatResponseWriter(
+				w,
+				func(buf []byte) {
+					logger.Trace().Bytes("response", buf).Msg("write response")
+				},
+			)
 
 			defer func() {
-				logger.
-					Trace().
-					Str("method", r.Method).
-					Str("url", r.RequestURI).
-					Str("remoteAddr", r.RemoteAddr).
-					Str("userAgent", r.UserAgent()).
-					Int("status", srw.statusCode).
-					Int("size", srw.bytes).
-					Int("elapsed_μs", int(time.Since(start).Microseconds())).
-					Msg("incoming request")
+				statFunc(logger, start, sr, sw)
 			}()
 
-			next.ServeHTTP(srw, r)
+			next.ServeHTTP(sw, r)
+		})
+	}
+}
+
+func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(next http.Handler) http.Handler {
+	if fatalFunc == nil {
+		fatalFunc = func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusTeapot)
+		}
+	}
+
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				if rvr := recover(); rvr != nil {
+					if rvr == http.ErrAbortHandler {
+						// we don't recover http.ErrAbortHandler so the response
+						// to the client is aborted, this should not be logged
+						panic(rvr)
+					}
+
+					if isDebug {
+						os.Stderr.Write([]byte(fmt.Sprintf("%+v", r)))
+						os.Stderr.Write(debug.Stack())
+					} else {
+						mrlog.Ctx(r.Context()).Error().
+							Str("panic", fmt.Sprintf("%+v", r)).
+							Bytes("CallStack", debug.Stack()).
+							Send()
+					}
+
+					fatalFunc(w, r)
+				}
+			}()
+
+			next.ServeHTTP(w, r)
 		})
 	}
 }

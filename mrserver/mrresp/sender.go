@@ -1,4 +1,4 @@
-package mrresponse
+package mrresp
 
 import (
 	"net/http"
@@ -13,8 +13,10 @@ type (
 	}
 )
 
-// Make sure the Sender conforms with the mrserver.ResponseSender interface
-var _ mrserver.ResponseSender = (*Sender)(nil)
+var (
+	// Make sure the Sender conforms with the mrserver.ResponseSender interface
+	_ mrserver.ResponseSender = (*Sender)(nil)
+)
 
 func NewSender(encoder mrserver.ResponseEncoder) *Sender {
 	return &Sender{

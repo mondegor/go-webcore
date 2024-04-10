@@ -22,8 +22,10 @@ type (
 	}
 )
 
-// Make sure the ListSorter conforms with the mrserver.RequestParserListSorter interface
-var _ mrserver.RequestParserListSorter = (*ListSorter)(nil)
+var (
+	// Make sure the ListSorter conforms with the mrserver.RequestParserListSorter interface
+	_ mrserver.RequestParserListSorter = (*ListSorter)(nil)
+)
 
 func NewListSorter(opts ListSorterOptions) *ListSorter {
 	ls := ListSorter{

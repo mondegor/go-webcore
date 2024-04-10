@@ -1,6 +1,30 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-04-10
+### Added
+- Добавлена поддержка роутера `chi`;
+- Добавлен `MiddlewareRecoverHandler` для того чтобы логировать вызовы panic
+  и возвращать клиенту результат в виде internal ошибки (`mrresp.HandlerGetFatalErrorAsJson`);
+- Добавлена константа `mrserver.VarRestOfURL` для использования её в качестве
+  параметра URL в которую роутер будет сохранять необработанную часть `URL` адреса;
+- Добавлены `mrserver.StatRequest`, `mrresp.HandlerGetStatInfoAsJson` для фиксации и
+  отображения статистики по запросам;
+
+### Changed
+- Приведено форматирование `var` к стандарту библиотеки;
+- Добавлен флаг `mrzerolog.EventAdapter.isAutoCallerEnabled` чтобы `auto caller`
+  срабатывал только при вызове `Err` метода, при этом ошибка не должна содержать свой `CallStack`;
+- Изменён формат параметров в URL для роутера: `/v1/sample/:id -> /v1/sample/{id}`,
+  такого вида параметры совместимы с `chi` роутером, а также их легче привести
+  к виду URL используемым в `julienschmidt`;
+- Переименовано:
+  - `mrresponse` -> `mrresp`;
+  - `mrjulienrouter.PathParam -> mrjulienrouter.URLPathParam`;
+
+### Removed
+- Удалён статус `ItemStatusRemoved`, теперь удаление контролируется через отдельное поле `deleted_at`;
+
 ## 2024-03-23
 ### Added
 - Добавлена ошибка `FactoryErrUseCaseEntityNotAvailable`;

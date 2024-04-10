@@ -16,8 +16,10 @@ type (
 	}
 )
 
-// Make sure the KeyInt32 conforms with the mrserver.RequestParserKeyInt32 interface
-var _ mrserver.RequestParserKeyInt32 = (*KeyInt32)(nil)
+var (
+	// Make sure the KeyInt32 conforms with the mrserver.RequestParserKeyInt32 interface
+	_ mrserver.RequestParserKeyInt32 = (*KeyInt32)(nil)
+)
 
 func NewKeyInt32(pathFunc mrserver.RequestParserParamFunc) *KeyInt32 {
 	return &KeyInt32{

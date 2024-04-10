@@ -11,9 +11,8 @@ const (
 	ItemStatusDraft
 	ItemStatusEnabled
 	ItemStatusDisabled
-	ItemStatusRemoved
 
-	itemStatusLast     = uint8(ItemStatusRemoved)
+	itemStatusLast     = uint8(ItemStatusDisabled)
 	enumNameItemStatus = "ItemStatus"
 )
 
@@ -26,31 +25,25 @@ var (
 		ItemStatusDraft:    "DRAFT",
 		ItemStatusEnabled:  "ENABLED",
 		ItemStatusDisabled: "DISABLED",
-		ItemStatusRemoved:  "REMOVED",
 	}
 
 	itemStatusValue = map[string]ItemStatus{
 		"DRAFT":    ItemStatusDraft,
 		"ENABLED":  ItemStatusEnabled,
 		"DISABLED": ItemStatusDisabled,
-		"REMOVED":  ItemStatusRemoved,
 	}
 
 	ItemStatusFlow = StatusFlow{
 		ItemStatusDraft: {
 			ItemStatusEnabled,
 			ItemStatusDisabled,
-			ItemStatusRemoved,
 		},
 		ItemStatusEnabled: {
 			ItemStatusDisabled,
-			ItemStatusRemoved,
 		},
 		ItemStatusDisabled: {
 			ItemStatusEnabled,
-			ItemStatusRemoved,
 		},
-		ItemStatusRemoved: {},
 	}
 )
 

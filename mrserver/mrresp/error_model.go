@@ -1,4 +1,4 @@
-package mrresponse
+package mrresp
 
 const (
 	ErrorAttributeIDByDefault = "generalError"

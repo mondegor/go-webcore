@@ -26,8 +26,10 @@ type (
 	}
 )
 
-// Make sure the ValidatorAdapter conforms with the mrview.Validator interface
-var _ mrview.Validator = (*ValidatorAdapter)(nil)
+var (
+	// Make sure the ValidatorAdapter conforms with the mrview.Validator interface
+	_ mrview.Validator = (*ValidatorAdapter)(nil)
+)
 
 func New() *ValidatorAdapter {
 	validate := validator.New()

@@ -24,7 +24,7 @@ type (
 	}
 )
 
-// SetDateTimeFormat - WARNING: use only when starting the main process
+// SetDateTimeFormat - WARNING: use only by the main process when it is starting
 func SetDateTimeFormat(value string) {
 	if value == "" {
 		return
@@ -80,7 +80,10 @@ func (l *LoggerAdapter) WithContext(ctx context.Context) context.Context {
 }
 
 func (l *LoggerAdapter) With() mrlog.LoggerContext {
-	return &ContextAdapter{zc: l.zl.With(), opts: l.opts}
+	return &ContextAdapter{
+		zc:   l.zl.With(),
+		opts: l.opts,
+	}
 }
 
 func (l *LoggerAdapter) Debug() mrlog.LoggerEvent {

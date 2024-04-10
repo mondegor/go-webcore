@@ -16,8 +16,10 @@ type (
 	}
 )
 
-// Make sure the UUID conforms with the mrserver.RequestParserUUID interface
-var _ mrserver.RequestParserUUID = (*UUID)(nil)
+var (
+	// Make sure the UUID conforms with the mrserver.RequestParserUUID interface
+	_ mrserver.RequestParserUUID = (*UUID)(nil)
+)
 
 func NewUUID(pathFunc mrserver.RequestParserParamFunc) *UUID {
 	return &UUID{

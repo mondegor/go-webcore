@@ -13,7 +13,11 @@ type (
 )
 
 func NewCacheableResponseWriter(w http.ResponseWriter) *CacheableResponseWriter {
-	return &CacheableResponseWriter{w, http.StatusOK, []byte{}}
+	return &CacheableResponseWriter{
+		ResponseWriter: w,
+		statusCode:     http.StatusOK,
+		body:           []byte{},
+	}
 }
 
 func (w *CacheableResponseWriter) WriteHeader(statusCode int) {

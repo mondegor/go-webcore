@@ -32,17 +32,29 @@ func (c *ContextAdapter) CallerWithSkipFrame(count int) mrlog.LoggerContext {
 }
 
 func (c *ContextAdapter) Str(key, value string) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.Str(key, value), opts: c.opts}
+	return &ContextAdapter{
+		zc:   c.zc.Str(key, value),
+		opts: c.opts,
+	}
 }
 
 func (c *ContextAdapter) Bytes(key string, value []byte) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.Bytes(key, value), opts: c.opts}
+	return &ContextAdapter{
+		zc:   c.zc.Bytes(key, value),
+		opts: c.opts,
+	}
 }
 
 func (c *ContextAdapter) Int(key string, value int) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.Int(key, value), opts: c.opts}
+	return &ContextAdapter{
+		zc:   c.zc.Int(key, value),
+		opts: c.opts,
+	}
 }
 
 func (c *ContextAdapter) Any(key string, value any) mrlog.LoggerContext {
-	return &ContextAdapter{zc: c.zc.Any(key, value), opts: c.opts}
+	return &ContextAdapter{
+		zc:   c.zc.Any(key, value),
+		opts: c.opts,
+	}
 }

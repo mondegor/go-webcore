@@ -1,27 +1,22 @@
-package mrjulienrouter
+package mrchi
 
 import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"regexp"
 	"runtime"
 	"strings"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/go-chi/chi/v5"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
-// go get -u github.com/julienschmidt/httprouter
-
-const (
-	varRestOfURL = "path"
-)
+// go get -u github.com/go-chi/chi/v5
 
 type (
 	RouterAdapter struct {
-		router             *httprouter.Router
+		router             *chi.Mux
 		generalHandler     http.Handler
 		handlerAdapterFunc func(next mrserver.HttpHandlerFunc) http.HandlerFunc
 		logger             mrlog.Logger
@@ -31,8 +26,6 @@ type (
 var (
 	// Make sure the RouterAdapter conforms with the mrserver.HttpRouter interface
 	_ mrserver.HttpRouter = (*RouterAdapter)(nil)
-
-	regexpURLVars = regexp.MustCompile(`{([a-zA-Z][a-zA-Z0-9_]*)}`)
 )
 
 func New(
@@ -41,14 +34,14 @@ func New(
 	notFoundFunc http.HandlerFunc,
 	methodNotAllowedFunc http.HandlerFunc,
 ) *RouterAdapter {
-	router := httprouter.New()
+	router := chi.NewRouter()
 
 	if notFoundFunc != nil {
-		router.NotFound = notFoundFunc
+		router.NotFound(notFoundFunc)
 	}
 
 	if methodNotAllowedFunc != nil {
-		router.MethodNotAllowed = methodNotAllowedFunc
+		router.MethodNotAllowed(methodNotAllowedFunc)
 	}
 
 	return &RouterAdapter{
@@ -91,7 +84,7 @@ func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFu
 	}
 
 	rt.logger.Debug().Msgf("- registered: %s %s", method, path)
-	rt.router.Handler(method, convertedPath, handler)
+	rt.router.Method(method, convertedPath, handler)
 }
 
 func (rt *RouterAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -99,11 +92,5 @@ func (rt *RouterAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rt *RouterAdapter) convertURL(url string) string {
-	url = strings.Replace(url, mrserver.VarRestOfURL, "*"+varRestOfURL, 1)
-
-	for _, m := range regexpURLVars.FindAllStringSubmatch(url, -1) {
-		url = strings.Replace(url, m[0], ":"+m[1], 1)
-	}
-
-	return url
+	return strings.Replace(url, mrserver.VarRestOfURL, "*", 1)
 }

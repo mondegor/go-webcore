@@ -15,8 +15,10 @@ type (
 	}
 )
 
-// Make sure the ItemStatus conforms with the mrserver.RequestParserItemStatus interface
-var _ mrserver.RequestParserItemStatus = (*ItemStatus)(nil)
+var (
+	// Make sure the ItemStatus conforms with the mrserver.RequestParserItemStatus interface
+	_ mrserver.RequestParserItemStatus = (*ItemStatus)(nil)
+)
 
 func NewItemStatus() *ItemStatus {
 	return &ItemStatus{}

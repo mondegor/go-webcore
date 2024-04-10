@@ -14,8 +14,10 @@ type (
 	}
 )
 
-// Make sure the DateTime conforms with the mrserver.RequestParserDateTime interface
-var _ mrserver.RequestParserDateTime = (*DateTime)(nil)
+var (
+	// Make sure the DateTime conforms with the mrserver.RequestParserDateTime interface
+	_ mrserver.RequestParserDateTime = (*DateTime)(nil)
+)
 
 func NewDateTime() *DateTime {
 	return &DateTime{}

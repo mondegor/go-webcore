@@ -13,8 +13,10 @@ type (
 	}
 )
 
-// Make sure the Bool conforms with the mrserver.RequestParserBool interface
-var _ mrserver.RequestParserBool = (*Bool)(nil)
+var (
+	// Make sure the Bool conforms with the mrserver.RequestParserBool interface
+	_ mrserver.RequestParserBool = (*Bool)(nil)
+)
 
 func NewBool() *Bool {
 	return &Bool{}

@@ -1,4 +1,4 @@
-package mrresponse
+package mrresp
 
 import (
 	"encoding/json"
@@ -6,15 +6,15 @@ import (
 	"time"
 )
 
-func HandlerGetNotFoundAsJson() func(w http.ResponseWriter, r *http.Request) {
+func HandlerGetMethodNotAllowedAsJson() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusMethodNotAllowed)
 
 		bytes, err := json.Marshal(
 			ErrorDetailsResponse{
-				Title:   "404 Not Found",
-				Details: "The server cannot find the requested resource",
+				Title:   "405 Method Not Allowed",
+				Details: "The server knows the request method, but the target resource doesn't support this method",
 				Request: r.URL.Path,
 				Time:    time.Now().UTC().Format(time.RFC3339),
 			},

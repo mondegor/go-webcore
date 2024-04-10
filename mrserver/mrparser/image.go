@@ -33,8 +33,10 @@ type (
 	}
 )
 
-// Make sure the Image conforms with the mrserver.RequestParserImage interface
-var _ mrserver.RequestParserImage = (*Image)(nil)
+var (
+	// Make sure the Image conforms with the mrserver.RequestParserImage interface
+	_ mrserver.RequestParserImage = (*Image)(nil)
+)
 
 func NewImage(opts ImageOptions) *Image {
 	if len(opts.File.AllowedExts) == 0 {
@@ -49,7 +51,7 @@ func NewImage(opts ImageOptions) *Image {
 	}
 }
 
-// FormImage - WARNING you don't forget to call result.Body.Close()
+// FormImage - WARNING: you don't forget to call result.Body.Close()
 func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	hdr, err := mrreq.FormFile(r, key)
 

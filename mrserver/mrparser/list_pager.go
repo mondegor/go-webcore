@@ -25,8 +25,10 @@ type (
 	}
 )
 
-// Make sure the ListPager conforms with the mrserver.RequestParserListPager interface
-var _ mrserver.RequestParserListPager = (*ListPager)(nil)
+var (
+	// Make sure the ListPager conforms with the mrserver.RequestParserListPager interface
+	_ mrserver.RequestParserListPager = (*ListPager)(nil)
+)
 
 func NewListPager(opts ListPagerOptions) *ListPager {
 	lp := ListPager{

@@ -34,7 +34,9 @@ func (l *DefaultLogger) WithContext(ctx context.Context) context.Context {
 }
 
 func (l *DefaultLogger) With() LoggerContext {
-	return &defaultContext{logger: *l}
+	return &defaultContext{
+		logger: *l,
+	}
 }
 
 func (l *DefaultLogger) Info() LoggerEvent {

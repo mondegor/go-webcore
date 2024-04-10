@@ -16,8 +16,10 @@ type (
 	}
 )
 
-// Make sure the Int64 conforms with the mrserver.RequestParserInt64 interface
-var _ mrserver.RequestParserInt64 = (*Int64)(nil)
+var (
+	// Make sure the Int64 conforms with the mrserver.RequestParserInt64 interface
+	_ mrserver.RequestParserInt64 = (*Int64)(nil)
+)
 
 func NewInt64(pathFunc mrserver.RequestParserParamFunc) *Int64 {
 	return &Int64{

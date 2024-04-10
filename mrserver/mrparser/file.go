@@ -33,8 +33,10 @@ type (
 	}
 )
 
-// Make sure the File conforms with the mrserver.RequestParserFile interface
-var _ mrserver.RequestParserFile = (*File)(nil)
+var (
+	// Make sure the File conforms with the mrserver.RequestParserFile interface
+	_ mrserver.RequestParserFile = (*File)(nil)
+)
 
 func NewFile(opts FileOptions) *File {
 	if len(opts.AllowedExts) == 0 {
@@ -55,7 +57,7 @@ func NewFile(opts FileOptions) *File {
 	}
 }
 
-// FormFile - WARNING you don't forget to call result.Body.Close()
+// FormFile - WARNING: you don't forget to call result.Body.Close()
 func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 	hdr, err := mrreq.FormFile(r, key)
 

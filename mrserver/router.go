@@ -4,6 +4,10 @@ import (
 	"net/http"
 )
 
+const (
+	VarRestOfURL = "{restOfUrl}"
+)
+
 type (
 	HttpRouter interface {
 		RegisterMiddleware(handlers ...func(next http.Handler) http.Handler)

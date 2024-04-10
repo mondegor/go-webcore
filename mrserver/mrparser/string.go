@@ -14,8 +14,10 @@ type (
 	}
 )
 
-// Make sure the String conforms with the mrserver.RequestParserString interface
-var _ mrserver.RequestParserString = (*String)(nil)
+var (
+	// Make sure the String conforms with the mrserver.RequestParserString interface
+	_ mrserver.RequestParserString = (*String)(nil)
+)
 
 func NewString(pathFunc mrserver.RequestParserParamFunc) *String {
 	return &String{

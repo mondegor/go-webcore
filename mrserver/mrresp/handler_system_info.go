@@ -1,4 +1,4 @@
-package mrresponse
+package mrresp
 
 import (
 	"net/http"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/mondegor/go-webcore/mrdebug"
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver"
 )
 
 type (
@@ -27,14 +26,14 @@ type (
 	}
 )
 
-func HandlerGetSystemInfoAsJson(cfg SystemInfoConfig) (func(w http.ResponseWriter, r *http.Request), error) {
+func HandlerGetSystemInfoAsJson(cfg SystemInfoConfig) (http.HandlerFunc, error) {
 	hostName, err := os.Hostname()
 
 	if err != nil {
 		return nil, err
 	}
 
-	return mrserver.HandlerGetStructAsJson(
+	return HandlerGetStructAsJson(
 		systemInfoResponse{
 			Name:      cfg.Name,
 			Version:   cfg.Version,

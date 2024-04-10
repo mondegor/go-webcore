@@ -1,27 +1,28 @@
 package mrserver
 
 import (
-	"context"
 	"net/http"
-
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 const (
-	traceResponseMaxLen = 1024
+	traceResponseBodyMaxLen = 1024
 )
 
 type (
 	StatResponseWriter struct {
 		http.ResponseWriter
-		ctx        context.Context
 		statusCode int
 		bytes      int
+		onWrite    func(buf []byte)
 	}
 )
 
-func NewStatResponseWriter(ctx context.Context, w http.ResponseWriter) *StatResponseWriter {
-	return &StatResponseWriter{w, ctx, http.StatusOK, 0}
+func NewStatResponseWriter(w http.ResponseWriter, onWrite func(buf []byte)) *StatResponseWriter {
+	return &StatResponseWriter{
+		ResponseWriter: w,
+		statusCode:     http.StatusOK,
+		onWrite:        onWrite,
+	}
 }
 
 func (w *StatResponseWriter) WriteHeader(statusCode int) {
@@ -33,11 +34,19 @@ func (w *StatResponseWriter) Write(buf []byte) (int, error) {
 	bytes, err := w.ResponseWriter.Write(buf)
 	w.bytes += bytes
 
-	if len(buf) > traceResponseMaxLen {
-		buf = buf[0:traceResponseMaxLen]
+	if len(buf) > traceResponseBodyMaxLen {
+		buf = buf[0:traceResponseBodyMaxLen]
 	}
 
-	mrlog.Ctx(w.ctx).Trace().Bytes("response", buf).Msg("write response")
+	w.onWrite(buf)
 
 	return bytes, err
+}
+
+func (w *StatResponseWriter) Bytes() int {
+	return w.bytes
+}
+
+func (w *StatResponseWriter) StatusCode() int {
+	return w.statusCode
 }

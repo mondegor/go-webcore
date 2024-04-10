@@ -72,7 +72,7 @@ func Default() Logger {
 	return def
 }
 
-// SetDefault - WARNING: use only when starting the main process
+// SetDefault - WARNING: use only by the main process when it is starting
 func SetDefault(logger Logger) {
 	if logger != nil {
 		def = logger.With().Str("logger", "DEFAULT").Logger()

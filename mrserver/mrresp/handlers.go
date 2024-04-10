@@ -1,17 +1,17 @@
-package mrserver
+package mrresp
 
 import (
 	"encoding/json"
 	"net/http"
 )
 
-func HandlerGetHealth() func(w http.ResponseWriter, r *http.Request) {
+func HandlerGetHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 }
 
-func HandlerGetStatusOKAsJson() func(w http.ResponseWriter, r *http.Request) {
+func HandlerGetStatusOKAsJson() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -19,7 +19,7 @@ func HandlerGetStatusOKAsJson() func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func HandlerGetStructAsJson(data any, status int) (func(w http.ResponseWriter, r *http.Request), error) {
+func HandlerGetStructAsJson(data any, status int) (http.HandlerFunc, error) {
 	bytes, err := json.Marshal(data)
 
 	if err != nil {

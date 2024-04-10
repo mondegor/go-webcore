@@ -11,6 +11,7 @@ func main() {
 
 	fmt.Printf("STATUS: %s\n", status.String())
 
+	fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusDraft, mrenum.ItemStatusEnabled))
 	fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusEnabled, mrenum.ItemStatusDisabled))
-	fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusRemoved, mrenum.ItemStatusDisabled))
+	fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusDisabled, mrenum.ItemStatusDraft))
 }

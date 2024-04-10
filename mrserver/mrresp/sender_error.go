@@ -1,4 +1,4 @@
-package mrresponse
+package mrresp
 
 import (
 	"context"
@@ -22,8 +22,10 @@ type (
 	}
 )
 
-// Make sure the ErrorSender conforms with the mrserver.ErrorResponseSender interface
-var _ mrserver.ErrorResponseSender = (*ErrorSender)(nil)
+var (
+	// Make sure the ErrorSender conforms with the mrserver.ErrorResponseSender interface
+	_ mrserver.ErrorResponseSender = (*ErrorSender)(nil)
+)
 
 func NewErrorSender(encoder mrserver.ResponseEncoder) *ErrorSender {
 	return &ErrorSender{
