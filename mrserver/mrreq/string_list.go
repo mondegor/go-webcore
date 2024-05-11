@@ -19,7 +19,7 @@ func ParseStrList(r *http.Request, key string) ([]string, error) {
 	}
 
 	if len(value) > maxLenStringsList {
-		return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenStringsList)
+		return nil, mrcore.FactoryErrHTTPRequestParamLenMax.New(key, maxLenStringsList)
 	}
 
 	items := strings.Split(value, ",")

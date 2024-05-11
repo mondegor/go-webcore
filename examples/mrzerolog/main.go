@@ -12,7 +12,7 @@ func main() {
 	logger := mrzerolog.New(
 		mrlog.Options{
 			Level:           mrlog.InfoLevel,
-			JsonFormat:      true,
+			JSONFormat:      true,
 			TimestampFormat: time.RFC3339Nano,
 		},
 	)

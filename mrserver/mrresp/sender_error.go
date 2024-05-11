@@ -18,25 +18,23 @@ import (
 type (
 	ErrorSender struct {
 		encoder      mrserver.ResponseEncoder
-		overrideFunc mrserver.HttpErrorOverrideFunc
+		overrideFunc mrserver.HTTPErrorOverrideFunc
 	}
 )
 
-var (
-	// Make sure the ErrorSender conforms with the mrserver.ErrorResponseSender interface
-	_ mrserver.ErrorResponseSender = (*ErrorSender)(nil)
-)
+// Make sure the ErrorSender conforms with the mrserver.ErrorResponseSender interface
+var _ mrserver.ErrorResponseSender = (*ErrorSender)(nil)
 
 func NewErrorSender(encoder mrserver.ResponseEncoder) *ErrorSender {
 	return &ErrorSender{
 		encoder:      encoder,
-		overrideFunc: mrserver.DefaultHttpErrorOverrideFunc,
+		overrideFunc: mrserver.DefaultHTTPErrorOverrideFunc,
 	}
 }
 
 func NewErrorSenderWithOverrideFunc(
 	encoder mrserver.ResponseEncoder,
-	overrideFunc mrserver.HttpErrorOverrideFunc,
+	overrideFunc mrserver.HTTPErrorOverrideFunc,
 ) *ErrorSender {
 	return &ErrorSender{
 		encoder:      encoder,
@@ -70,7 +68,6 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 	}
 
 	appError, ok := err.(*mrerr.AppError)
-
 	if !ok {
 		appError = mrcore.FactoryErrInternalNotice.Wrap(err)
 	}
@@ -98,13 +95,12 @@ func (rs *ErrorSender) sendStructResponse(
 	structResponse any,
 ) {
 	bytes, err := json.Marshal(structResponse)
-
 	if err != nil {
 		status = http.StatusTeapot
 		bytes = []byte{}
 		mrlog.Ctx(ctx).
 			Error().
-			Err(mrcore.FactoryErrHttpResponseParseData.Wrap(err)).
+			Err(mrcore.FactoryErrHTTPResponseParseData.Wrap(err)).
 			Send()
 	}
 

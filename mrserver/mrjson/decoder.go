@@ -9,21 +9,20 @@ import (
 )
 
 type (
-	JsonDecoder struct {
-	}
+	JSONDecoder struct{}
 )
 
-func NewDecoder() *JsonDecoder {
-	return &JsonDecoder{}
+func NewDecoder() *JSONDecoder {
+	return &JSONDecoder{}
 }
 
-func (p *JsonDecoder) ParseToStruct(ctx context.Context, content io.Reader, structPointer any) error {
+func (p *JSONDecoder) ParseToStruct(ctx context.Context, content io.Reader, structPointer any) error {
 	dec := json.NewDecoder(content)
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(structPointer); err != nil {
 		const skipFrame = 1
-		return mrcore.FactoryErrHttpRequestParseData.WithCallerSkipFrame(skipFrame).Wrap(err)
+		return mrcore.FactoryErrHTTPRequestParseData.WithCallerSkipFrame(skipFrame).Wrap(err)
 	}
 
 	return nil

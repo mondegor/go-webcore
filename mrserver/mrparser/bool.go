@@ -9,14 +9,11 @@ import (
 )
 
 type (
-	Bool struct {
-	}
+	Bool struct{}
 )
 
-var (
-	// Make sure the Bool conforms with the mrserver.RequestParserBool interface
-	_ mrserver.RequestParserBool = (*Bool)(nil)
-)
+// Make sure the Bool conforms with the mrserver.RequestParserBool interface
+var _ mrserver.RequestParserBool = (*Bool)(nil)
 
 func NewBool() *Bool {
 	return &Bool{}
@@ -24,7 +21,6 @@ func NewBool() *Bool {
 
 func (p *Bool) FilterNullableBool(r *http.Request, key string) *bool {
 	value, err := mrreq.ParseNullableBool(r, key)
-
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return nil

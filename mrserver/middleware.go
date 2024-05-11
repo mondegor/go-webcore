@@ -101,8 +101,8 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 	}
 }
 
-func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HttpHandlerFunc) http.HandlerFunc {
-	return func(next HttpHandlerFunc) http.HandlerFunc {
+func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HTTPHandlerFunc) http.HandlerFunc {
+	return func(next HTTPHandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if err := next(w, r); err != nil {
 				s.SendError(w, r, err)
@@ -111,8 +111,8 @@ func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HttpHandlerFunc) 
 	}
 }
 
-func MiddlewareHandlerCheckAccess(handlerName string, access mrperms.AccessControl, privilege, permission string) func(next HttpHandlerFunc) HttpHandlerFunc {
-	return func(next HttpHandlerFunc) HttpHandlerFunc {
+func MiddlewareHandlerCheckAccess(handlerName string, access mrperms.AccessControl, privilege, permission string) func(next HTTPHandlerFunc) HTTPHandlerFunc {
+	return func(next HTTPHandlerFunc) HTTPHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {
 			mrlog.Ctx(r.Context()).Debug().Str("handler", handlerName).Msg("exec handler")
 
@@ -123,16 +123,16 @@ func MiddlewareHandlerCheckAccess(handlerName string, access mrperms.AccessContr
 			}
 
 			if rights.IsGuestAccess() {
-				return mrcore.FactoryErrHttpClientUnauthorized.New()
+				return mrcore.FactoryErrHTTPClientUnauthorized.New()
 			}
 
-			return mrcore.FactoryErrHttpAccessForbidden.New()
+			return mrcore.FactoryErrHTTPAccessForbidden.New()
 		}
 	}
 }
 
-func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender ResponseSender) func(next HttpHandlerFunc) HttpHandlerFunc {
-	return func(next HttpHandlerFunc) HttpHandlerFunc {
+func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender ResponseSender) func(next HTTPHandlerFunc) HTTPHandlerFunc {
+	return func(next HTTPHandlerFunc) HTTPHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {
 			idempotencyKey := r.Header.Get(mrreq.HeaderKeyIdempotencyKey)
 
@@ -154,11 +154,12 @@ func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender Respon
 				)
 			}
 
-			if unlock, err := provider.Lock(r.Context(), idempotencyKey); err != nil {
+			unlock, err := provider.Lock(r.Context(), idempotencyKey)
+			if err != nil {
 				return err
-			} else {
-				defer unlock()
 			}
+
+			defer unlock()
 
 			sw := NewCacheableResponseWriter(w)
 

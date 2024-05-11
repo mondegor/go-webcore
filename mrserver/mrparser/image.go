@@ -33,10 +33,8 @@ type (
 	}
 )
 
-var (
-	// Make sure the Image conforms with the mrserver.RequestParserImage interface
-	_ mrserver.RequestParserImage = (*Image)(nil)
-)
+// Make sure the Image conforms with the mrserver.RequestParserImage interface
+var _ mrserver.RequestParserImage = (*Image)(nil)
 
 func NewImage(opts ImageOptions) *Image {
 	if len(opts.File.AllowedExts) == 0 {
@@ -54,7 +52,6 @@ func NewImage(opts ImageOptions) *Image {
 // FormImage - WARNING: you don't forget to call result.Body.Close()
 func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	hdr, err := mrreq.FormFile(r, key)
-
 	if err != nil {
 		return mrtype.Image{}, err
 	}
@@ -64,14 +61,12 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	}
 
 	file, err := hdr.Open()
-
 	if err != nil {
-		return mrtype.Image{}, mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
+		return mrtype.Image{}, mrcore.FactoryErrHTTPMultipartFormFile.Wrap(err, key)
 	}
 
 	contentType := p.file.detectedContentType(hdr)
 	meta, err := p.decode(file, contentType)
-
 	if err != nil {
 		file.Close()
 		return mrtype.Image{}, err
@@ -92,7 +87,6 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 // FormImageContent - only for short files
 func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageContent, error) {
 	file, err := p.FormImage(r, key)
-
 	if err != nil {
 		return mrtype.ImageContent{}, nil
 	}
@@ -113,6 +107,9 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageConte
 
 func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, error) {
 	fds, err := mrreq.FormFiles(r, key, 0)
+	if err != nil {
+		return nil, err
+	}
 
 	if len(fds) == 0 {
 		return nil, nil
@@ -133,16 +130,14 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 			}
 
 			file, err := fds[i].Open()
-
 			if err != nil {
-				return mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
+				return mrcore.FactoryErrHTTPMultipartFormFile.Wrap(err, key)
 			}
 
 			defer file.Close()
 
 			contentType := p.file.detectedContentType(fds[i])
 			meta, err := p.decode(file, contentType)
-
 			if err != nil {
 				return err
 			}
@@ -160,7 +155,6 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 
 			return nil
 		}()
-
 		if err != nil {
 			return nil, err
 		}
@@ -171,17 +165,16 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 
 func (p *Image) decode(file multipart.File, contentType string) (imageMeta, error) {
 	cfg, err := mrlib.DecodeImageConfig(file, contentType)
-
 	if err != nil {
 		return imageMeta{}, err
 	}
 
 	if p.maxWidth > 0 && int32(cfg.Width) > p.maxWidth {
-		return imageMeta{}, FactoryErrHttpRequestImageWidthMax.New(p.maxWidth)
+		return imageMeta{}, FactoryErrHTTPRequestImageWidthMax.New(p.maxWidth)
 	}
 
 	if p.maxHeight > 0 && int32(cfg.Height) > p.maxHeight {
-		return imageMeta{}, FactoryErrHttpRequestImageHeightMax.New(p.maxHeight)
+		return imageMeta{}, FactoryErrHTTPRequestImageHeightMax.New(p.maxHeight)
 	}
 
 	if p.checkBody {

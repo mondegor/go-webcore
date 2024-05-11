@@ -12,7 +12,6 @@ import (
 
 func DecodeImageConfig(file io.ReadSeeker, expectedContentType string) (image.Config, error) {
 	cfg, err := unsafeDecodeImageConfig(file, expectedContentType)
-
 	if err != nil {
 		return image.Config{}, err
 	}
@@ -44,7 +43,6 @@ func CheckImage(file io.ReadSeeker, expectedContentType string) error {
 
 func DecodeImage(file io.ReadSeeker, expectedContentType string) (image.Image, error) {
 	img, err := unsafeDecodeImage(file, expectedContentType)
-
 	if err != nil {
 		return nil, err
 	}

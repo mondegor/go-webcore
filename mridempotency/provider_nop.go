@@ -14,8 +14,7 @@ const (
 )
 
 type (
-	nopProvider struct {
-	}
+	nopProvider struct{}
 )
 
 func NewNopProvider() Provider {

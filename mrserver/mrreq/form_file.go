@@ -23,10 +23,10 @@ func FormFiles(r *http.Request, key string, maxMemory int64) ([]*multipart.FileH
 			mrdebug.MultipartForm(r.Context(), r.MultipartForm)
 
 			if errors.Is(err, http.ErrMissingBoundary) {
-				return nil, mrcore.FactoryErrHttpFileUpload.Wrap(err, key)
+				return nil, mrcore.FactoryErrHTTPFileUpload.Wrap(err, key)
 			}
 
-			return nil, mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
+			return nil, mrcore.FactoryErrHTTPMultipartFormFile.Wrap(err, key)
 		}
 	}
 
@@ -45,13 +45,12 @@ func FormFiles(r *http.Request, key string, maxMemory int64) ([]*multipart.FileH
 
 func FormFile(r *http.Request, key string) (*multipart.FileHeader, error) {
 	fhs, err := FormFiles(r, key, 0)
-
 	if err != nil {
 		return nil, err
 	}
 
 	if len(fhs) == 0 {
-		return nil, mrcore.FactoryErrHttpFileUpload.Wrap(http.ErrMissingFile, key)
+		return nil, mrcore.FactoryErrHTTPFileUpload.Wrap(http.ErrMissingFile, key)
 	}
 
 	return fhs[0], nil

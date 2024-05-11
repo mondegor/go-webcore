@@ -11,7 +11,7 @@ func HandlerGetHealth() http.HandlerFunc {
 	}
 }
 
-func HandlerGetStatusOKAsJson() http.HandlerFunc {
+func HandlerGetStatusOKAsJSON() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -19,9 +19,8 @@ func HandlerGetStatusOKAsJson() http.HandlerFunc {
 	}
 }
 
-func HandlerGetStructAsJson(data any, status int) (http.HandlerFunc, error) {
+func HandlerGetStructAsJSON(data any, status int) (http.HandlerFunc, error) {
 	bytes, err := json.Marshal(data)
-
 	if err != nil {
 		return nil, err
 	}

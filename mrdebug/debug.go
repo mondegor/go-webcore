@@ -1,8 +1,6 @@
 package mrdebug
 
-var (
-	isDebug = false
-)
+var isDebug = false
 
 func IsDebug() bool {
 	return isDebug

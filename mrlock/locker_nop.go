@@ -12,8 +12,7 @@ const (
 )
 
 type (
-	nopLocker struct {
-	}
+	nopLocker struct{}
 )
 
 func NewNopLocker() Locker {

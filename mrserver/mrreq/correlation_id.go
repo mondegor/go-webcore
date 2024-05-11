@@ -14,9 +14,7 @@ const (
 	maxLenCorrelationID = 64
 )
 
-var (
-	regexpCorrelationID = regexp.MustCompile(`^[0-9a-fA-F][0-9a-fA-F-]+[0-9a-fA-F]$`)
-)
+var regexpCorrelationID = regexp.MustCompile(`^[0-9a-fA-F][0-9a-fA-F-]+[0-9a-fA-F]$`)
 
 func ParseCorrelationID(r *http.Request) (string, error) {
 	value := strings.TrimSpace(r.Header.Get(HeaderKeyCorrelationID))
@@ -28,7 +26,7 @@ func ParseCorrelationID(r *http.Request) (string, error) {
 	if len(value) < minLenCorrelationID ||
 		len(value) > maxLenCorrelationID ||
 		!regexpCorrelationID.MatchString(value) {
-		return "", FactoryErrHttpRequestCorrelationID.New(value)
+		return "", FactoryErrHTTPRequestCorrelationID.New(value)
 	}
 
 	return value, nil

@@ -18,5 +18,5 @@ func ParseDateTimeFormat(str string) (string, error) {
 
 	}
 
-	return time.RFC3339, fmt.Errorf("'%s' is not found in mrlog.ParseDateTimeFormat()")
+	return time.RFC3339, fmt.Errorf("'%s' is not found in mrlog.ParseDateTimeFormat()", str)
 }

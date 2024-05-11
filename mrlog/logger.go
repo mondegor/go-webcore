@@ -50,7 +50,7 @@ type (
 
 	Options struct {
 		Level           Level
-		JsonFormat      bool
+		JSONFormat      bool
 		TimestampFormat string
 		ConsoleColor    bool
 
@@ -61,12 +61,10 @@ type (
 	ctxKey struct{}
 )
 
-var (
-	def Logger = &DefaultLogger{
-		level:  DebugLevel,
-		native: log.Default(),
-	}
-)
+var def Logger = &DefaultLogger{
+	level:  DebugLevel,
+	native: log.Default(),
+}
 
 func Default() Logger {
 	return def

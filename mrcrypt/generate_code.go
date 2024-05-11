@@ -21,7 +21,6 @@ func GenDigitCode(length int) string {
 
 	minValue := pow(10, length-1)
 	value, err := rand.Int(rand.Reader, big.NewInt(minValue*9))
-
 	if err != nil {
 		mrlog.Default().Error().Err(err).Send()
 		value = big.NewInt(minValue * 9)

@@ -8,13 +8,11 @@ import (
 
 func ParseRangeInt64(r *http.Request, key string) (mrtype.RangeInt64, error) {
 	minValue, err := ParseInt64(r, key+"-min", false)
-
 	if err != nil {
 		return mrtype.RangeInt64{}, err
 	}
 
 	maxValue, err := ParseInt64(r, key+"-max", false)
-
 	if err != nil {
 		return mrtype.RangeInt64{}, err
 	}

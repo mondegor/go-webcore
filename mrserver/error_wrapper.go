@@ -7,16 +7,16 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
-// DefaultHttpErrorOverrideFunc - only for: 401, 403, 404, 418, 5XX
-func DefaultHttpErrorOverrideFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
+// DefaultHTTPErrorOverrideFunc - only for: 401, 403, 404, 418, 5XX
+func DefaultHTTPErrorOverrideFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
 	status := http.StatusInternalServerError
 
 	if mrcore.FactoryErrUseCaseEntityNotFound.Is(err) ||
-		mrcore.FactoryErrHttpResourceNotFound.Is(err) {
+		mrcore.FactoryErrHTTPResourceNotFound.Is(err) {
 		status = http.StatusNotFound
-	} else if mrcore.FactoryErrHttpClientUnauthorized.Is(err) {
+	} else if mrcore.FactoryErrHTTPClientUnauthorized.Is(err) {
 		status = http.StatusUnauthorized
-	} else if mrcore.FactoryErrHttpAccessForbidden.Is(err) {
+	} else if mrcore.FactoryErrHTTPAccessForbidden.Is(err) {
 		status = http.StatusForbidden
 	} else if err.Code() == mrcore.FactoryErrInternal.Code() {
 		// если ошибка явно не обработана разработчиком, то вместо 500 отображается 418

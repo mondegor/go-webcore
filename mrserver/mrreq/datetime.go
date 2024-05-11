@@ -17,20 +17,19 @@ func ParseDateTime(r *http.Request, key string, required bool) (time.Time, error
 
 	if value == "" {
 		if required {
-			return time.Time{}, mrcore.FactoryErrHttpRequestParamEmpty.New(key)
+			return time.Time{}, mrcore.FactoryErrHTTPRequestParamEmpty.New(key)
 		}
 
 		return time.Time{}, nil
 	}
 
 	if len(value) > maxLenDateTime {
-		return time.Time{}, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenDateTime)
+		return time.Time{}, mrcore.FactoryErrHTTPRequestParamLenMax.New(key, maxLenDateTime)
 	}
 
 	item, err := time.Parse(time.RFC3339, value)
-
 	if err != nil {
-		return time.Time{}, mrcore.FactoryErrHttpRequestParseParam.New(key, "DateTime", value)
+		return time.Time{}, mrcore.FactoryErrHTTPRequestParseParam.New(key, "DateTime", value)
 	}
 
 	return item, nil

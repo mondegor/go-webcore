@@ -23,21 +23,21 @@ type (
 	RouterAdapter struct {
 		router             *httprouter.Router
 		generalHandler     http.Handler
-		handlerAdapterFunc func(next mrserver.HttpHandlerFunc) http.HandlerFunc
+		handlerAdapterFunc func(next mrserver.HTTPHandlerFunc) http.HandlerFunc
 		logger             mrlog.Logger
 	}
 )
 
 var (
-	// Make sure the RouterAdapter conforms with the mrserver.HttpRouter interface
-	_ mrserver.HttpRouter = (*RouterAdapter)(nil)
+	// Make sure the RouterAdapter conforms with the mrserver.HTTPRouter interface
+	_ mrserver.HTTPRouter = (*RouterAdapter)(nil)
 
 	regexpURLVars = regexp.MustCompile(`{([a-zA-Z][a-zA-Z0-9_]*)}`)
 )
 
 func New(
 	logger mrlog.Logger,
-	adapterFunc func(next mrserver.HttpHandlerFunc) http.HandlerFunc,
+	adapterFunc func(next mrserver.HTTPHandlerFunc) http.HandlerFunc,
 	notFoundFunc http.HandlerFunc,
 	methodNotAllowedFunc http.HandlerFunc,
 ) *RouterAdapter {
@@ -75,7 +75,7 @@ func (rt *RouterAdapter) RegisterMiddleware(handlers ...func(next http.Handler) 
 	}
 }
 
-func (rt *RouterAdapter) Register(controllers ...mrserver.HttpController) {
+func (rt *RouterAdapter) Register(controllers ...mrserver.HTTPController) {
 	for i := range controllers {
 		for _, handler := range controllers[i].Handlers() {
 			rt.HandlerFunc(handler.Method, handler.URL, rt.handlerAdapterFunc(handler.Func))

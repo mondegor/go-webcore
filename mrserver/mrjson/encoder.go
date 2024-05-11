@@ -3,27 +3,26 @@ package mrjson
 import "encoding/json"
 
 const (
-	contentTypeJson        = "application/json; charset=utf-8"
-	contentTypeProblemJson = "application/problem+json; charset=utf-8"
+	contentTypeJSON        = "application/json; charset=utf-8"
+	contentTypeProblemJSON = "application/problem+json; charset=utf-8"
 )
 
 type (
-	JsonEncoder struct {
-	}
+	JSONEncoder struct{}
 )
 
-func NewEncoder() *JsonEncoder {
-	return &JsonEncoder{}
+func NewEncoder() *JSONEncoder {
+	return &JSONEncoder{}
 }
 
-func (p *JsonEncoder) ContentType() string {
-	return contentTypeJson
+func (p *JSONEncoder) ContentType() string {
+	return contentTypeJSON
 }
 
-func (p *JsonEncoder) ContentTypeProblem() string {
-	return contentTypeProblemJson
+func (p *JSONEncoder) ContentTypeProblem() string {
+	return contentTypeProblemJSON
 }
 
-func (p *JsonEncoder) Marshal(structure any) ([]byte, error) {
+func (p *JSONEncoder) Marshal(structure any) ([]byte, error) {
 	return json.Marshal(structure)
 }

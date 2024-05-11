@@ -9,12 +9,12 @@ import (
 
 const (
 	PassVowels      PassCharsKinds = 1
-	PassConsonants                 = 2
-	PassNumerals                   = 4
-	PassSigns                      = 8
-	PassAbc                        = 3  // PassVowels + PassConsonants
-	PassAbcNumerals                = 7  // PassVowels + PassConsonants + PassNumerals
-	PassAll                        = 15 // PassVowels + PassConsonants + PassNumerals + PassSigns
+	PassConsonants  PassCharsKinds = 2
+	PassNumerals    PassCharsKinds = 4
+	PassSigns       PassCharsKinds = 8
+	PassAbc         PassCharsKinds = 3  // PassVowels + PassConsonants
+	PassAbcNumerals PassCharsKinds = 7  // PassVowels + PassConsonants + PassNumerals
+	PassAll         PassCharsKinds = 15 // PassVowels + PassConsonants + PassNumerals + PassSigns
 
 	pwCharSetLen = 4
 )
@@ -31,14 +31,12 @@ type (
 	}
 )
 
-var (
-	pwCharSets = [pwCharSetLen]pwCharSet{
-		{PassVowels, 2, true, 10, []byte("aeiuyAEIUY")}, // oO - символы удалены, чтобы не перепутать с нулём
-		{PassConsonants, 2, true, 40, []byte("bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ")},
-		{PassNumerals, 1, false, 9, []byte("123456789")}, // 0 - символ удалён, чтобы не перепутать с oO
-		{PassSigns, 1, false, 6, []byte(".!?@$&")},
-	}
-)
+var pwCharSets = [pwCharSetLen]pwCharSet{
+	{PassVowels, 2, true, 10, []byte("aeiuyAEIUY")}, // oO - символы удалены, чтобы не перепутать с нулём
+	{PassConsonants, 2, true, 40, []byte("bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ")},
+	{PassNumerals, 1, false, 9, []byte("123456789")}, // 0 - символ удалён, чтобы не перепутать с oO
+	{PassSigns, 1, false, 6, []byte(".!?@$&")},
+}
 
 func GenPassword(length int, charsKinds PassCharsKinds) string {
 	if length < 1 {
@@ -112,7 +110,6 @@ func GenPassword(length int, charsKinds PassCharsKinds) string {
 
 func getRandValue(max int) int {
 	value, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
-
 	if err != nil {
 		mrlog.Default().Error().Err(err).Send()
 		return 0

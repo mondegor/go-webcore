@@ -5,18 +5,17 @@ import (
 	"net/http"
 )
 
-func ParseUserIp(r *http.Request) (net.IP, error) {
+func ParseUserIP(r *http.Request) (net.IP, error) {
 	ip, _, err := net.SplitHostPort(r.RemoteAddr)
-
 	if err != nil {
-		return nil, FactoryErrHttpRequestUserIP.New(r.RemoteAddr)
+		return nil, FactoryErrHTTPRequestUserIP.New(r.RemoteAddr)
 	}
 
-	parsedIp := net.ParseIP(ip)
+	parsedIP := net.ParseIP(ip)
 
-	if parsedIp == nil {
-		return nil, FactoryErrHttpRequestParseUserIP.New(ip)
+	if parsedIP == nil {
+		return nil, FactoryErrHTTPRequestParseUserIP.New(ip)
 	}
 
-	return parsedIp, nil
+	return parsedIP, nil
 }

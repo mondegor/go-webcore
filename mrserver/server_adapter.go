@@ -83,7 +83,6 @@ func (s *ServerAdapter) Start(ctx context.Context) error {
 	logger.Info().Msg("Starting the server...")
 
 	listener, err := s.createListener(logger)
-
 	if err != nil {
 		return fmt.Errorf("failed start listening: %w", err)
 	}
@@ -117,7 +116,6 @@ func (s *ServerAdapter) createListener(logger mrlog.Logger) (net.Listener, error
 	if s.listenOpts.Type == ListenTypeSock {
 		logger.Debug().Msg("Detect app real path")
 		appDir, err := filepath.Abs(filepath.Dir(s.listenOpts.AppPath))
-
 		if err != nil {
 			return nil, fmt.Errorf("app real path: %w", err)
 		}

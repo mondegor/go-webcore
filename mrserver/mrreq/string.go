@@ -16,14 +16,14 @@ func ParseStr(r *http.Request, key string, required bool) (string, error) {
 
 	if value == "" {
 		if required {
-			return "", mrcore.FactoryErrHttpRequestParamEmpty.New(key)
+			return "", mrcore.FactoryErrHTTPRequestParamEmpty.New(key)
 		}
 
 		return "", nil
 	}
 
 	if len(value) > maxLenString {
-		return "", mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenString)
+		return "", mrcore.FactoryErrHTTPRequestParamLenMax.New(key, maxLenString)
 	}
 
 	return value, nil

@@ -33,10 +33,8 @@ type (
 	}
 )
 
-var (
-	// Make sure the File conforms with the mrserver.RequestParserFile interface
-	_ mrserver.RequestParserFile = (*File)(nil)
-)
+// Make sure the File conforms with the mrserver.RequestParserFile interface
+var _ mrserver.RequestParserFile = (*File)(nil)
 
 func NewFile(opts FileOptions) *File {
 	if len(opts.AllowedExts) == 0 {
@@ -60,7 +58,6 @@ func NewFile(opts FileOptions) *File {
 // FormFile - WARNING: you don't forget to call result.Body.Close()
 func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 	hdr, err := mrreq.FormFile(r, key)
-
 	if err != nil {
 		return mrtype.File{}, err
 	}
@@ -70,9 +67,8 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 	}
 
 	file, err := hdr.Open()
-
 	if err != nil {
-		return mrtype.File{}, mrcore.FactoryErrHttpMultipartFormFile.Wrap(err, key)
+		return mrtype.File{}, mrcore.FactoryErrHTTPMultipartFormFile.Wrap(err, key)
 	}
 
 	return mrtype.File{
@@ -88,7 +84,6 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 // FormFileContent - only for short files
 func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent, error) {
 	file, err := p.FormFile(r, key)
-
 	if err != nil {
 		return mrtype.FileContent{}, err
 	}
@@ -109,7 +104,6 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent,
 
 func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, error) {
 	fds, err := mrreq.FormFiles(r, key, 0)
-
 	if err != nil {
 		return nil, err
 	}
@@ -146,24 +140,24 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 
 func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	if hdr.Size < p.minSize {
-		return FactoryErrHttpRequestFileSizeMin.New(p.minSize)
+		return FactoryErrHTTPRequestFileSizeMin.New(p.minSize)
 	}
 
 	if p.maxSize > 0 && hdr.Size > p.maxSize {
-		return FactoryErrHttpRequestFileSizeMax.New(p.maxSize)
+		return FactoryErrHTTPRequestFileSizeMax.New(p.maxSize)
 	}
 
 	ext := path.Ext(hdr.Filename)
 
 	if !p.checkExt(ext) {
-		return FactoryErrHttpRequestFileExtension.New(ext)
+		return FactoryErrHTTPRequestFileExtension.New(ext)
 	}
 
 	detectedContentType := mrlib.MimeTypeByExt(ext)
 
 	if p.checkRequestContentType {
 		if detectedContentType != hdr.Header.Get("Content-Type") {
-			return FactoryErrHttpRequestFileContentType.New(hdr.Header.Get("Content-Type"))
+			return FactoryErrHTTPRequestFileContentType.New(hdr.Header.Get("Content-Type"))
 		}
 	} else {
 		if detectedContentType == "" {
@@ -172,7 +166,7 @@ func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	}
 
 	if detectedContentType == "" {
-		return FactoryErrHttpRequestFileUnsupportedType.New(hdr.Filename)
+		return FactoryErrHTTPRequestFileUnsupportedType.New(hdr.Filename)
 	}
 
 	return nil
@@ -195,7 +189,7 @@ func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles int) error
 		}
 
 		if currentSize > p.maxTotalSize {
-			return FactoryErrHttpRequestFileTotalSizeMax.New(p.maxTotalSize)
+			return FactoryErrHTTPRequestFileTotalSizeMax.New(p.maxTotalSize)
 		}
 	}
 

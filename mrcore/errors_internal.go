@@ -1,29 +1,29 @@
 package mrcore
 
-import . "github.com/mondegor/go-sysmess/mrerr"
+import e "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrInternal = NewFactory(
-		ErrorCodeInternal, ErrorTypeInternal, "internal server error")
+	FactoryErrInternal = e.NewFactory(
+		e.ErrorCodeInternal, e.ErrorTypeInternal, "internal server error")
 
-	FactoryErrInternalNotice = NewFactory(
-		ErrorCodeInternal, ErrorTypeInternalNotice, "internal server error")
+	FactoryErrInternalNotice = e.NewFactory(
+		e.ErrorCodeInternal, e.ErrorTypeInternalNotice, "internal server error")
 
-	FactoryErrInternalNilPointer = NewFactory(
-		"errInternalNilPointer", ErrorTypeInternal, "nil pointer")
+	FactoryErrInternalNilPointer = e.NewFactory(
+		"errInternalNilPointer", e.ErrorTypeInternal, "nil pointer")
 
-	FactoryErrInternalTypeAssertion = NewFactory(
-		"errInternalTypeAssertion", ErrorTypeInternal, "invalid type '{{ .type }}' assertion (value: {{ .value }})")
+	FactoryErrInternalTypeAssertion = e.NewFactory(
+		"errInternalTypeAssertion", e.ErrorTypeInternal, "invalid type '{{ .type }}' assertion (value: {{ .value }})")
 
-	FactoryErrInternalInvalidType = NewFactory(
-		"errInternalInvalidType", ErrorTypeInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
+	FactoryErrInternalInvalidType = e.NewFactory(
+		"errInternalInvalidType", e.ErrorTypeInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
 
-	FactoryErrInternalFailedToOpen = NewFactory(
-		"errInternalFailedToOpen", ErrorTypeInternal, "failed to open object")
+	FactoryErrInternalFailedToOpen = e.NewFactory(
+		"errInternalFailedToOpen", e.ErrorTypeInternal, "failed to open object")
 
-	FactoryErrInternalFailedToClose = NewFactory(
-		"errInternalFailedToClose", ErrorTypeInternal, "failed to close object")
+	FactoryErrInternalFailedToClose = e.NewFactory(
+		"errInternalFailedToClose", e.ErrorTypeInternal, "failed to close object")
 
-	FactoryErrWithData = NewFactory(
-		"errWithData", ErrorTypeInternalNotice, "{{ .key }}={{ .data }}")
+	FactoryErrWithData = e.NewFactory(
+		"errWithData", e.ErrorTypeInternalNotice, "{{ .key }}={{ .data }}")
 )

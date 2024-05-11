@@ -1,29 +1,29 @@
 package mrcore
 
-import . "github.com/mondegor/go-sysmess/mrerr"
+import e "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrUseCaseOperationFailed = NewFactory(
-		"errUseCaseOperationFailed", ErrorTypeInternal, "operation failed")
+	FactoryErrUseCaseOperationFailed = e.NewFactory(
+		"errUseCaseOperationFailed", e.ErrorTypeInternal, "operation failed")
 
-	FactoryErrUseCaseTemporarilyUnavailable = NewFactory(
-		"errUseCaseTemporarilyUnavailable", ErrorTypeSystem, "system is temporarily unavailable")
+	FactoryErrUseCaseTemporarilyUnavailable = e.NewFactory(
+		"errUseCaseTemporarilyUnavailable", e.ErrorTypeSystem, "system is temporarily unavailable")
 
-	FactoryErrUseCaseIncorrectInputData = NewFactory(
-		"errUseCaseIncorrectInputData", ErrorTypeInternalNotice, "{{ .key }}={{ .data }} is incorrect")
+	FactoryErrUseCaseIncorrectInputData = e.NewFactory(
+		"errUseCaseIncorrectInputData", e.ErrorTypeInternalNotice, "{{ .key }}={{ .data }} is incorrect")
 
-	FactoryErrUseCaseEntityNotFound = NewFactory(
-		"errUseCaseEntityNotFound", ErrorTypeUser, "entity not found")
+	FactoryErrUseCaseEntityNotFound = e.NewFactory(
+		"errUseCaseEntityNotFound", e.ErrorTypeUser, "entity not found")
 
-	FactoryErrUseCaseEntityNotAvailable = NewFactory(
-		"errUseCaseEntityNotAvailable", ErrorTypeUser, "entity is not available")
+	FactoryErrUseCaseEntityNotAvailable = e.NewFactory(
+		"errUseCaseEntityNotAvailable", e.ErrorTypeUser, "entity is not available")
 
-	FactoryErrUseCaseEntityVersionInvalid = NewFactory(
-		"errUseCaseEntityVersionInvalid", ErrorTypeUser, "entity version is invalid")
+	FactoryErrUseCaseEntityVersionInvalid = e.NewFactory(
+		"errUseCaseEntityVersionInvalid", e.ErrorTypeUser, "entity version is invalid")
 
-	FactoryErrUseCaseSwitchStatusRejected = NewFactory(
-		"errUseCaseSwitchStatusRejected", ErrorTypeUser, "switching from '{{ .statusFrom }}' to '{{ .statusTo }}' is rejected")
+	FactoryErrUseCaseSwitchStatusRejected = e.NewFactory(
+		"errUseCaseSwitchStatusRejected", e.ErrorTypeUser, "switching from '{{ .statusFrom }}' to '{{ .statusTo }}' is rejected")
 
-	FactoryErrUseCaseInvalidFile = NewFactory(
-		"errUseCaseInvalidFile", ErrorTypeUser, "file is invalid")
+	FactoryErrUseCaseInvalidFile = e.NewFactory(
+		"errUseCaseInvalidFile", e.ErrorTypeUser, "file is invalid")
 )

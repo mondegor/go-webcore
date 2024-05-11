@@ -12,9 +12,8 @@ func (f StatusFlow) Exists(status Status) bool {
 }
 
 // Check - проверяет возможность переключения из указанного статуса в указанный статус
-func (f StatusFlow) Check(statusFrom Status, statusTo Status) bool {
+func (f StatusFlow) Check(statusFrom, statusTo Status) bool {
 	statuses, ok := f[statusFrom]
-
 	if !ok {
 		return false
 	}

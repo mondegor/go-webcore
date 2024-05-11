@@ -22,10 +22,8 @@ type (
 	}
 )
 
-var (
-	// Make sure the ListSorter conforms with the mrserver.RequestParserListSorter interface
-	_ mrserver.RequestParserListSorter = (*ListSorter)(nil)
-)
+// Make sure the ListSorter conforms with the mrserver.RequestParserListSorter interface
+var _ mrserver.RequestParserListSorter = (*ListSorter)(nil)
 
 func NewListSorter(opts ListSorterOptions) *ListSorter {
 	ls := ListSorter{
@@ -50,7 +48,6 @@ func (p *ListSorter) SortParams(r *http.Request, sorter mrview.ListSorter) mrtyp
 		p.paramNameSortField,
 		p.paramNameSortDirection,
 	)
-
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 	}

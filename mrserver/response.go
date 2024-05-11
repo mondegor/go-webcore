@@ -31,5 +31,5 @@ type (
 		SendError(w http.ResponseWriter, r *http.Request, err error)
 	}
 
-	HttpErrorOverrideFunc func(err *mrerr.AppError) (int, *mrerr.AppError)
+	HTTPErrorOverrideFunc func(err *mrerr.AppError) (int, *mrerr.AppError)
 )

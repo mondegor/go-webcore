@@ -15,10 +15,8 @@ type (
 	}
 )
 
-var (
-	// Make sure the ItemStatus conforms with the mrserver.RequestParserItemStatus interface
-	_ mrserver.RequestParserItemStatus = (*ItemStatus)(nil)
-)
+// Make sure the ItemStatus conforms with the mrserver.RequestParserItemStatus interface
+var _ mrserver.RequestParserItemStatus = (*ItemStatus)(nil)
 
 func NewItemStatus() *ItemStatus {
 	return &ItemStatus{}
@@ -32,7 +30,6 @@ func NewItemStatusWithDefault(items []mrenum.ItemStatus) *ItemStatus {
 
 func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.ItemStatus {
 	items, err := p.parseList(r, key)
-
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return p.defaultItems
@@ -47,13 +44,11 @@ func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.Item
 
 func (p *ItemStatus) parseList(r *http.Request, key string) ([]mrenum.ItemStatus, error) {
 	enumList, err := mrreq.ParseEnumList(r, key)
-
 	if err != nil {
 		return []mrenum.ItemStatus{}, err
 	}
 
 	items, err := mrenum.ParseItemStatusList(enumList)
-
 	if err != nil {
 		return []mrenum.ItemStatus{}, err
 	}

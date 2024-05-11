@@ -55,7 +55,6 @@ func NewAccessControl(opts AccessControlOptions) (*RoleAccessControl, error) {
 		ma.roles[roleName] = roleID
 
 		config, err := loadRoleConfig(roleName, getFilePath(opts.RolesDirPath, roleName))
-
 		if err != nil {
 			return nil, err
 		}
@@ -101,7 +100,6 @@ func (a *RoleAccessControl) HasPrivilege(name string) bool {
 
 func (a *RoleAccessControl) CheckPrivilege(rolesIDs []uint16, name string) bool {
 	privRolesIDs, ok := a.privileges[name]
-
 	if !ok {
 		return false
 	}
@@ -117,7 +115,6 @@ func (a *RoleAccessControl) HasPermission(name string) bool {
 
 func (a *RoleAccessControl) CheckPermission(rolesIDs []uint16, name string) bool {
 	permRolesIDs, ok := a.permissions[name]
-
 	if !ok {
 		return false
 	}

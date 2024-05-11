@@ -17,20 +17,19 @@ func ParseUUID(r *http.Request, key string, required bool) (uuid.UUID, error) {
 
 	if value == "" {
 		if required {
-			return uuid.Nil, mrcore.FactoryErrHttpRequestParamEmpty.New(key)
+			return uuid.Nil, mrcore.FactoryErrHTTPRequestParamEmpty.New(key)
 		}
 
 		return uuid.Nil, nil
 	}
 
 	if len(value) > maxLenUUID {
-		return uuid.Nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenInt64)
+		return uuid.Nil, mrcore.FactoryErrHTTPRequestParamLenMax.New(key, maxLenInt64)
 	}
 
 	item, err := uuid.Parse(value)
-
 	if err != nil {
-		return uuid.Nil, mrcore.FactoryErrHttpRequestParseParam.New(key, "UUID", value)
+		return uuid.Nil, mrcore.FactoryErrHTTPRequestParseParam.New(key, "UUID", value)
 	}
 
 	return item, nil

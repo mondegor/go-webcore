@@ -9,23 +9,23 @@ const (
 )
 
 type (
-	HttpRouter interface {
+	HTTPRouter interface {
 		RegisterMiddleware(handlers ...func(next http.Handler) http.Handler)
-		Register(controllers ...HttpController)
+		Register(controllers ...HTTPController)
 		HandlerFunc(method, path string, handler http.HandlerFunc)
 		ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
-	HttpController interface {
-		Handlers() []HttpHandler
+	HTTPController interface {
+		Handlers() []HTTPHandler
 	}
 
-	HttpHandler struct {
+	HTTPHandler struct {
 		Method     string
 		URL        string
 		Permission string
-		Func       HttpHandlerFunc
+		Func       HTTPHandlerFunc
 	}
 
-	HttpHandlerFunc func(w http.ResponseWriter, r *http.Request) error
+	HTTPHandlerFunc func(w http.ResponseWriter, r *http.Request) error
 )

@@ -20,7 +20,7 @@ func ParseInt64List(r *http.Request, key string) ([]int64, error) {
 	}
 
 	if len(value) > maxLenInt64List {
-		return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenInt64List)
+		return nil, mrcore.FactoryErrHTTPRequestParamLenMax.New(key, maxLenInt64List)
 	}
 
 	itemsTmp := strings.Split(value, ",")
@@ -28,9 +28,8 @@ func ParseInt64List(r *http.Request, key string) ([]int64, error) {
 
 	for i, item := range itemsTmp {
 		itemN, err := strconv.ParseInt(strings.TrimSpace(item), 10, 64)
-
 		if err != nil {
-			return nil, mrcore.FactoryErrHttpRequestParseParam.New(key, "Int64", value)
+			return nil, mrcore.FactoryErrHTTPRequestParseParam.New(key, "Int64", value)
 		}
 
 		items[i] = itemN

@@ -27,15 +27,13 @@ type (
 	passTypeChars uint8
 )
 
-var (
-	passStrengthName = map[PassStrength]string{
-		PassStrengthNotRated: "NOT_RATED",
-		PassStrengthWeak:     "WEAK",
-		PassStrengthMedium:   "MIDDLE",
-		PassStrengthStrong:   "STRONG",
-		PassStrengthBest:     "THE_BEST",
-	}
-)
+var passStrengthName = map[PassStrength]string{
+	PassStrengthNotRated: "NOT_RATED",
+	PassStrengthWeak:     "WEAK",
+	PassStrengthMedium:   "MIDDLE",
+	PassStrengthStrong:   "STRONG",
+	PassStrengthBest:     "THE_BEST",
+}
 
 func PasswordStrength(value string) PassStrength {
 	length := len(value)

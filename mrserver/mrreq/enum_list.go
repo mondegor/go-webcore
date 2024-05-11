@@ -19,7 +19,7 @@ func ParseEnumList(r *http.Request, key string) ([]string, error) {
 	}
 
 	if len(value) > maxLenEnumList {
-		return nil, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenEnumList)
+		return nil, mrcore.FactoryErrHTTPRequestParamLenMax.New(key, maxLenEnumList)
 	}
 
 	items := strings.Split(strings.ToUpper(value), ",")
@@ -28,7 +28,7 @@ func ParseEnumList(r *http.Request, key string) ([]string, error) {
 		item = strings.TrimSpace(item)
 
 		if !regexpEnum.MatchString(item) {
-			return nil, mrcore.FactoryErrHttpRequestParseParam.New(key, "Enum", value)
+			return nil, mrcore.FactoryErrHTTPRequestParseParam.New(key, "Enum", value)
 		}
 
 		items[i] = item

@@ -9,7 +9,7 @@ import (
 )
 
 func WithPermission(permission string) PrepareHandlerFunc {
-	return func(handler *mrserver.HttpHandler) {
+	return func(handler *mrserver.HTTPHandler) {
 		if handler.Permission == "" {
 			handler.Permission = permission
 		}
@@ -17,7 +17,7 @@ func WithPermission(permission string) PrepareHandlerFunc {
 }
 
 func WithMiddlewareCheckAccess(ctx context.Context, section mrperms.AppSection, access mrperms.AccessControl) PrepareHandlerFunc {
-	return func(handler *mrserver.HttpHandler) {
+	return func(handler *mrserver.HTTPHandler) {
 		if !access.HasPermission(handler.Permission) {
 			mrlog.Ctx(ctx).Warn().Caller(1).Msgf(
 				"Permission '%s' is not registered for handler '%s %s', perhaps, it is not registered in the config or is not associated with any role",

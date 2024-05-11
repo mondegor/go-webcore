@@ -26,14 +26,13 @@ type (
 	}
 )
 
-func HandlerGetSystemInfoAsJson(cfg SystemInfoConfig) (http.HandlerFunc, error) {
+func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) {
 	hostName, err := os.Hostname()
-
 	if err != nil {
 		return nil, err
 	}
 
-	return HandlerGetStructAsJson(
+	return HandlerGetStructAsJSON(
 		systemInfoResponse{
 			Name:      cfg.Name,
 			Version:   cfg.Version,

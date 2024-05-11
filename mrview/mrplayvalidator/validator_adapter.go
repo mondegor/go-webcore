@@ -26,10 +26,8 @@ type (
 	}
 )
 
-var (
-	// Make sure the ValidatorAdapter conforms with the mrview.Validator interface
-	_ mrview.Validator = (*ValidatorAdapter)(nil)
-)
+// Make sure the ValidatorAdapter conforms with the mrview.Validator interface
+var _ mrview.Validator = (*ValidatorAdapter)(nil)
 
 func New() *ValidatorAdapter {
 	validate := validator.New()
@@ -68,7 +66,6 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 	}
 
 	errors, ok := err.(validator.ValidationErrors)
-
 	if !ok {
 		return mrcore.FactoryErrInternal.Wrap(err)
 	}

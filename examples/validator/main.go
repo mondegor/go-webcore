@@ -14,9 +14,7 @@ type (
 	}
 )
 
-var (
-	regexpLogin = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9\-]+[a-zA-Z]$`)
-)
+var regexpLogin = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9\-]+[a-zA-Z]$`)
 
 func main() {
 	validator := mrplayvalidator.New()

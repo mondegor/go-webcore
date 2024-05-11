@@ -36,7 +36,7 @@ func SetDateTimeFormat(value string) {
 func New(opts mrlog.Options) *LoggerAdapter {
 	var out io.Writer = os.Stdout
 
-	if !opts.JsonFormat {
+	if !opts.JSONFormat {
 		if opts.TimestampFormat == "" {
 			opts.TimestampFormat = time.Kitchen
 		}

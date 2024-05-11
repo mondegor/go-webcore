@@ -1,26 +1,26 @@
 package mrcore
 
-import . "github.com/mondegor/go-sysmess/mrerr"
+import e "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrStorageConnectionIsAlreadyCreated = NewFactory(
-		"errStorageConnectionIsAlreadyCreated", ErrorTypeInternal, "connection '{{ .name }}' is already created")
+	FactoryErrStorageConnectionIsAlreadyCreated = e.NewFactory(
+		"errStorageConnectionIsAlreadyCreated", e.ErrorTypeInternal, "connection '{{ .name }}' is already created")
 
-	FactoryErrStorageConnectionIsNotOpened = NewFactory(
-		"errStorageConnectionIsNotOpened", ErrorTypeInternal, "connection '{{ .name }}' is not opened")
+	FactoryErrStorageConnectionIsNotOpened = e.NewFactory(
+		"errStorageConnectionIsNotOpened", e.ErrorTypeInternal, "connection '{{ .name }}' is not opened")
 
-	FactoryErrStorageConnectionFailed = NewFactory(
-		"errStorageConnectionFailed", ErrorTypeSystem, "connection '{{ .name }}' is failed")
+	FactoryErrStorageConnectionFailed = e.NewFactory(
+		"errStorageConnectionFailed", e.ErrorTypeSystem, "connection '{{ .name }}' is failed")
 
-	FactoryErrStorageQueryFailed = NewFactory(
-		"errStorageQueryFailed", ErrorTypeInternal, "query is failed")
+	FactoryErrStorageQueryFailed = e.NewFactory(
+		"errStorageQueryFailed", e.ErrorTypeInternal, "query is failed")
 
-	FactoryErrStorageFetchDataFailed = NewFactory(
-		"errStorageFetchDataFailed", ErrorTypeInternal, "fetching data is failed")
+	FactoryErrStorageFetchDataFailed = e.NewFactory(
+		"errStorageFetchDataFailed", e.ErrorTypeInternal, "fetching data is failed")
 
-	FactoryErrStorageNoRowFound = NewFactory(
-		"errStorageNoRowFound", ErrorTypeInternalNotice, "no row found")
+	FactoryErrStorageNoRowFound = e.NewFactory(
+		"errStorageNoRowFound", e.ErrorTypeInternalNotice, "no row found")
 
-	FactoryErrStorageRowsNotAffected = NewFactory(
-		"errStorageRowsNotAffected", ErrorTypeInternalNotice, "rows not affected")
+	FactoryErrStorageRowsNotAffected = e.NewFactory(
+		"errStorageRowsNotAffected", e.ErrorTypeInternalNotice, "rows not affected")
 )

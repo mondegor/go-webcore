@@ -17,10 +17,8 @@ type (
 	}
 )
 
-var (
-	// Make sure the Validator conforms with the mrserver.RequestParserValidate interface
-	_ mrserver.RequestParserValidate = (*Validator)(nil)
-)
+// Make sure the Validator conforms with the mrserver.RequestParserValidate interface
+var _ mrserver.RequestParserValidate = (*Validator)(nil)
 
 func NewValidator(
 	decoder mrserver.RequestDecoder,

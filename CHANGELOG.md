@@ -4,7 +4,32 @@
 ## 2024-05-11
 ### Changed
 - Обновлена система формирования ошибок в связи с внедрением новой версии библиотеки `go-sysmess`:
-  - изменён формат создания новых ошибок;
+    - изменён формат создания новых ошибок;
+- Отформатирован код утилитой `gofumpt`;
+- Исправлены найденные утилитами `vet` и `staticcheck` недочёты;
+- Сделаны следующие замены в рамках `golint`:
+    - `FactoryErrHttp* -> FactoryErrHTTP*`;
+    - `HandlerGetSystemInfoAsJson -> HandlerGetSystemInfoAsJSON`;
+    - `HandlerGetStatusOKAsJson -> HandlerGetStatusOKAsJSON`;
+    - `HandlerGetStructAsJson -> HandlerGetStructAsJSON`;
+    - `HandlerGetStatInfoAsJson -> HandlerGetStatInfoAsJSON`;
+    - `HandlerGetNotFoundAsJson -> HandlerGetNotFoundAsJSON`;
+    - `HandlerGetMethodNotAllowedAsJson -> HandlerGetMethodNotAllowedAsJSON`;
+    - `HandlerGetFatalErrorAsJson  HandlerGetFatalErrorAsJSON`;
+    - `HttpController -> HTTPController`;
+    - `HttpErrorOverrideFunc -> HTTPErrorOverrideFunc`;
+    - `HttpHandler -> HTTPHandler`;
+    - `HttpHandlerFunc -> HTTPHandlerFunc`;
+    - `HttpRouter -> HTTPRouter`;
+    - `DefaultHttpErrorOverrideFunc -> DefaultHTTPErrorOverrideFunc`;
+    - `Ip2int -> IP2int`;
+    - `Ip2intMust -> IP2intMust`;
+    - `JsonEncoder -> JSONEncoder`;
+    - `JsonDecoder -> JSONDecoder`;
+    - `JsonFormat -> JSONFormat`;
+    - `ParseUserIp -> ParseUserIP`;
+    - `contentTypeJson -> contentTypeJSON`;
+    - `contentTypeProblemJson -> contentTypeProblemJSON`;
 
 ## 2024-04-10
 ### Added

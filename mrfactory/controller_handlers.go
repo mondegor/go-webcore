@@ -5,16 +5,16 @@ import (
 )
 
 type (
-	ControllerHandlers      []mrserver.HttpHandler
-	PrepareHandlerFunc      func(handler *mrserver.HttpHandler)
-	ApplyEachControllerFunc func(list []mrserver.HttpController, err error) error
+	ControllerHandlers      []mrserver.HTTPHandler
+	PrepareHandlerFunc      func(handler *mrserver.HTTPHandler)
+	ApplyEachControllerFunc func(list []mrserver.HTTPController, err error) error
 )
 
-func (c ControllerHandlers) Handlers() []mrserver.HttpHandler {
+func (c ControllerHandlers) Handlers() []mrserver.HTTPHandler {
 	return c
 }
 
-func PrepareEachController(list []mrserver.HttpController, operations ...PrepareHandlerFunc) []mrserver.HttpController {
+func PrepareEachController(list []mrserver.HTTPController, operations ...PrepareHandlerFunc) []mrserver.HTTPController {
 	for i := range list {
 		list[i] = PrepareController(list[i], operations...)
 	}
@@ -22,7 +22,7 @@ func PrepareEachController(list []mrserver.HttpController, operations ...Prepare
 	return list
 }
 
-func PrepareController(c mrserver.HttpController, operations ...PrepareHandlerFunc) mrserver.HttpController {
+func PrepareController(c mrserver.HTTPController, operations ...PrepareHandlerFunc) mrserver.HTTPController {
 	if len(operations) == 0 {
 		return c
 	}

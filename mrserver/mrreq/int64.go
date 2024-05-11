@@ -17,20 +17,19 @@ func ParseInt64(r *http.Request, key string, required bool) (int64, error) {
 
 	if value == "" {
 		if required {
-			return 0, mrcore.FactoryErrHttpRequestParamEmpty.New(key)
+			return 0, mrcore.FactoryErrHTTPRequestParamEmpty.New(key)
 		}
 
 		return 0, nil
 	}
 
 	if len(value) > maxLenInt64 {
-		return 0, mrcore.FactoryErrHttpRequestParamLenMax.New(key, maxLenInt64)
+		return 0, mrcore.FactoryErrHTTPRequestParamLenMax.New(key, maxLenInt64)
 	}
 
 	item, err := strconv.ParseInt(value, 10, 64)
-
 	if err != nil {
-		return 0, mrcore.FactoryErrHttpRequestParseParam.New(key, "Int64", value)
+		return 0, mrcore.FactoryErrHTTPRequestParseParam.New(key, "Int64", value)
 	}
 
 	return item, nil

@@ -10,14 +10,11 @@ import (
 )
 
 type (
-	DateTime struct {
-	}
+	DateTime struct{}
 )
 
-var (
-	// Make sure the DateTime conforms with the mrserver.RequestParserDateTime interface
-	_ mrserver.RequestParserDateTime = (*DateTime)(nil)
-)
+// Make sure the DateTime conforms with the mrserver.RequestParserDateTime interface
+var _ mrserver.RequestParserDateTime = (*DateTime)(nil)
 
 func NewDateTime() *DateTime {
 	return &DateTime{}
@@ -25,7 +22,6 @@ func NewDateTime() *DateTime {
 
 func (p *DateTime) FilterDateTime(r *http.Request, key string) time.Time {
 	value, err := mrreq.ParseDateTime(r, key, false)
-
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		return time.Time{}

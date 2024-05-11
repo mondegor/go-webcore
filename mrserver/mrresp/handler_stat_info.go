@@ -27,7 +27,7 @@ var (
 	accessLastTime time.Time
 )
 
-func HandlerGetStatInfoAsJson() http.HandlerFunc {
+func HandlerGetStatInfoAsJSON() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		statMutex.Lock()
 		response := statInfoResponse{

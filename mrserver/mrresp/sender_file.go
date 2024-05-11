@@ -18,10 +18,8 @@ type (
 	}
 )
 
-var (
-	// Make sure the FileSender conforms with the mrserver.FileResponseSender interface
-	_ mrserver.FileResponseSender = (*FileSender)(nil)
-)
+// Make sure the FileSender conforms with the mrserver.FileResponseSender interface
+var _ mrserver.FileResponseSender = (*FileSender)(nil)
 
 func NewFileSender(base *Sender) *FileSender {
 	return &FileSender{

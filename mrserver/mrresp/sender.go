@@ -13,10 +13,8 @@ type (
 	}
 )
 
-var (
-	// Make sure the Sender conforms with the mrserver.ResponseSender interface
-	_ mrserver.ResponseSender = (*Sender)(nil)
-)
+// Make sure the Sender conforms with the mrserver.ResponseSender interface
+var _ mrserver.ResponseSender = (*Sender)(nil)
 
 func NewSender(encoder mrserver.ResponseEncoder) *Sender {
 	return &Sender{
@@ -26,9 +24,8 @@ func NewSender(encoder mrserver.ResponseEncoder) *Sender {
 
 func (rs *Sender) Send(w http.ResponseWriter, status int, structure any) error {
 	bytes, err := rs.encoder.Marshal(structure)
-
 	if err != nil {
-		return mrcore.FactoryErrHttpResponseParseData.Wrap(err)
+		return mrcore.FactoryErrHTTPResponseParseData.Wrap(err)
 	}
 
 	rs.sendResponse(w, status, rs.encoder.ContentType(), bytes)

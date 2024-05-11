@@ -5,8 +5,7 @@ import (
 )
 
 type (
-	nopEventEmitter struct {
-	}
+	nopEventEmitter struct{}
 )
 
 func NewNopEventEmitter() EventEmitter {

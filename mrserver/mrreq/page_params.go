@@ -23,7 +23,6 @@ func ParsePageParams(r *http.Request, keyIndex, keySize string) (mrtype.PagePara
 	}
 
 	size, err := ParseInt64(r, keySize, false)
-
 	if err != nil {
 		return mrtype.PageParams{}, err
 	}
@@ -33,7 +32,7 @@ func ParsePageParams(r *http.Request, keyIndex, keySize string) (mrtype.PagePara
 	}
 
 	if size > maxValuePageSize {
-		return mrtype.PageParams{}, mrcore.FactoryErrHttpRequestParamMax.New(keySize, maxValuePageSize)
+		return mrtype.PageParams{}, mrcore.FactoryErrHTTPRequestParamMax.New(keySize, maxValuePageSize)
 	}
 
 	return mrtype.PageParams{
