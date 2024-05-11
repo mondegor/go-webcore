@@ -51,5 +51,5 @@ func (h *UsecaseHelper) wrapErrorFailed(err error, name string, data any) error 
 		factory = FactoryErrUseCaseOperationFailed
 	}
 
-	return factory.WithAttr(name, data).WithCaller(h.callerSkipFrame).Wrap(err)
+	return factory.WithAttr(name, data).WithCallerSkipFrame(h.callerSkipFrame).Wrap(err)
 }

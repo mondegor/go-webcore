@@ -1,6 +1,11 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-05-11
+### Changed
+- Обновлена система формирования ошибок в связи с внедрением новой версии библиотеки `go-sysmess`:
+  - изменён формат создания новых ошибок;
+
 ## 2024-04-10
 ### Added
 - Добавлена поддержка роутера `chi`;
@@ -37,7 +42,6 @@
       на нативные варианты;
     - удален метод `mrserver.HttpRouter.HttpHandlerFunc()`;
     - `mrrscors.New() + mrrscors.CorsAdapter.Middleware() -> mrrscors.Middleware()`;
-    - переименован и доработан: ;
     - стандартизованы:
         - `NewMiddlewareHandlerAdapter() -> MiddlewareHandlerAdapter()`;
         - `mrserver.MiddlewareCheckAccess`;

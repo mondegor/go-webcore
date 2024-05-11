@@ -140,7 +140,7 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.
 		Details:      errMessage.DetailsToString(),
 		Request:      r.URL.Path,
 		Time:         time.Now().UTC().Format(time.RFC3339),
-		ErrorTraceID: appError.TraceID(),
+		ErrorTraceID: appError.InstanceID(),
 	}
 
 	if mrdebug.IsDebug() {

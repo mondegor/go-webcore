@@ -38,7 +38,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	user3 := User{Login: "really-long-login"}
+	user3 := User{Login: "really-long-login-len-24"}
 
 	if err := validator.Validate(context.Background(), &user3); err != nil {
 		fmt.Println(err)

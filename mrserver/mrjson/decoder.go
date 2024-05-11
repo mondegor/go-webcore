@@ -22,7 +22,8 @@ func (p *JsonDecoder) ParseToStruct(ctx context.Context, content io.Reader, stru
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(structPointer); err != nil {
-		return mrcore.FactoryErrHttpRequestParseData.WithCaller(1).Wrap(err)
+		const skipFrame = 1
+		return mrcore.FactoryErrHttpRequestParseData.WithCallerSkipFrame(skipFrame).Wrap(err)
 	}
 
 	return nil

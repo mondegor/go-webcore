@@ -6,28 +6,28 @@ import (
 
 var (
 	FactoryErrHttpRequestFileSizeMin = NewFactory(
-		"errHttpRequestFileSizeMin", ErrorKindUser, "invalid file size, min size = {{ .value }}b")
+		"errHttpRequestFileSizeMin", ErrorTypeUser, "invalid file size, min size = {{ .value }}b")
 
 	FactoryErrHttpRequestFileSizeMax = NewFactory(
-		"errHttpRequestFileSizeMax", ErrorKindUser, "invalid file size, max size = {{ .value }}b")
+		"errHttpRequestFileSizeMax", ErrorTypeUser, "invalid file size, max size = {{ .value }}b")
 
 	FactoryErrHttpRequestFileExtension = NewFactory(
-		"errHttpRequestFileExtension", ErrorKindUser, "invalid file extension: {{ .value }}")
+		"errHttpRequestFileExtension", ErrorTypeUser, "invalid file extension: {{ .value }}")
 
 	FactoryErrHttpRequestFileTotalSizeMax = NewFactory(
-		"errHttpRequestFileTotalSizeMax", ErrorKindUser, "invalid file total size, max total size = {{ .value }}b")
+		"errHttpRequestFileTotalSizeMax", ErrorTypeUser, "invalid file total size, max total size = {{ .value }}b")
 
 	FactoryErrHttpRequestFileContentType = NewFactory(
-		"errHttpRequestFileContentType", ErrorKindUser, "the content type '{{ .value }}' does not match the detected type")
+		"errHttpRequestFileContentType", ErrorTypeUser, "the content type '{{ .value }}' does not match the detected type")
 
 	FactoryErrHttpRequestFileUnsupportedType = NewFactory(
-		"errHttpRequestFileUnsupportedType", ErrorKindUser, "unsupported file type '{{ .value }}'")
+		"errHttpRequestFileUnsupportedType", ErrorTypeUser, "unsupported file type '{{ .value }}'")
 
 	FactoryErrHttpRequestImageWidthMax = NewFactory(
-		"errHttpRequestImageWidthMax", ErrorKindUser, "invalid image width, max size = {{ .value }}px")
+		"errHttpRequestImageWidthMax", ErrorTypeUser, "invalid image width, max size = {{ .value }}px")
 
 	FactoryErrHttpRequestImageHeightMax = NewFactory(
-		"errHttpRequestImageHeightMax", ErrorKindUser, "invalid image height, max size = {{ .value }}px")
+		"errHttpRequestImageHeightMax", ErrorTypeUser, "invalid image height, max size = {{ .value }}px")
 )
 
 func WrapFileError(err error, name string) error {

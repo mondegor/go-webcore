@@ -3,27 +3,27 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrInternal = NewFactoryWithCaller(
-		ErrorCodeInternal, ErrorKindInternal, "internal server error")
+	FactoryErrInternal = NewFactory(
+		ErrorCodeInternal, ErrorTypeInternal, "internal server error")
 
 	FactoryErrInternalNotice = NewFactory(
-		ErrorCodeInternal, ErrorKindInternal, "internal server error")
+		ErrorCodeInternal, ErrorTypeInternalNotice, "internal server error")
 
-	FactoryErrInternalNilPointer = NewFactoryWithCaller(
-		"errInternalNilPointer", ErrorKindInternal, "nil pointer")
+	FactoryErrInternalNilPointer = NewFactory(
+		"errInternalNilPointer", ErrorTypeInternal, "nil pointer")
 
-	FactoryErrInternalTypeAssertion = NewFactoryWithCaller(
-		"errInternalTypeAssertion", ErrorKindInternal, "invalid type '{{ .type }}' assertion (value: {{ .value }})")
+	FactoryErrInternalTypeAssertion = NewFactory(
+		"errInternalTypeAssertion", ErrorTypeInternal, "invalid type '{{ .type }}' assertion (value: {{ .value }})")
 
-	FactoryErrInternalInvalidType = NewFactoryWithCaller(
-		"errInternalInvalidType", ErrorKindInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
+	FactoryErrInternalInvalidType = NewFactory(
+		"errInternalInvalidType", ErrorTypeInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
 
-	FactoryErrInternalFailedToOpen = NewFactoryWithCaller(
-		"errInternalFailedToOpen", ErrorKindInternal, "failed to open object")
+	FactoryErrInternalFailedToOpen = NewFactory(
+		"errInternalFailedToOpen", ErrorTypeInternal, "failed to open object")
 
-	FactoryErrInternalFailedToClose = NewFactoryWithCaller(
-		"errInternalFailedToClose", ErrorKindInternal, "failed to close object")
+	FactoryErrInternalFailedToClose = NewFactory(
+		"errInternalFailedToClose", ErrorTypeInternal, "failed to close object")
 
 	FactoryErrWithData = NewFactory(
-		"errWithData", ErrorKindInternal, "{{ .key }}={{ .data }}")
+		"errWithData", ErrorTypeInternalNotice, "{{ .key }}={{ .data }}")
 )

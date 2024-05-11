@@ -3,36 +3,36 @@ package mrcore
 import . "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrHttpResponseParseData = NewFactoryWithCaller(
-		"errHttpResponseParseData", ErrorKindInternal, "response data is not valid")
+	FactoryErrHttpResponseParseData = NewFactory(
+		"errHttpResponseParseData", ErrorTypeInternal, "response data is not valid")
 
 	FactoryErrHttpFileUpload = NewFactory(
-		"errHttpFileUpload", ErrorKindUser, "the file with the specified key '{{ .key }}' was not uploaded")
+		"errHttpFileUpload", ErrorTypeUser, "the file with the specified key '{{ .key }}' was not uploaded")
 
-	FactoryErrHttpMultipartFormFile = NewFactoryWithCaller(
-		"errHttpMultipartFormFile", ErrorKindSystem, "the file with the specified key '{{ .key }}' cannot be processed")
+	FactoryErrHttpMultipartFormFile = NewFactory(
+		"errHttpMultipartFormFile", ErrorTypeSystem, "the file with the specified key '{{ .key }}' cannot be processed")
 
 	FactoryErrHttpClientUnauthorized = NewFactory(
-		"errHttpClientUnauthorized", ErrorKindUser, "401. client is unauthorized")
+		"errHttpClientUnauthorized", ErrorTypeUser, "401. client is unauthorized")
 
 	FactoryErrHttpAccessForbidden = NewFactory(
-		"errHttpAccessForbidden", ErrorKindUser, "403. access forbidden")
+		"errHttpAccessForbidden", ErrorTypeUser, "403. access forbidden")
 
 	FactoryErrHttpResourceNotFound = NewFactory(
-		"errHttpResourceNotFound", ErrorKindUser, "404. resource not found")
+		"errHttpResourceNotFound", ErrorTypeUser, "404. resource not found")
 
 	FactoryErrHttpRequestParseData = NewFactory(
-		"errHttpRequestParseData", ErrorKindUser, "request body is not valid")
+		"errHttpRequestParseData", ErrorTypeUserWithCaller, "request body is not valid")
 
 	FactoryErrHttpRequestParseParam = NewFactory(
-		"errHttpRequestParseParam", ErrorKindUser, "request param with key '{{ .key }}' of type '{{ .type }}' contains incorrect value '{{ .value }}'")
+		"errHttpRequestParseParam", ErrorTypeUser, "request param with key '{{ .key }}' of type '{{ .type }}' contains incorrect value '{{ .value }}'")
 
 	FactoryErrHttpRequestParamEmpty = NewFactory(
-		"errHttpRequestParamEmpty", ErrorKindUser, "request param with key '{{ .key }}' is empty'")
+		"errHttpRequestParamEmpty", ErrorTypeUser, "request param with key '{{ .key }}' is empty'")
 
 	FactoryErrHttpRequestParamMax = NewFactory(
-		"errHttpRequestParamMax", ErrorKindUser, "request param with key '{{ .key }}' contains value greater then max '{{ .max }}'")
+		"errHttpRequestParamMax", ErrorTypeUser, "request param with key '{{ .key }}' contains value greater then max '{{ .max }}'")
 
 	FactoryErrHttpRequestParamLenMax = NewFactory(
-		"errHttpRequestParamLenMax", ErrorKindUser, "request param with key '{{ .key }}' has value length greater then max '{{ .maxLength }}' characters")
+		"errHttpRequestParamLenMax", ErrorTypeUser, "request param with key '{{ .key }}' has value length greater then max '{{ .maxLength }}' characters")
 )
