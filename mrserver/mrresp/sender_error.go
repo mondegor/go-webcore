@@ -9,80 +9,99 @@ import (
 
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-sysmess/mrlang"
+
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrdebug"
+	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
 type (
+	// ErrorSender - comment struct.
 	ErrorSender struct {
-		encoder      mrserver.ResponseEncoder
-		overrideFunc mrserver.HTTPErrorOverrideFunc
+		encoder          mrserver.ResponseEncoder
+		errorHandler     mrcore.ErrorHandler
+		statusGetter     mrserver.ErrorStatusGetter
+		unexpectedStatus int
 	}
 )
 
-// Make sure the ErrorSender conforms with the mrserver.ErrorResponseSender interface
+// Make sure the ErrorSender conforms with the mrserver.ErrorResponseSender interface.
 var _ mrserver.ErrorResponseSender = (*ErrorSender)(nil)
 
-func NewErrorSender(encoder mrserver.ResponseEncoder) *ErrorSender {
-	return &ErrorSender{
-		encoder:      encoder,
-		overrideFunc: mrserver.DefaultHTTPErrorOverrideFunc,
-	}
-}
-
-func NewErrorSenderWithOverrideFunc(
+// NewErrorSender - создаёт объект ErrorSender.
+func NewErrorSender(
 	encoder mrserver.ResponseEncoder,
-	overrideFunc mrserver.HTTPErrorOverrideFunc,
+	errorHandler mrcore.ErrorHandler,
+	statusGetter mrserver.ErrorStatusGetter,
+	unexpectedStatus int,
 ) *ErrorSender {
 	return &ErrorSender{
-		encoder:      encoder,
-		overrideFunc: overrideFunc,
+		encoder:          encoder,
+		errorHandler:     errorHandler,
+		statusGetter:     statusGetter,
+		unexpectedStatus: unexpectedStatus,
 	}
 }
 
+// SendError - отправляет клиенту ответ с ошибкой в одном из статусов: 4xx, 5XX и её деталями.
 func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err error) {
-	if customError, ok := err.(*mrerr.CustomError); ok {
+	ctx := r.Context()
+	sendResponse := func(status int, response any) {
 		rs.sendStructResponse(
-			r.Context(),
+			ctx,
 			w,
-			http.StatusBadRequest,
-			rs.encoder.ContentType(),
-			rs.getErrorListResponse(r.Context(), customError),
+			status,
+			rs.encoder.ContentTypeProblem(),
+			response,
 		)
-
-		return
 	}
 
-	if customErrorList, ok := err.(mrerr.CustomErrorList); ok {
-		rs.sendStructResponse(
-			r.Context(),
-			w,
-			http.StatusBadRequest,
-			rs.encoder.ContentType(),
-			rs.getErrorListResponse(r.Context(), customErrorList...),
-		)
+	var appError *mrerr.AppError
 
-		return
+	if customError, ok := err.(*mrerr.CustomError); ok { //nolint:errorlint
+		if customError.IsValid() {
+			sendResponse(
+				http.StatusBadRequest,
+				rs.getErrorListResponse(r.Context(), customError),
+			)
+
+			return
+		}
+
+		appError = customError.Err()
 	}
 
-	appError, ok := err.(*mrerr.AppError)
-	if !ok {
-		appError = mrcore.FactoryErrInternalNotice.Wrap(err)
+	if customErrorList, ok := err.(mrerr.CustomErrors); ok { //nolint:errorlint
+		for _, customError := range customErrorList {
+			if !customError.IsValid() {
+				appError = customError.Err() // берётся первая попавшаяся необработанная ошибка
+
+				break
+			}
+		}
+
+		if appError == nil {
+			sendResponse(
+				http.StatusBadRequest,
+				rs.getErrorListResponse(r.Context(), customErrorList...),
+			)
+
+			return
+		}
 	}
 
-	status, appError := rs.overrideFunc(appError)
+	// сюда могут приходит следующие типы ошибок:
+	// 1. AppError + Internal/System/User;
+	// 1. ProtoAppError + Internal/System/User;
+	// 3. error - ошибка, которая не была обёрнута в AppError;
+	rs.errorHandler.Process(ctx, err)
 
-	if appError.HasCallStack() {
-		mrlog.Ctx(r.Context()).Error().Err(appError).Send()
-	}
+	appError = mrcore.CastToAppError(err)
 
-	rs.sendStructResponse(
-		r.Context(),
-		w,
-		status,
-		rs.encoder.ContentTypeProblem(),
+	sendResponse(
+		rs.statusGetter.ErrorStatus(appError),
 		rs.getErrorDetailsResponse(r, appError),
 	)
 }
@@ -96,33 +115,26 @@ func (rs *ErrorSender) sendStructResponse(
 ) {
 	bytes, err := json.Marshal(structResponse)
 	if err != nil {
-		status = http.StatusTeapot
-		bytes = []byte{}
-		mrlog.Ctx(ctx).
-			Error().
-			Err(mrcore.FactoryErrHTTPResponseParseData.Wrap(err)).
-			Send()
+		status = rs.unexpectedStatus
+		bytes = nil
+
+		mrlog.Ctx(ctx).Error().Err(mrcore.ErrHttpResponseParseData.Wrap(err)).Msg("marshal failed")
 	}
 
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
-
-	if len(bytes) < 1 {
-		return
-	}
-
-	w.Write(bytes)
+	mrlib.Write(ctx, w, bytes)
 }
 
 func (rs *ErrorSender) getErrorListResponse(ctx context.Context, errors ...*mrerr.CustomError) ErrorListResponse {
 	attrs := make([]ErrorAttribute, len(errors))
 
 	for i, customError := range errors {
-		attrs[i].ID = customError.Code()
-		attrs[i].Value = customError.AppError().Translate(mrlang.Ctx(ctx)).Reason
+		attrs[i].ID = customError.CustomCode()
+		attrs[i].Value = customError.Err().Translate(mrlang.Ctx(ctx)).Reason
 
 		if mrdebug.IsDebug() {
-			attrs[i].DebugInfo = rs.debugInfo(customError.AppError())
+			attrs[i].DebugInfo = rs.debugInfo(customError.Err())
 		}
 	}
 

@@ -5,27 +5,31 @@ import (
 )
 
 const (
-	VarRestOfURL = "{restOfUrl}"
+	VarRestOfURL = "{{restOfUrl}}" // VarRestOfURL - comment const
 )
 
 type (
-	HTTPRouter interface {
+	// HttpRouter - роутинг запросов с их регистрацией и запуском.
+	HttpRouter interface {
 		RegisterMiddleware(handlers ...func(next http.Handler) http.Handler)
-		Register(controllers ...HTTPController)
+		Register(controllers ...HttpController)
 		HandlerFunc(method, path string, handler http.HandlerFunc)
 		ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
-	HTTPController interface {
-		Handlers() []HTTPHandler
+	// HttpController - http контроллер со списком его обработчиков.
+	HttpController interface {
+		Handlers() []HttpHandler
 	}
 
-	HTTPHandler struct {
+	// HttpHandler - http обработчик, к которому привязаны метод, URL и разрешение контролирующее запуск этого обработчика.
+	HttpHandler struct {
 		Method     string
 		URL        string
 		Permission string
-		Func       HTTPHandlerFunc
+		Func       HttpHandlerFunc
 	}
 
-	HTTPHandlerFunc func(w http.ResponseWriter, r *http.Request) error
+	// HttpHandlerFunc  - comment func.
+	HttpHandlerFunc func(w http.ResponseWriter, r *http.Request) error
 )

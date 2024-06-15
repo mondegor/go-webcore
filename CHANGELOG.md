@@ -1,35 +1,27 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
-## 2024-05-11
+## 2024-06-15
 ### Changed
 - Обновлена система формирования ошибок в связи с внедрением новой версии библиотеки `go-sysmess`:
     - изменён формат создания новых ошибок;
-- Отформатирован код утилитой `gofumpt`;
-- Исправлены найденные утилитами `vet` и `staticcheck` недочёты;
-- Сделаны следующие замены в рамках `golint`:
+- К проекту подключены линтеры с их настройками (`.golangci.yaml`);
+- Добавлены комментарии для публичных объектов и методов;
+- `MimeTypeList` теперь задаётся из `config.yaml`; 
+- Сделаны следующие замены:
     - `FactoryErrHttp* -> FactoryErrHTTP*`;
     - `HandlerGetSystemInfoAsJson -> HandlerGetSystemInfoAsJSON`;
-    - `HandlerGetStatusOKAsJson -> HandlerGetStatusOKAsJSON`;
+    - `HandlerGetStatusOKAsJson -> HandlerGetStatusOkAsJSON`;
     - `HandlerGetStructAsJson -> HandlerGetStructAsJSON`;
     - `HandlerGetStatInfoAsJson -> HandlerGetStatInfoAsJSON`;
     - `HandlerGetNotFoundAsJson -> HandlerGetNotFoundAsJSON`;
     - `HandlerGetMethodNotAllowedAsJson -> HandlerGetMethodNotAllowedAsJSON`;
     - `HandlerGetFatalErrorAsJson  HandlerGetFatalErrorAsJSON`;
-    - `HttpController -> HTTPController`;
-    - `HttpErrorOverrideFunc -> HTTPErrorOverrideFunc`;
-    - `HttpHandler -> HTTPHandler`;
-    - `HttpHandlerFunc -> HTTPHandlerFunc`;
-    - `HttpRouter -> HTTPRouter`;
-    - `DefaultHttpErrorOverrideFunc -> DefaultHTTPErrorOverrideFunc`;
-    - `Ip2int -> IP2int`;
-    - `Ip2intMust -> IP2intMust`;
-    - `JsonEncoder -> JSONEncoder`;
-    - `JsonDecoder -> JSONDecoder`;
-    - `JsonFormat -> JSONFormat`;
     - `ParseUserIp -> ParseUserIP`;
     - `contentTypeJson -> contentTypeJSON`;
     - `contentTypeProblemJson -> contentTypeProblemJSON`;
+- Обновлены многие пакеты: `mrperms`, `mrcrypt`, `mrresp`,
+  `mrparser`, `mrlog`, `mridempotency`, `mrserver` и др.;
 
 ## 2024-04-10
 ### Added

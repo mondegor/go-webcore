@@ -3,8 +3,11 @@ package mrlog
 import (
 	"fmt"
 	"time"
+
+	"github.com/mondegor/go-webcore/mrcore"
 )
 
+// ParseDateTimeFormat  - comment func.
 func ParseDateTimeFormat(str string) (string, error) {
 	switch str {
 	case "RFC3339":
@@ -15,8 +18,7 @@ func ParseDateTimeFormat(str string) (string, error) {
 		return time.DateTime, nil
 	case "TimeOnly":
 		return time.TimeOnly, nil
-
 	}
 
-	return time.RFC3339, fmt.Errorf("'%s' is not found in mrlog.ParseDateTimeFormat()", str)
+	return time.RFC3339, mrcore.ErrInternal.Wrap(fmt.Errorf("value '%s' is not found in mrlog.ParseDateTimeFormat()", str))
 }

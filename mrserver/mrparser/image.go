@@ -7,12 +7,14 @@ import (
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
 type (
+	// Image - comment struct.
 	Image struct {
 		file      *File
 		maxWidth  int32
@@ -20,6 +22,7 @@ type (
 		checkBody bool
 	}
 
+	// ImageOptions - опции для создания Image.
 	ImageOptions struct {
 		File      FileOptions
 		MaxWidth  int32
@@ -33,12 +36,28 @@ type (
 	}
 )
 
-// Make sure the Image conforms with the mrserver.RequestParserImage interface
+// Make sure the Image conforms with the mrserver.RequestParserImage interface.
 var _ mrserver.RequestParserImage = (*Image)(nil)
 
+// NewImage - создаёт объект Image.
 func NewImage(opts ImageOptions) *Image {
-	if len(opts.File.AllowedExts) == 0 {
-		opts.File.AllowedExts = []string{".gif", ".jpeg", ".jpg", ".png"}
+	if opts.File.AllowedMimeTypes == nil {
+		opts.File.AllowedMimeTypes = mrlib.NewMimeTypeList(
+			[]mrlib.MimeType{
+				{
+					Extension:   ".gif",
+					ContentType: "image/gif",
+				},
+				{
+					Extension:   ".jpg",
+					ContentType: "image/jpeg",
+				},
+				{
+					Extension:   ".png",
+					ContentType: "image/png",
+				},
+			},
+		)
 	}
 
 	return &Image{
@@ -49,7 +68,7 @@ func NewImage(opts ImageOptions) *Image {
 	}
 }
 
-// FormImage - WARNING: you don't forget to call result.Body.Close()
+// FormImage - WARNING: you don't forget to call result.Body.Close().
 func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	hdr, err := mrreq.FormFile(r, key)
 	if err != nil {
@@ -62,13 +81,17 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 
 	file, err := hdr.Open()
 	if err != nil {
-		return mrtype.Image{}, mrcore.FactoryErrHTTPMultipartFormFile.Wrap(err, key)
+		return mrtype.Image{}, mrcore.ErrHttpMultipartFormFile.Wrap(err, key)
 	}
 
 	contentType := p.file.detectedContentType(hdr)
+
 	meta, err := p.decode(file, contentType)
 	if err != nil {
-		file.Close()
+		if err := file.Close(); err != nil {
+			mrlog.Ctx(r.Context()).Error().Err(err).Msg("mrparser.FormImage: error when closing file image")
+		}
+
 		return mrtype.Image{}, err
 	}
 
@@ -84,11 +107,11 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	}, nil
 }
 
-// FormImageContent - only for short files
+// FormImageContent - only for short files.
 func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageContent, error) {
 	file, err := p.FormImage(r, key)
 	if err != nil {
-		return mrtype.ImageContent{}, nil
+		return mrtype.ImageContent{}, err
 	}
 
 	defer file.Body.Close()
@@ -96,7 +119,7 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageConte
 	buf := bytes.Buffer{}
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
-		return mrtype.ImageContent{}, mrcore.FactoryErrInternal.Wrap(err)
+		return mrtype.ImageContent{}, mrcore.ErrInternal.Wrap(err)
 	}
 
 	return mrtype.ImageContent{
@@ -105,6 +128,7 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageConte
 	}, nil
 }
 
+// FormImages - comment method.
 func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, error) {
 	fds, err := mrreq.FormFiles(r, key, 0)
 	if err != nil {
@@ -131,12 +155,13 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 
 			file, err := fds[i].Open()
 			if err != nil {
-				return mrcore.FactoryErrHTTPMultipartFormFile.Wrap(err, key)
+				return mrcore.ErrHttpMultipartFormFile.Wrap(err, key)
 			}
 
 			defer file.Close()
 
 			contentType := p.file.detectedContentType(fds[i])
+
 			meta, err := p.decode(file, contentType)
 			if err != nil {
 				return err
@@ -170,11 +195,11 @@ func (p *Image) decode(file multipart.File, contentType string) (imageMeta, erro
 	}
 
 	if p.maxWidth > 0 && int32(cfg.Width) > p.maxWidth {
-		return imageMeta{}, FactoryErrHTTPRequestImageWidthMax.New(p.maxWidth)
+		return imageMeta{}, ErrHttpRequestImageWidthMax.New(p.maxWidth)
 	}
 
 	if p.maxHeight > 0 && int32(cfg.Height) > p.maxHeight {
-		return imageMeta{}, FactoryErrHTTPRequestImageHeightMax.New(p.maxHeight)
+		return imageMeta{}, ErrHttpRequestImageHeightMax.New(p.maxHeight)
 	}
 
 	if p.checkBody {

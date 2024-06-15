@@ -2,24 +2,27 @@ package mrcrypt
 
 import (
 	"crypto/rand"
+	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
 const (
-	PassVowels      PassCharsKinds = 1
-	PassConsonants  PassCharsKinds = 2
-	PassNumerals    PassCharsKinds = 4
-	PassSigns       PassCharsKinds = 8
-	PassAbc         PassCharsKinds = 3  // PassVowels + PassConsonants
-	PassAbcNumerals PassCharsKinds = 7  // PassVowels + PassConsonants + PassNumerals
-	PassAll         PassCharsKinds = 15 // PassVowels + PassConsonants + PassNumerals + PassSigns
+	PassVowels      PassCharsKinds = 1  // PassVowels  - гласные буквы
+	PassConsonants  PassCharsKinds = 2  // PassConsonants  - согласные буквы
+	PassNumerals    PassCharsKinds = 4  // PassNumerals  - цифры
+	PassSigns       PassCharsKinds = 8  // PassSigns  - знаки
+	PassAbc         PassCharsKinds = 3  // PassAbc = PassVowels + PassConsonants
+	PassAbcNumerals PassCharsKinds = 7  // PassAbcNumerals = PassVowels + PassConsonants + PassNumerals
+	PassAll         PassCharsKinds = 15 // PassAll = PassVowels + PassConsonants + PassNumerals + PassSigns
 
 	pwCharSetLen = 4
 )
 
 type (
+	// PassCharsKinds  - comment type.
 	PassCharsKinds uint8
 
 	pwCharSet struct {
@@ -38,24 +41,27 @@ var pwCharSets = [pwCharSetLen]pwCharSet{
 	{PassSigns, 1, false, 6, []byte(".!?@$&")},
 }
 
+// GenPassword  - comment func.
 func GenPassword(length int, charsKinds PassCharsKinds) string {
 	if length < 1 {
-		mrlog.Default().Warn().Caller(1).Msgf("param 'length': %d < 1", length)
+		mrlog.Default().Warn().Err(fmt.Errorf("param 'length': %d < 1", length)).Send()
 		length = 1
 	}
 
 	if length > 128 {
-		mrlog.Default().Warn().Caller(1).Msgf("param 'length': %d > 128", length)
+		mrlog.Default().Warn().Err(fmt.Errorf("param 'length': %d > 128", length)).Send()
 		length = 128
 	}
 
 	if charsKinds == 0 {
-		mrlog.Default().Warn().Caller(1).Msgf("param 'charsKinds' is zero", length)
 		charsKinds = PassAll
+		mrlog.Default().Warn().Err(errors.New("param 'charsKinds' is zero")).Send() //nolint:wsl
 	}
 
-	var abc [pwCharSetLen]pwCharSet
-	var abcLen int
+	var (
+		abc    [pwCharSetLen]pwCharSet
+		abcLen int
+	)
 
 	for i := 0; i < pwCharSetLen; i++ {
 		if (pwCharSets[abcLen].kind & charsKinds) > 0 {
@@ -87,15 +93,17 @@ func GenPassword(length int, charsKinds PassCharsKinds) string {
 			// или если символ не первый и не последний
 			if abc[abcIndex].firstOrLast || (i != 0 && i != (length-1)) {
 				// если предыдущий символ такого же типа
-				if abcIndex == lastAbc.charSetIndex {
-					// если подряд идущих символов не превышает
-					if lastAbc.countSuccessivelySigns < abc[abcIndex].successivelyMax {
-						lastAbc.countSuccessivelySigns++
-						break
-					}
-				} else {
+				if abcIndex != lastAbc.charSetIndex {
 					lastAbc.charSetIndex = abcIndex
 					lastAbc.countSuccessivelySigns = 1
+
+					break
+				}
+
+				// если подряд идущих символов не превышает
+				if lastAbc.countSuccessivelySigns < abc[abcIndex].successivelyMax {
+					lastAbc.countSuccessivelySigns++
+
 					break
 				}
 			}
@@ -112,6 +120,7 @@ func getRandValue(max int) int {
 	value, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
 	if err != nil {
 		mrlog.Default().Error().Err(err).Send()
+
 		return 0
 	}
 

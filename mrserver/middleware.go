@@ -1,6 +1,7 @@
 package mrserver
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,17 +10,19 @@ import (
 	"time"
 
 	"github.com/mondegor/go-sysmess/mrlang"
+	"github.com/rs/xid"
+
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrperms"
-	"github.com/rs/xid"
 
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
 
 // go get -u github.com/rs/xid
 
+// MiddlewareGeneral  - comment func.
 func MiddlewareGeneral(
 	tr *mrlang.Translator,
 	statFunc func(l mrlog.Logger, start time.Time, sr *StatRequest, sw *StatResponseWriter),
@@ -65,18 +68,19 @@ func MiddlewareGeneral(
 	}
 }
 
+// MiddlewareRecoverHandler  - comment func.
 func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(next http.Handler) http.Handler {
 	if fatalFunc == nil {
-		fatalFunc = func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusTeapot)
+		fatalFunc = func(w http.ResponseWriter, _ *http.Request) {
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
 
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			defer func() {
+			defer func(ctx context.Context) {
 				if rvr := recover(); rvr != nil {
-					if rvr == http.ErrAbortHandler {
+					if rvr == http.ErrAbortHandler { //nolint:errorlint
 						// we don't recover http.ErrAbortHandler so the response
 						// to the client is aborted, this should not be logged
 						panic(rvr)
@@ -86,7 +90,7 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 						os.Stderr.Write([]byte(fmt.Sprintf("%+v", r)))
 						os.Stderr.Write(debug.Stack())
 					} else {
-						mrlog.Ctx(r.Context()).Error().
+						mrlog.Ctx(ctx).Error().
 							Str("panic", fmt.Sprintf("%+v", r)).
 							Bytes("CallStack", debug.Stack()).
 							Send()
@@ -94,15 +98,16 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 
 					fatalFunc(w, r)
 				}
-			}()
+			}(r.Context())
 
 			next.ServeHTTP(w, r)
 		})
 	}
 }
 
-func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HTTPHandlerFunc) http.HandlerFunc {
-	return func(next HTTPHandlerFunc) http.HandlerFunc {
+// MiddlewareHandlerAdapter  - comment func.
+func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HttpHandlerFunc) http.HandlerFunc {
+	return func(next HttpHandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if err := next(w, r); err != nil {
 				s.SendError(w, r, err)
@@ -111,28 +116,34 @@ func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HTTPHandlerFunc) 
 	}
 }
 
-func MiddlewareHandlerCheckAccess(handlerName string, access mrperms.AccessControl, privilege, permission string) func(next HTTPHandlerFunc) HTTPHandlerFunc {
-	return func(next HTTPHandlerFunc) HTTPHandlerFunc {
+// MiddlewareHandlerCheckAccess  - comment func.
+func MiddlewareHandlerCheckAccess(
+	handlerName string,
+	access mrperms.AccessRightsFactory,
+	privilege, permission string,
+) func(next HttpHandlerFunc) HttpHandlerFunc {
+	return func(next HttpHandlerFunc) HttpHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {
 			mrlog.Ctx(r.Context()).Debug().Str("handler", handlerName).Msg("exec handler")
 
-			rights := access.NewAccessRights("administrators", "guests") // :TODO: брать у пользователя
+			rights := access.NewAccessRights("administrators", "guests") // TODO: брать у пользователя
 
 			if rights.CheckPrivilege(privilege) && rights.CheckPermission(permission) {
 				return next(w, r)
 			}
 
 			if rights.IsGuestAccess() {
-				return mrcore.FactoryErrHTTPClientUnauthorized.New()
+				return mrcore.ErrHttpClientUnauthorized.New()
 			}
 
-			return mrcore.FactoryErrHTTPAccessForbidden.New()
+			return mrcore.ErrHttpAccessForbidden.New()
 		}
 	}
 }
 
-func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender ResponseSender) func(next HTTPHandlerFunc) HTTPHandlerFunc {
-	return func(next HTTPHandlerFunc) HTTPHandlerFunc {
+// MiddlewareHandlerIdempotency  - comment func.
+func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender ResponseSender) func(next HttpHandlerFunc) HttpHandlerFunc {
+	return func(next HttpHandlerFunc) HttpHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {
 			idempotencyKey := r.Header.Get(mrreq.HeaderKeyIdempotencyKey)
 

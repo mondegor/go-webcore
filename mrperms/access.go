@@ -1,20 +1,12 @@
 package mrperms
 
 type (
-	AppSection interface {
-		Caption() string
-		Path(actionPath string) string
-		Privilege() string
-		Secret() string
-		Audience() string
-	}
-
-	AccessControl interface {
+	// AccessRightsFactory - выдаёт объект AccessRights, который проверяет права доступа для указанных members.
+	AccessRightsFactory interface {
 		NewAccessRights(members ...string) AccessRights
-		HasPrivilege(name string) bool
-		HasPermission(name string) bool
 	}
 
+	// AccessRights - проверка прав доступа конкретного объекта к привилегиям и разрешениям.
 	AccessRights interface {
 		IsGuestAccess() bool
 		CheckPrivilege(name string) bool

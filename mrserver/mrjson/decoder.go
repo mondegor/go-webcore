@@ -6,23 +6,29 @@ import (
 	"io"
 
 	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrserver"
 )
 
 type (
-	JSONDecoder struct{}
+	// JsonDecoder - comment struct.
+	JsonDecoder struct{}
 )
 
-func NewDecoder() *JSONDecoder {
-	return &JSONDecoder{}
+// Make sure the Image conforms with the mrserver.RequestDecoder interface.
+var _ mrserver.RequestDecoder = (*JsonDecoder)(nil)
+
+// NewDecoder - создаёт объект JsonDecoder.
+func NewDecoder() *JsonDecoder {
+	return &JsonDecoder{}
 }
 
-func (p *JSONDecoder) ParseToStruct(ctx context.Context, content io.Reader, structPointer any) error {
+// ParseToStruct - comment method.
+func (p *JsonDecoder) ParseToStruct(_ context.Context, content io.Reader, structPointer any) error {
 	dec := json.NewDecoder(content)
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(structPointer); err != nil {
-		const skipFrame = 1
-		return mrcore.FactoryErrHTTPRequestParseData.WithCallerSkipFrame(skipFrame).Wrap(err)
+		return mrcore.ErrHttpRequestParseData.Wrap(err)
 	}
 
 	return nil

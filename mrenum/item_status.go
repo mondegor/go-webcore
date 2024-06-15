@@ -3,20 +3,22 @@ package mrenum
 import (
 	"database/sql/driver"
 	"encoding/json"
-	"fmt"
+
+	"github.com/mondegor/go-webcore/mrcore"
 )
 
 const (
-	_ ItemStatus = iota
-	ItemStatusDraft
-	ItemStatusEnabled
-	ItemStatusDisabled
+	_                  ItemStatus = iota
+	ItemStatusDraft               // ItemStatusDraft - черновик
+	ItemStatusEnabled             // ItemStatusEnabled - действующий
+	ItemStatusDisabled            // ItemStatusDisabled - отключённый
 
 	itemStatusLast     = uint8(ItemStatusDisabled)
 	enumNameItemStatus = "ItemStatus"
 )
 
 type (
+	// ItemStatus - comment type.
 	ItemStatus uint8
 )
 
@@ -32,47 +34,46 @@ var (
 		"ENABLED":  ItemStatusEnabled,
 		"DISABLED": ItemStatusDisabled,
 	}
-
-	ItemStatusFlow = StatusFlow{
-		ItemStatusDraft: {
-			ItemStatusEnabled,
-			ItemStatusDisabled,
-		},
-		ItemStatusEnabled: {
-			ItemStatusDisabled,
-		},
-		ItemStatusDisabled: {
-			ItemStatusEnabled,
-		},
-	}
 )
 
+// ParseAndSet - парсит указанное значение и если оно валидно, то устанавливает его числовое значение.
 func (e *ItemStatus) ParseAndSet(value string) error {
 	if parsedValue, ok := itemStatusValue[value]; ok {
 		*e = parsedValue
+
 		return nil
 	}
 
-	return fmt.Errorf("'%s' is not found in map %s", value, enumNameItemStatus)
+	return mrcore.ErrInternalKeyNotFoundInSource.New(value, enumNameItemStatus)
 }
 
+// Set - устанавливает указанное значение, если оно является enum значением.
 func (e *ItemStatus) Set(value uint8) error {
 	if value > 0 && value <= itemStatusLast {
 		*e = ItemStatus(value)
+
 		return nil
 	}
 
-	return fmt.Errorf("number '%d' is not registered in %s", value, enumNameItemStatus)
+	return mrcore.ErrInternalKeyNotFoundInSource.New(value, enumNameItemStatus)
 }
 
+// String - comment method.
 func (e ItemStatus) String() string {
 	return itemStatusName[e]
 }
 
+// Empty - проверяет, что enum значение не установлено.
+func (e ItemStatus) Empty() bool {
+	return e == 0
+}
+
+// MarshalJSON - переводит enum значение в строковое представление.
 func (e ItemStatus) MarshalJSON() ([]byte, error) {
 	return json.Marshal(e.String())
 }
 
+// UnmarshalJSON - переводит строковое значение в enum представление.
 func (e *ItemStatus) UnmarshalJSON(data []byte) error {
 	var value string
 
@@ -89,15 +90,19 @@ func (e *ItemStatus) Scan(value any) error {
 		return e.Set(uint8(val))
 	}
 
-	return fmt.Errorf("invalid type '%s' assertion (value: %v)", enumNameItemStatus, value)
+	return mrcore.ErrInternalTypeAssertion.New(enumNameItemStatus, value)
 }
 
+// Value implements the driver.Valuer interface.
 func (e ItemStatus) Value() (driver.Value, error) {
 	return uint8(e), nil
 }
 
+// ParseItemStatusList - парсит массив строковых значений и
+// возвращает соответствующий массив enum значений.
 func ParseItemStatusList(items []string) ([]ItemStatus, error) {
 	var tmp ItemStatus
+
 	parsedItems := make([]ItemStatus, len(items))
 
 	for i := range items {

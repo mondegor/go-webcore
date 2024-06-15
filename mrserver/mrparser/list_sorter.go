@@ -11,20 +11,23 @@ import (
 )
 
 type (
+	// ListSorter - comment struct.
 	ListSorter struct {
 		paramNameSortField     string
 		paramNameSortDirection string
 	}
 
+	// ListSorterOptions - опции для создания ListSorter.
 	ListSorterOptions struct {
 		ParamNameSortField     string
 		ParamNameSortDirection string
 	}
 )
 
-// Make sure the ListSorter conforms with the mrserver.RequestParserListSorter interface
+// Make sure the ListSorter conforms with the mrserver.RequestParserListSorter interface.
 var _ mrserver.RequestParserListSorter = (*ListSorter)(nil)
 
+// NewListSorter - создаёт объект ListSorter.
 func NewListSorter(opts ListSorterOptions) *ListSorter {
 	ls := ListSorter{
 		paramNameSortField:     "sortField",
@@ -42,6 +45,7 @@ func NewListSorter(opts ListSorterOptions) *ListSorter {
 	return &ls
 }
 
+// SortParams - comment method.
 func (p *ListSorter) SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams {
 	value, err := mrreq.ParseSortParams(
 		r,
@@ -58,6 +62,7 @@ func (p *ListSorter) SortParams(r *http.Request, sorter mrview.ListSorter) mrtyp
 
 	if !sorter.CheckField(value.FieldName) {
 		mrlog.Ctx(r.Context()).Warn().Msgf("sort field '%s' is not registered", value.FieldName)
+
 		return sorter.DefaultSort()
 	}
 

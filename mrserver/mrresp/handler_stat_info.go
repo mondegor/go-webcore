@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 )
@@ -27,7 +29,8 @@ var (
 	accessLastTime time.Time
 )
 
-func HandlerGetStatInfoAsJSON() http.HandlerFunc {
+// HandlerGetStatInfoAsJSON  - comment func.
+func HandlerGetStatInfoAsJSON(unexpectedStatus int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		statMutex.Lock()
 		response := statInfoResponse{
@@ -38,15 +41,23 @@ func HandlerGetStatInfoAsJSON() http.HandlerFunc {
 		}
 		statMutex.Unlock()
 
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
+		status := http.StatusOK
 
-		if bytes, err := json.Marshal(response); err == nil {
-			w.Write(bytes)
+		bytes, err := json.Marshal(response)
+		if err != nil {
+			status = unexpectedStatus
+			bytes = nil
+
+			mrlog.Ctx(r.Context()).Error().Err(mrcore.ErrHttpResponseParseData.Wrap(err)).Msg("marshal failed")
 		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(status)
+		mrlib.Write(r.Context(), w, bytes)
 	}
 }
 
+// ApplyStatRequest  - comment func.
 func ApplyStatRequest(l mrlog.Logger, start time.Time, sr *mrserver.StatRequest, sw *mrserver.StatResponseWriter) {
 	r := sr.Request()
 

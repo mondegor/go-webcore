@@ -9,25 +9,28 @@ import (
 )
 
 type (
+	// String - comment struct.
 	String struct {
 		pathFunc mrserver.RequestParserParamFunc
 	}
 )
 
-// Make sure the String conforms with the mrserver.RequestParserString interface
+// Make sure the String conforms with the mrserver.RequestParserString interface.
 var _ mrserver.RequestParserString = (*String)(nil)
 
+// NewString - создаёт объект String.
 func NewString(pathFunc mrserver.RequestParserParamFunc) *String {
 	return &String{
 		pathFunc: pathFunc,
 	}
 }
 
+// PathParamString - comment method.
 func (p *String) PathParamString(r *http.Request, name string) string {
 	return p.pathFunc(r, name)
 }
 
-// RawParamString - returns nil if the param not found
+// RawParamString - returns nil if the param not found.
 func (p *String) RawParamString(r *http.Request, key string) *string {
 	if !r.URL.Query().Has(key) {
 		return nil
@@ -38,10 +41,12 @@ func (p *String) RawParamString(r *http.Request, key string) *string {
 	return &value
 }
 
+// FilterString - comment method.
 func (p *String) FilterString(r *http.Request, key string) string {
 	value, err := mrreq.ParseStr(r, key, false)
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+
 		return ""
 	}
 

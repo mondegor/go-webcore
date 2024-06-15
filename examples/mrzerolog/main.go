@@ -1,26 +1,26 @@
 package main
 
 import (
-	"fmt"
-	"time"
+	"errors"
+	"log"
 
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrlog/mrzerolog"
+	"github.com/mondegor/go-webcore/mrlog/zerolog/factory"
 )
 
 func main() {
-	logger := mrzerolog.New(
-		mrlog.Options{
-			Level:           mrlog.InfoLevel,
-			JSONFormat:      true,
-			TimestampFormat: time.RFC3339Nano,
+	logger, err := factory.NewZeroLogAdapter(
+		factory.Options{
+			Level:           mrlog.InfoLevel.String(),
+			JsonFormat:      true,
+			TimestampFormat: "RFC3339Nano",
 		},
 	)
-
-	mrlog.SetDefault(logger)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	logger.Info().Msg("Logger info message - OK!")
 	logger.Debug().Msg("Logger debug message skipped")
-	logger.Error().Err(fmt.Errorf("my error")).Msg("Error with auto caller")
-	logger.Info().Caller().Msg("Message with caller")
+	logger.Error().Err(errors.New("my error")).Msg("Error with auto caller")
 }

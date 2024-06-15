@@ -15,6 +15,7 @@ const (
 
 var regexpSorterField = regexp.MustCompile(`^[a-z]([a-zA-Z0-9]+)?[a-zA-Z0-9]$`)
 
+// ParseSortParams  - comment func.
 func ParseSortParams(r *http.Request, keyField, keyDirection string) (mrtype.SortParams, error) {
 	query := r.URL.Query()
 	value := query.Get(keyField)
@@ -24,11 +25,11 @@ func ParseSortParams(r *http.Request, keyField, keyDirection string) (mrtype.Sor
 	}
 
 	if len(value) > maxLenSortField {
-		return mrtype.SortParams{}, mrcore.FactoryErrHTTPRequestParamLenMax.New(keyField, maxLenSortField)
+		return mrtype.SortParams{}, mrcore.ErrHttpRequestParamLenMax.New(keyField, maxLenSortField)
 	}
 
 	if !regexpSorterField.MatchString(value) {
-		return mrtype.SortParams{}, mrcore.FactoryErrHTTPRequestParseParam.New(keyField, "SortParams", value)
+		return mrtype.SortParams{}, mrcore.ErrHttpRequestParseParam.New(keyField, "SortParams", value)
 	}
 
 	var params mrtype.SortParams

@@ -9,6 +9,7 @@ const (
 )
 
 type (
+	// StatResponseWriter - comment struct.
 	StatResponseWriter struct {
 		http.ResponseWriter
 		statusCode int
@@ -17,6 +18,7 @@ type (
 	}
 )
 
+// NewStatResponseWriter - создаёт объект StatResponseWriter.
 func NewStatResponseWriter(w http.ResponseWriter, onWrite func(buf []byte)) *StatResponseWriter {
 	return &StatResponseWriter{
 		ResponseWriter: w,
@@ -25,11 +27,13 @@ func NewStatResponseWriter(w http.ResponseWriter, onWrite func(buf []byte)) *Sta
 	}
 }
 
+// WriteHeader - comment method.
 func (w *StatResponseWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
+// Write - comment method.
 func (w *StatResponseWriter) Write(buf []byte) (int, error) {
 	bytes, err := w.ResponseWriter.Write(buf)
 	w.bytes += bytes
@@ -43,10 +47,12 @@ func (w *StatResponseWriter) Write(buf []byte) (int, error) {
 	return bytes, err
 }
 
+// Bytes - comment method.
 func (w *StatResponseWriter) Bytes() int {
 	return w.bytes
 }
 
+// StatusCode - comment method.
 func (w *StatResponseWriter) StatusCode() int {
 	return w.statusCode
 }

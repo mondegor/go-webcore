@@ -5,11 +5,11 @@ import (
 )
 
 const (
-	PassStrengthNotRated PassStrength = iota // not rated
-	PassStrengthWeak                         // weak
-	PassStrengthMedium                       // middle
-	PassStrengthStrong                       // strong
-	PassStrengthBest                         // the best
+	PassStrengthNotRated PassStrength = iota // PassStrengthNotRated - пароль без оценки
+	PassStrengthWeak                         // PassStrengthWeak - слабый пароль
+	PassStrengthMedium                       // PassStrengthMedium - средний пароль
+	PassStrengthStrong                       // PassStrengthStrong - сильный пароль
+	PassStrengthBest                         // PassStrengthBest - самый сильный пароль
 
 	passTypeSmallABC passTypeChars = iota
 	passTypeBigABC
@@ -23,6 +23,7 @@ const (
 )
 
 type (
+	// PassStrength - comment type.
 	PassStrength  uint8
 	passTypeChars uint8
 )
@@ -35,6 +36,7 @@ var passStrengthName = map[PassStrength]string{
 	PassStrengthBest:     "THE_BEST",
 }
 
+// PasswordStrength  - comment func.
 func PasswordStrength(value string) PassStrength {
 	length := len(value)
 
@@ -48,13 +50,14 @@ func PasswordStrength(value string) PassStrength {
 	for i := 0; i < length; i++ {
 		uniqChars[value[i]] = true
 
-		if value[i] >= 48 && value[i] <= 57 {
+		switch {
+		case value[i] >= 48 && value[i] <= 57:
 			uniqTypeChars[passTypeNumeral] = passTypeNumeralLen
-		} else if value[i] >= 65 && value[i] <= 90 {
+		case value[i] >= 65 && value[i] <= 90:
 			uniqTypeChars[passTypeBigABC] = passTypeBigABCLen
-		} else if value[i] >= 97 && value[i] <= 122 {
+		case value[i] >= 97 && value[i] <= 122:
 			uniqTypeChars[passTypeSmallABC] = passTypeSmallABCLen
-		} else {
+		default:
 			uniqTypeChars[passTypeSign] = passTypeSignLen
 		}
 	}
@@ -89,6 +92,7 @@ func PasswordStrength(value string) PassStrength {
 	return PassStrengthNotRated
 }
 
+// String - comment method.
 func (e PassStrength) String() string {
 	return passStrengthName[e]
 }

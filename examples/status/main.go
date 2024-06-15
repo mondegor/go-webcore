@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/mondegor/go-webcore/mrenum"
+	"github.com/mondegor/go-webcore/mrstatus/mrflow"
 )
 
 func main() {
@@ -11,7 +12,9 @@ func main() {
 
 	fmt.Printf("STATUS: %s\n", status.String())
 
-	fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusDraft, mrenum.ItemStatusEnabled))
-	fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusEnabled, mrenum.ItemStatusDisabled))
-	fmt.Printf("check: %#v\n", mrenum.ItemStatusFlow.Check(mrenum.ItemStatusDisabled, mrenum.ItemStatusDraft))
+	flow := mrflow.ItemStatusFlow()
+
+	fmt.Printf("check: %#v\n", flow.Check(mrenum.ItemStatusDraft, mrenum.ItemStatusEnabled))
+	fmt.Printf("check: %#v\n", flow.Check(mrenum.ItemStatusEnabled, mrenum.ItemStatusDisabled))
+	fmt.Printf("check: %#v\n", flow.Check(mrenum.ItemStatusDisabled, mrenum.ItemStatusDraft))
 }

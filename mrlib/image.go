@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// DecodeImageConfig  - comment func.
 func DecodeImageConfig(file io.ReadSeeker, expectedContentType string) (image.Config, error) {
 	cfg, err := unsafeDecodeImageConfig(file, expectedContentType)
 	if err != nil {
@@ -32,15 +33,17 @@ func unsafeDecodeImageConfig(file io.ReadSeeker, contentType string) (image.Conf
 		return gif.DecodeConfig(file)
 	}
 
-	return image.Config{}, fmt.Errorf("the content type is not supported: %s", contentType)
+	return image.Config{}, fmt.Errorf("the image content type is not supported: %s", contentType)
 }
 
+// CheckImage  - comment func.
 func CheckImage(file io.ReadSeeker, expectedContentType string) error {
 	_, err := DecodeImage(file, expectedContentType)
 
 	return err
 }
 
+// DecodeImage  - comment func.
 func DecodeImage(file io.ReadSeeker, expectedContentType string) (image.Image, error) {
 	img, err := unsafeDecodeImage(file, expectedContentType)
 	if err != nil {
@@ -63,5 +66,5 @@ func unsafeDecodeImage(file io.ReadSeeker, contentType string) (image.Image, err
 		return gif.Decode(file)
 	}
 
-	return nil, fmt.Errorf("the content type is not supported: %s", contentType)
+	return nil, fmt.Errorf("the image content type is not supported: %s", contentType)
 }

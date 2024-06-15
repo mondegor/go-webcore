@@ -5,7 +5,8 @@ import (
 )
 
 type (
-	appSection struct {
+	// AppSection - comment struct.
+	AppSection struct {
 		caption   string
 		rootPath  string
 		privilege string
@@ -13,47 +14,58 @@ type (
 		audience  string
 	}
 
+	// AppSectionOptions - опции для создания AppSection.
 	AppSectionOptions struct {
 		Caption      string
-		RootPath     string
+		BasePath     string
 		Privilege    string
 		AuthSecret   string
 		AuthAudience string
 	}
 )
 
-func NewAppSection(opts AppSectionOptions) AppSection {
-	rootPath := "/" + strings.Trim(opts.RootPath, "/")
+// NewAppSection - создаёт объект AppSection.
+func NewAppSection(opts AppSectionOptions) *AppSection {
+	basePath := "/" + strings.Trim(opts.BasePath, "/")
 
-	if rootPath != "/" {
-		rootPath += "/"
+	if basePath != "/" {
+		basePath += "/"
 	}
 
-	return &appSection{
+	return &AppSection{
 		caption:   opts.Caption,
-		rootPath:  rootPath,
+		rootPath:  basePath,
 		privilege: opts.Privilege,
 		secret:    opts.AuthSecret,
 		audience:  opts.AuthAudience,
 	}
 }
 
-func (s *appSection) Caption() string {
+// Caption - comment method.
+func (s *AppSection) Caption() string {
 	return s.caption
 }
 
-func (s *appSection) Path(actionPath string) string {
-	return s.rootPath + strings.TrimLeft(actionPath, "/")
+// BuildPath - comment method.
+func (s *AppSection) BuildPath(methodPath string) string {
+	if methodPath == "" {
+		return ""
+	}
+
+	return s.rootPath + strings.TrimLeft(methodPath, "/")
 }
 
-func (s *appSection) Privilege() string {
+// Privilege - comment method.
+func (s *AppSection) Privilege() string {
 	return s.privilege
 }
 
-func (s *appSection) Secret() string {
+// Secret - comment method.
+func (s *AppSection) Secret() string {
 	return s.secret
 }
 
-func (s *appSection) Audience() string {
+// Audience - comment method.
+func (s *AppSection) Audience() string {
 	return s.audience
 }

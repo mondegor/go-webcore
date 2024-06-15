@@ -13,6 +13,7 @@ const (
 	defaultMaxMemory = 32 << 20 // 32 MB
 )
 
+// FormFiles  - comment func.
 func FormFiles(r *http.Request, key string, maxMemory int64) ([]*multipart.FileHeader, error) {
 	if maxMemory < 1 {
 		maxMemory = defaultMaxMemory
@@ -23,10 +24,10 @@ func FormFiles(r *http.Request, key string, maxMemory int64) ([]*multipart.FileH
 			mrdebug.MultipartForm(r.Context(), r.MultipartForm)
 
 			if errors.Is(err, http.ErrMissingBoundary) {
-				return nil, mrcore.FactoryErrHTTPFileUpload.Wrap(err, key)
+				return nil, mrcore.ErrHttpFileUpload.Wrap(err, key)
 			}
 
-			return nil, mrcore.FactoryErrHTTPMultipartFormFile.Wrap(err, key)
+			return nil, mrcore.ErrHttpMultipartFormFile.Wrap(err, key)
 		}
 	}
 
@@ -43,6 +44,7 @@ func FormFiles(r *http.Request, key string, maxMemory int64) ([]*multipart.FileH
 	return nil, nil
 }
 
+// FormFile  - comment func.
 func FormFile(r *http.Request, key string) (*multipart.FileHeader, error) {
 	fhs, err := FormFiles(r, key, 0)
 	if err != nil {
@@ -50,7 +52,7 @@ func FormFile(r *http.Request, key string) (*multipart.FileHeader, error) {
 	}
 
 	if len(fhs) == 0 {
-		return nil, mrcore.FactoryErrHTTPFileUpload.Wrap(http.ErrMissingFile, key)
+		return nil, mrcore.ErrHttpFileUpload.Wrap(http.ErrMissingFile, key)
 	}
 
 	return fhs[0], nil

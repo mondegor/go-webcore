@@ -4,27 +4,31 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
+// GenTokenBase64  - comment func.
 func GenTokenBase64(length int) string {
 	return cutString(base64.StdEncoding.EncodeToString(genToken(length)), length)
 }
 
+// GenTokenHex  - comment func.
 func GenTokenHex(length int) string {
 	return cutString(hex.EncodeToString(genToken(length)), length)
 }
 
+// GenTokenHexWithDelimiter  - comment func.
 func GenTokenHexWithDelimiter(length, repeat int) string {
 	if repeat < 1 {
-		mrlog.Default().Warn().Caller(1).Msgf("param 'repeat': %d < 1", repeat)
+		mrlog.Default().Warn().Err(fmt.Errorf("param 'repeat': %d < 1", repeat)).Send()
 		repeat = 1
 	}
 
 	if repeat > 16 {
-		mrlog.Default().Warn().Caller(1).Msgf("param 'repeat': %d > 16", repeat)
+		mrlog.Default().Warn().Err(fmt.Errorf("param 'repeat': %d > 16", repeat)).Send()
 		repeat = 16
 	}
 
@@ -39,20 +43,21 @@ func GenTokenHexWithDelimiter(length, repeat int) string {
 
 func genToken(length int) []byte {
 	if length < 1 {
-		mrlog.Default().Warn().Caller(2).Msgf("param 'length': %d < 1", length)
+		mrlog.Default().Warn().Err(fmt.Errorf("param 'length': %d < 1", length)).Send()
 		length = 1
 	}
 
 	if length > 256 {
-		mrlog.Default().Warn().Caller(2).Msgf("param 'length': %d > 256", length)
+		mrlog.Default().Warn().Err(fmt.Errorf("param 'length': %d > 256", length)).Send()
 		length = 256
 	}
 
 	value := make([]byte, length)
 
 	if _, err := rand.Read(value); err != nil {
-		mrlog.Default().Error().Caller(2).Err(err).Send()
-		return []byte{}
+		mrlog.Default().Error().Err(err).Send()
+
+		return nil
 	}
 
 	return value

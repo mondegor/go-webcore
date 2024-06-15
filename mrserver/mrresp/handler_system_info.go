@@ -10,6 +10,7 @@ import (
 )
 
 type (
+	// SystemInfoConfig - comment struct.
 	SystemInfoConfig struct {
 		Name      string
 		Version   string
@@ -26,6 +27,7 @@ type (
 	}
 )
 
+// HandlerGetSystemInfoAsJSON  - comment func.
 func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) {
 	hostName, err := os.Hostname()
 	if err != nil {

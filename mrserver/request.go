@@ -7,28 +7,32 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/mondegor/go-webcore/mrenum"
 	"github.com/mondegor/go-webcore/mrtype"
 	"github.com/mondegor/go-webcore/mrview"
 )
 
 type (
+	// RequestDecoder - преобразователь данных в указанную go структуру.
 	RequestDecoder interface {
 		ParseToStruct(ctx context.Context, content io.Reader, structPointer any) error
 	}
 
+	// RequestParserString - парсер данных запроса для преобразования их в string.
 	RequestParserString interface {
 		PathParamString(r *http.Request, name string) string
-		// RawParamString - returns nil if the param not found
-		RawParamString(r *http.Request, key string) *string
+		RawParamString(r *http.Request, key string) *string // returns nil if the param not found
 		FilterString(r *http.Request, key string) string
 	}
 
+	// RequestParserValidate - парсер данных запроса для преобразования их в go структуру.
 	RequestParserValidate interface {
 		Validate(r *http.Request, structPointer any) error
 		ValidateContent(ctx context.Context, content []byte, structPointer any) error
 	}
 
+	// RequestParserInt64 - парсер данных запроса для преобразования их в int64.
 	RequestParserInt64 interface {
 		PathParamInt64(r *http.Request, name string) int64
 		FilterInt64(r *http.Request, key string) int64
@@ -36,48 +40,58 @@ type (
 		FilterInt64List(r *http.Request, key string) []int64
 	}
 
+	// RequestParserKeyInt32 - парсер данных запроса для преобразования их в mrtype.KeyInt32.
 	RequestParserKeyInt32 interface {
 		PathKeyInt32(r *http.Request, name string) mrtype.KeyInt32
 		FilterKeyInt32(r *http.Request, key string) mrtype.KeyInt32
 		FilterKeyInt32List(r *http.Request, key string) []mrtype.KeyInt32
 	}
 
+	// RequestParserBool - парсер данных запроса для преобразования их в *bool.
 	RequestParserBool interface {
 		FilterNullableBool(r *http.Request, key string) *bool
 	}
 
+	// RequestParserDateTime - парсер данных запроса для преобразования их в time.Time.
 	RequestParserDateTime interface {
 		FilterDateTime(r *http.Request, key string) time.Time
 	}
 
+	// RequestParserUUID - парсер данных запроса для преобразования их в uuid.UUID.
 	RequestParserUUID interface {
 		PathParamUUID(r *http.Request, name string) uuid.UUID
 		FilterUUID(r *http.Request, key string) uuid.UUID
 	}
 
+	// RequestParserFile - парсер данных запроса для преобразования их в файловую структуру.
 	RequestParserFile interface {
 		FormFile(r *http.Request, key string) (mrtype.File, error)
 		FormFileContent(r *http.Request, key string) (mrtype.FileContent, error)
 		FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, error)
 	}
 
+	// RequestParserImage - парсер данных запроса для преобразования их в файловую структуру изображения.
 	RequestParserImage interface {
 		FormImage(r *http.Request, key string) (mrtype.Image, error)
 		FormImageContent(r *http.Request, key string) (mrtype.ImageContent, error)
 		FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, error)
 	}
 
+	// RequestParserListSorter - парсер данных запроса для преобразования их в mrtype.SortParams.
 	RequestParserListSorter interface {
 		SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams
 	}
 
+	// RequestParserListPager - парсер данных запроса для преобразования их в mrtype.PageParams.
 	RequestParserListPager interface {
 		PageParams(r *http.Request) mrtype.PageParams
 	}
 
+	// RequestParserItemStatus - парсер данных запроса для преобразования их в []mrenum.ItemStatus.
 	RequestParserItemStatus interface {
 		FilterStatusList(r *http.Request, key string) []mrenum.ItemStatus
 	}
 
+	// RequestParserParamFunc - функция для парсинга URL для извлечения из него параметров.
 	RequestParserParamFunc func(r *http.Request, key string) string
 )

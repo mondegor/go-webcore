@@ -1,12 +1,18 @@
 package main
 
 import (
+	"log"
+
 	"github.com/mondegor/go-webcore/mrcrypt"
 	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-webcore/mrlog/mrlogbase"
 )
 
 func main() {
-	logger := mrlog.New(mrlog.DebugLevel).With().Str("example", "mrcrypt").Logger()
+	logger := mrlogbase.New(mrlog.DebugLevel).With().Str("example", "mrcrypt").Logger()
+	if err := mrlog.SetDefault(logger); err != nil {
+		log.Fatal(err)
+	}
 
 	logger.Info().Msgf("GenDigitCode: %s", mrcrypt.GenDigitCode(16))
 	logger.Info().Msgf("GenTokenBase64: %s", mrcrypt.GenTokenBase64(16))

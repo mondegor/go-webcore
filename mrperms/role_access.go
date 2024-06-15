@@ -1,14 +1,12 @@
 package mrperms
 
 import (
+	"errors"
 	"fmt"
 )
 
 type (
-	roleMap       map[string]uint16
-	privilegeMap  map[string][]uint16
-	permissionMap map[string][]uint16
-
+	// RoleAccessControl - comment struct.
 	RoleAccessControl struct {
 		roles        roleMap       // map to rolesIDs
 		privileges   privilegeMap  // map to roles
@@ -17,6 +15,7 @@ type (
 		guestsRoleID uint16
 	}
 
+	// AccessControlOptions - опции для создания AccessControl.
 	AccessControlOptions struct {
 		RolesDirPath  string
 		RolesFileType string
@@ -25,11 +24,16 @@ type (
 		Permissions   []string
 		GuestRole     string // optional
 	}
+
+	roleMap       map[string]uint16
+	privilegeMap  map[string][]uint16
+	permissionMap map[string][]uint16
 )
 
+// NewAccessControl - создаёт объект RoleAccessControl.
 func NewAccessControl(opts AccessControlOptions) (*RoleAccessControl, error) {
 	if len(opts.Roles) == 0 {
-		return nil, fmt.Errorf("opts.Roles is required")
+		return nil, errors.New("opts.Roles is required")
 	}
 
 	if opts.GuestRole == "" {
@@ -54,7 +58,7 @@ func NewAccessControl(opts AccessControlOptions) (*RoleAccessControl, error) {
 		roleID++
 		ma.roles[roleName] = roleID
 
-		config, err := loadRoleConfig(roleName, getFilePath(opts.RolesDirPath, roleName))
+		config, err := loadRoleConfig(getFilePath(opts.RolesDirPath, roleName))
 		if err != nil {
 			return nil, err
 		}
@@ -84,20 +88,24 @@ func NewAccessControl(opts AccessControlOptions) (*RoleAccessControl, error) {
 	return &ma, nil
 }
 
-func (a *RoleAccessControl) NewAccessRights(roles ...string) AccessRights {
+// NewAccessRights - comment method.
+func (a *RoleAccessControl) NewAccessRights(roles ...string) AccessRights { //nolint:ireturn,nolintlint
 	return newRoleGroup(a, roles)
 }
 
+// GuestRole - comment method.
 func (a *RoleAccessControl) GuestRole() string {
 	return a.guestsRole
 }
 
+// HasPrivilege - comment method.
 func (a *RoleAccessControl) HasPrivilege(name string) bool {
 	_, ok := a.privileges[name]
 
 	return ok
 }
 
+// CheckPrivilege - comment method.
 func (a *RoleAccessControl) CheckPrivilege(rolesIDs []uint16, name string) bool {
 	privRolesIDs, ok := a.privileges[name]
 	if !ok {
@@ -107,12 +115,14 @@ func (a *RoleAccessControl) CheckPrivilege(rolesIDs []uint16, name string) bool 
 	return isArraysIntersection(rolesIDs, privRolesIDs)
 }
 
+// HasPermission - comment method.
 func (a *RoleAccessControl) HasPermission(name string) bool {
 	_, ok := a.permissions[name]
 
 	return ok
 }
 
+// CheckPermission - comment method.
 func (a *RoleAccessControl) CheckPermission(rolesIDs []uint16, name string) bool {
 	permRolesIDs, ok := a.permissions[name]
 	if !ok {
@@ -122,6 +132,7 @@ func (a *RoleAccessControl) CheckPermission(rolesIDs []uint16, name string) bool
 	return isArraysIntersection(rolesIDs, permRolesIDs)
 }
 
+// RegisteredRoles - comment method.
 func (a *RoleAccessControl) RegisteredRoles() []string {
 	roles := make([]string, len(a.roles))
 	i := 0
@@ -134,6 +145,7 @@ func (a *RoleAccessControl) RegisteredRoles() []string {
 	return roles
 }
 
+// RegisteredPrivileges - comment method.
 func (a *RoleAccessControl) RegisteredPrivileges() []string {
 	privileges := make([]string, len(a.privileges))
 	i := 0
@@ -146,6 +158,7 @@ func (a *RoleAccessControl) RegisteredPrivileges() []string {
 	return privileges
 }
 
+// RegisteredPermissions - comment method.
 func (a *RoleAccessControl) RegisteredPermissions() []string {
 	permissions := make([]string, len(a.permissions))
 	i := 0
@@ -158,6 +171,7 @@ func (a *RoleAccessControl) RegisteredPermissions() []string {
 	return permissions
 }
 
+// roleNamesToIDs - comment method.
 func (a *RoleAccessControl) roleNamesToIDs(roles []string) []uint16 {
 	var roleIDs []uint16
 

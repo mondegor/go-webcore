@@ -11,15 +11,16 @@ const (
 	maxLenStringsList = 2048
 )
 
+// ParseStrList  - comment func.
 func ParseStrList(r *http.Request, key string) ([]string, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 
 	if value == "" {
-		return []string{}, nil
+		return nil, nil
 	}
 
 	if len(value) > maxLenStringsList {
-		return nil, mrcore.FactoryErrHTTPRequestParamLenMax.New(key, maxLenStringsList)
+		return nil, mrcore.ErrHttpRequestParamLenMax.New(key, maxLenStringsList)
 	}
 
 	items := strings.Split(value, ",")

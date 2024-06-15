@@ -14,8 +14,9 @@ import (
 )
 
 type (
+	// File - comment struct.
 	File struct {
-		allowedExts             []string
+		allowedMimeTypes        *mrlib.MimeTypeList
 		minSize                 int64
 		maxSize                 int64
 		maxTotalSize            int64
@@ -23,8 +24,9 @@ type (
 		checkRequestContentType bool
 	}
 
+	// FileOptions - опции для создания File.
 	FileOptions struct {
-		AllowedExts             []string
+		AllowedMimeTypes        *mrlib.MimeTypeList
 		MinSize                 int64
 		MaxSize                 int64
 		MaxTotalSize            int64
@@ -33,12 +35,24 @@ type (
 	}
 )
 
-// Make sure the File conforms with the mrserver.RequestParserFile interface
+// Make sure the File conforms with the mrserver.RequestParserFile interface.
 var _ mrserver.RequestParserFile = (*File)(nil)
 
+// NewFile - создаёт объект File.
 func NewFile(opts FileOptions) *File {
-	if len(opts.AllowedExts) == 0 {
-		opts.AllowedExts = []string{".json", ".pdf", ".rar", ".tar", ".tgz", ".zip"}
+	if opts.AllowedMimeTypes == nil {
+		opts.AllowedMimeTypes = mrlib.NewMimeTypeList(
+			[]mrlib.MimeType{
+				{
+					Extension:   ".pdf",
+					ContentType: "application/pdf",
+				},
+				{
+					Extension:   ".zip",
+					ContentType: "application/zip",
+				},
+			},
+		)
 	}
 
 	if opts.MaxTotalSize == 0 && opts.MaxSize > 0 && opts.MaxFiles > 0 {
@@ -46,7 +60,7 @@ func NewFile(opts FileOptions) *File {
 	}
 
 	return &File{
-		allowedExts:             opts.AllowedExts,
+		allowedMimeTypes:        opts.AllowedMimeTypes,
 		minSize:                 opts.MinSize,
 		maxSize:                 opts.MaxSize,
 		maxFiles:                opts.MaxFiles,
@@ -55,7 +69,7 @@ func NewFile(opts FileOptions) *File {
 	}
 }
 
-// FormFile - WARNING: you don't forget to call result.Body.Close()
+// FormFile - WARNING: you don't forget to call result.Body.Close().
 func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 	hdr, err := mrreq.FormFile(r, key)
 	if err != nil {
@@ -68,7 +82,7 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 
 	file, err := hdr.Open()
 	if err != nil {
-		return mrtype.File{}, mrcore.FactoryErrHTTPMultipartFormFile.Wrap(err, key)
+		return mrtype.File{}, mrcore.ErrHttpMultipartFormFile.Wrap(err, key)
 	}
 
 	return mrtype.File{
@@ -81,7 +95,7 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 	}, nil
 }
 
-// FormFileContent - only for short files
+// FormFileContent - only for short files.
 func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent, error) {
 	file, err := p.FormFile(r, key)
 	if err != nil {
@@ -93,7 +107,7 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent,
 	buf := bytes.Buffer{}
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
-		return mrtype.FileContent{}, mrcore.FactoryErrInternal.Wrap(err)
+		return mrtype.FileContent{}, mrcore.ErrInternal.Wrap(err)
 	}
 
 	return mrtype.FileContent{
@@ -102,6 +116,7 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent,
 	}, nil
 }
 
+// FormFiles - comment method.
 func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, error) {
 	fds, err := mrreq.FormFiles(r, key, 0)
 	if err != nil {
@@ -140,24 +155,24 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 
 func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	if hdr.Size < p.minSize {
-		return FactoryErrHTTPRequestFileSizeMin.New(p.minSize)
+		return ErrHttpRequestFileSizeMin.New(p.minSize)
 	}
 
 	if p.maxSize > 0 && hdr.Size > p.maxSize {
-		return FactoryErrHTTPRequestFileSizeMax.New(p.maxSize)
+		return ErrHttpRequestFileSizeMax.New(p.maxSize)
 	}
 
 	ext := path.Ext(hdr.Filename)
 
-	if !p.checkExt(ext) {
-		return FactoryErrHTTPRequestFileExtension.New(ext)
+	if err := p.allowedMimeTypes.CheckExt(ext); err != nil {
+		return ErrHttpRequestFileExtension.Wrap(err, ext)
 	}
 
-	detectedContentType := mrlib.MimeTypeByExt(ext)
+	detectedContentType := p.allowedMimeTypes.ContentType(ext)
 
 	if p.checkRequestContentType {
 		if detectedContentType != hdr.Header.Get("Content-Type") {
-			return FactoryErrHTTPRequestFileContentType.New(hdr.Header.Get("Content-Type"))
+			return ErrHttpRequestFileContentType.New(hdr.Header.Get("Content-Type"))
 		}
 	} else {
 		if detectedContentType == "" {
@@ -166,7 +181,7 @@ func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	}
 
 	if detectedContentType == "" {
-		return FactoryErrHTTPRequestFileUnsupportedType.New(hdr.Filename)
+		return ErrHttpRequestFileUnsupportedType.New(hdr.Filename)
 	}
 
 	return nil
@@ -189,7 +204,7 @@ func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles int) error
 		}
 
 		if currentSize > p.maxTotalSize {
-			return FactoryErrHTTPRequestFileTotalSizeMax.New(p.maxTotalSize)
+			return ErrHttpRequestFileTotalSizeMax.New(p.maxTotalSize)
 		}
 	}
 
@@ -197,24 +212,9 @@ func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles int) error
 }
 
 func (p *File) detectedContentType(hdr *multipart.FileHeader) string {
-	if contentType := mrlib.MimeTypeByFile(hdr.Filename); contentType != "" {
+	if contentType := p.allowedMimeTypes.ContentTypeByFileName(hdr.Filename); contentType != "" {
 		return contentType
 	}
 
 	return hdr.Header.Get("Content-Type")
-}
-
-// ext can be empty
-func (p *File) checkExt(ext string) bool {
-	if len(p.allowedExts) == 0 {
-		return true
-	}
-
-	for i := range p.allowedExts {
-		if ext == p.allowedExts[i] {
-			return true
-		}
-	}
-
-	return false
 }

@@ -9,18 +9,23 @@ import (
 )
 
 type (
-	errorNopService struct {
+	nopServiceError struct {
 		name string
 		err  error
 	}
 )
 
-func (e *errorNopService) Error() string {
-	return fmt.Errorf("NopService '%s' has error: %w", e.name, e.err).Error()
+// Error - comment method.
+func (e *nopServiceError) Error() string {
+	if e.err != nil {
+		return fmt.Sprintf("NopService '%s' has error: %s", e.name, e.err.Error())
+	}
+
+	return fmt.Sprintf("NopService '%s' has no error", e.name)
 }
 
 // PrepareNopServiceWithTimeoutToStart - предназначен для тестирования запуска и остановки процессов
-// пример: appRunner.Add(mrdebug.PrepareNopServiceWithTimeoutToStart(ctx, "s1", 5 * time.Second))
+// Пример: appRunner.Add(mrdebug.PrepareNopServiceWithTimeoutToStart(ctx, "s1", 5 * time.Second)).
 func PrepareNopServiceWithTimeoutToStart(
 	ctx context.Context,
 	name string,
@@ -36,15 +41,18 @@ func PrepareNopServiceWithTimeoutToStart(
 			err := ctx.Err()
 
 			// если такого типа процесс успел первым
-			if _, ok := err.(*errorNopService); !ok {
-				err = &errorNopService{name: name, err: err}
+			if _, ok := err.(*nopServiceError); !ok { //nolint:errorlint
+				err = &nopServiceError{
+					name: name,
+					err:  err,
+				}
 			}
 
 			return err
 		}, func(err error) {
 			cancel()
 
-			if errService, ok := err.(*errorNopService); ok {
+			if errService, ok := err.(*nopServiceError); ok { //nolint:errorlint
 				if errService.name == name {
 					logger.Info().Msgf("Shutting down the NopService '%s' by timeout", name)
 				} else {

@@ -10,28 +10,33 @@ import (
 )
 
 type (
+	// ItemStatus - comment struct.
 	ItemStatus struct {
 		defaultItems []mrenum.ItemStatus
 	}
 )
 
-// Make sure the ItemStatus conforms with the mrserver.RequestParserItemStatus interface
+// Make sure the ItemStatus conforms with the mrserver.RequestParserItemStatus interface.
 var _ mrserver.RequestParserItemStatus = (*ItemStatus)(nil)
 
+// NewItemStatus - создаёт объект ItemStatus.
 func NewItemStatus() *ItemStatus {
 	return &ItemStatus{}
 }
 
+// NewItemStatusWithDefault - создаёт объект ItemStatus.
 func NewItemStatusWithDefault(items []mrenum.ItemStatus) *ItemStatus {
 	return &ItemStatus{
 		defaultItems: items,
 	}
 }
 
+// FilterStatusList - comment method.
 func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.ItemStatus {
 	items, err := p.parseList(r, key)
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+
 		return p.defaultItems
 	}
 
@@ -45,12 +50,12 @@ func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.Item
 func (p *ItemStatus) parseList(r *http.Request, key string) ([]mrenum.ItemStatus, error) {
 	enumList, err := mrreq.ParseEnumList(r, key)
 	if err != nil {
-		return []mrenum.ItemStatus{}, err
+		return nil, err
 	}
 
 	items, err := mrenum.ParseItemStatusList(enumList)
 	if err != nil {
-		return []mrenum.ItemStatus{}, err
+		return nil, err
 	}
 
 	return items, nil

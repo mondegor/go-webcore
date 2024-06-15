@@ -11,18 +11,22 @@ var (
 	regexpVariable          = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]+$`)
 )
 
+// ValidateAnyNotSpaceSymbol  - comment func.
 func ValidateAnyNotSpaceSymbol(value string) bool {
 	return regexpAnyNotSpaceSymbol.MatchString(value)
 }
 
+// ValidateArticle  - comment func.
 func ValidateArticle(value string) bool {
 	return regexpArticle.MatchString(value)
 }
 
+// ValidateRewriteName  - comment func.
 func ValidateRewriteName(value string) bool {
 	return regexpRewriteName.MatchString(value)
 }
 
+// ValidateVariable  - comment func.
 func ValidateVariable(value string) bool {
 	return regexpVariable.MatchString(value)
 }

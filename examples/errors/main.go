@@ -2,16 +2,18 @@ package main
 
 import (
 	"github.com/mondegor/go-sysmess/mrmsg"
+
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-webcore/mrlog/mrlogbase"
 )
 
 func main() {
-	logger := mrlog.New(mrlog.DebugLevel).With().Str("example", "errors").Logger()
+	logger := mrlogbase.New(mrlog.DebugLevel).With().Str("example", "errors").Logger()
 
-	logger.Error().Err(mrcore.FactoryErrInternal.New()).Msg("this is FactoryErrInternal")
-	logger.Error().Err(mrcore.FactoryErrInternalTypeAssertion.New("MY-TYPE", "MY-VALUE")).Send()
-	logger.Error().Err(mrcore.FactoryErrInternal.WithAttr("MY-DATA-KEY", mrmsg.Data{"itemId": "id-001"}).New()).Send()
+	logger.Error().Err(mrcore.ErrInternal).Msg("this is ErrInternal")
+	logger.Error().Err(mrcore.ErrInternalTypeAssertion.New("MY-TYPE", "MY-VALUE")).Send()
+	logger.Error().Err(mrcore.ErrInternal.New().WithAttr("MY-DATA-KEY", mrmsg.Data{"itemId": "id-001"})).Send()
 
-	logger.Fatal().Int("int1", 1).Int("int2", 2).Int("int3", 3).Msg(mrcore.FactoryErrInternal.New().Error())
+	logger.Fatal().Int("int1", 1).Int("int2", 2).Int("int3", 3).Msg(mrcore.ErrInternal.New().Error())
 }

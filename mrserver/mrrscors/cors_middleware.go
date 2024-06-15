@@ -3,13 +3,15 @@ package mrrscors
 import (
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/rs/cors"
+
+	"github.com/mondegor/go-webcore/mrlog"
 )
 
 // go get -u github.com/rs/cors
 
 type (
+	// Options - опции для создания Middleware.
 	Options struct {
 		AllowedOrigins   []string
 		AllowedMethods   []string
@@ -20,6 +22,7 @@ type (
 	}
 )
 
+// Middleware  - comment func.
 func Middleware(opts Options) func(next http.Handler) http.Handler {
 	options := cors.Options{
 		AllowedOrigins:   opts.AllowedOrigins,
@@ -47,9 +50,9 @@ func Middleware(opts Options) func(next http.Handler) http.Handler {
 		)
 	}
 
-	cors := cors.New(options)
+	c := cors.New(options)
 
 	return func(next http.Handler) http.Handler {
-		return cors.Handler(next)
+		return c.Handler(next)
 	}
 }

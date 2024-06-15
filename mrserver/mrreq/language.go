@@ -10,6 +10,7 @@ const (
 	headerKeyAcceptLanguage = "Accept-Language"
 )
 
+// ParseLanguage  - comment func.
 func ParseLanguage(r *http.Request) []string {
 	acceptLanguage := r.Header.Get(headerKeyAcceptLanguage)
 

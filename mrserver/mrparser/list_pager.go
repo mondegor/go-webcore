@@ -10,6 +10,7 @@ import (
 )
 
 type (
+	// ListPager - comment struct.
 	ListPager struct {
 		paramNamePageIndex string
 		paramNamePageSize  string
@@ -17,6 +18,7 @@ type (
 		pageSizeDefault    uint64
 	}
 
+	// ListPagerOptions - опции для создания ListPager.
 	ListPagerOptions struct {
 		ParamNamePageIndex string
 		ParamNamePageSize  string
@@ -25,9 +27,10 @@ type (
 	}
 )
 
-// Make sure the ListPager conforms with the mrserver.RequestParserListPager interface
+// Make sure the ListPager conforms with the mrserver.RequestParserListPager interface.
 var _ mrserver.RequestParserListPager = (*ListPager)(nil)
 
+// NewListPager - создаёт объект ListPager.
 func NewListPager(opts ListPagerOptions) *ListPager {
 	lp := ListPager{
 		paramNamePageIndex: "pageIndex",
@@ -55,6 +58,7 @@ func NewListPager(opts ListPagerOptions) *ListPager {
 	return &lp
 }
 
+// PageParams - comment method.
 func (p *ListPager) PageParams(r *http.Request) mrtype.PageParams {
 	value, err := mrreq.ParsePageParams(
 		r,

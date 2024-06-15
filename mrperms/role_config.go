@@ -19,7 +19,7 @@ type (
 	}
 )
 
-func loadRoleConfig(roleName, filePath string) (*roleConfig, error) {
+func loadRoleConfig(filePath string) (*roleConfig, error) {
 	cfg := roleConfig{}
 
 	if err := parseFile(filePath, &cfg); err != nil {

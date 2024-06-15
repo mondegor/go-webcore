@@ -8,11 +8,13 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
+// MultipartForm  - comment func.
 func MultipartForm(ctx context.Context, form *multipart.Form) {
 	logger := mrlog.Ctx(ctx).With().Str("func", "MultipartForm").Logger()
 
 	if form == nil {
 		logger.Debug().Msg("Param form is nil")
+
 		return
 	}
 
@@ -33,11 +35,13 @@ func MultipartForm(ctx context.Context, form *multipart.Form) {
 	}
 }
 
+// MultipartFileHeader  - comment func.
 func MultipartFileHeader(ctx context.Context, hdr *multipart.FileHeader) {
 	logger := mrlog.Ctx(ctx).With().Str("func", "MultipartFileHeader").Logger()
 
 	if hdr == nil {
 		logger.Debug().Msg("Param hdr is nil")
+
 		return
 	}
 

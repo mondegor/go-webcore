@@ -1,6 +1,10 @@
 package mrjson
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/mondegor/go-webcore/mrserver"
+)
 
 const (
 	contentTypeJSON        = "application/json; charset=utf-8"
@@ -8,21 +12,29 @@ const (
 )
 
 type (
-	JSONEncoder struct{}
+	// JsonEncoder - comment struct.
+	JsonEncoder struct{}
 )
 
-func NewEncoder() *JSONEncoder {
-	return &JSONEncoder{}
+// Make sure the Image conforms with the mrserver.ResponseEncoder interface.
+var _ mrserver.ResponseEncoder = (*JsonEncoder)(nil)
+
+// NewEncoder - создаёт объект JsonEncoder.
+func NewEncoder() *JsonEncoder {
+	return &JsonEncoder{}
 }
 
-func (p *JSONEncoder) ContentType() string {
+// ContentType - comment method.
+func (p *JsonEncoder) ContentType() string {
 	return contentTypeJSON
 }
 
-func (p *JSONEncoder) ContentTypeProblem() string {
+// ContentTypeProblem - comment method.
+func (p *JsonEncoder) ContentTypeProblem() string {
 	return contentTypeProblemJSON
 }
 
-func (p *JSONEncoder) Marshal(structure any) ([]byte, error) {
+// Marshal - comment method.
+func (p *JsonEncoder) Marshal(structure any) ([]byte, error) {
 	return json.Marshal(structure)
 }

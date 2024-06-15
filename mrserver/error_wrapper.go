@@ -1,27 +1,48 @@
 package mrserver
 
 import (
+	"errors"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
-// DefaultHTTPErrorOverrideFunc - only for: 401, 403, 404, 418, 5XX
-func DefaultHTTPErrorOverrideFunc(err *mrerr.AppError) (int, *mrerr.AppError) {
-	status := http.StatusInternalServerError
+type (
+	// HttpErrorStatusGetter - only for: 401, 403, 404, 418, 5XX.
+	HttpErrorStatusGetter struct {
+		unexpectedStatus int
+	}
+)
 
-	if mrcore.FactoryErrUseCaseEntityNotFound.Is(err) ||
-		mrcore.FactoryErrHTTPResourceNotFound.Is(err) {
-		status = http.StatusNotFound
-	} else if mrcore.FactoryErrHTTPClientUnauthorized.Is(err) {
-		status = http.StatusUnauthorized
-	} else if mrcore.FactoryErrHTTPAccessForbidden.Is(err) {
-		status = http.StatusForbidden
-	} else if err.Code() == mrcore.FactoryErrInternal.Code() {
-		// если ошибка явно не обработана разработчиком, то вместо 500 отображается 418
-		status = http.StatusTeapot
+// NewHttpErrorStatusGetter - создаёт объект HttpErrorStatusGetter.
+func NewHttpErrorStatusGetter(unexpectedStatus int) *HttpErrorStatusGetter {
+	return &HttpErrorStatusGetter{
+		unexpectedStatus: unexpectedStatus,
+	}
+}
+
+// ErrorStatus - comment method.
+func (g *HttpErrorStatusGetter) ErrorStatus(err error) int {
+	if errors.Is(err, mrcore.ErrUseCaseEntityNotFound) ||
+		errors.Is(err, mrcore.ErrHttpResourceNotFound) {
+		return http.StatusNotFound
 	}
 
-	return status, err
+	if errors.Is(err, mrcore.ErrHttpClientUnauthorized) {
+		return http.StatusUnauthorized
+	}
+
+	if errors.Is(err, mrcore.ErrHttpAccessForbidden) {
+		return http.StatusForbidden
+	}
+
+	status := http.StatusInternalServerError
+
+	// если ошибка явно не обработана разработчиком (ни чем не обёрнута),
+	// то вместо 500 отображается указанный g.unexpectedStatus
+	if g.unexpectedStatus != status && mrcore.IsUnexpectedError(err) {
+		return g.unexpectedStatus
+	}
+
+	return status
 }

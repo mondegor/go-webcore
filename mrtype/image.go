@@ -8,6 +8,7 @@ import (
 )
 
 type (
+	// ImageInfo - comment struct.
 	ImageInfo struct {
 		ContentType  string     `json:"contentType,omitempty"`
 		OriginalName string     `json:"originalName,omitempty"`
@@ -21,22 +22,26 @@ type (
 		UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
 	}
 
+	// Image - comment struct.
 	Image struct {
 		ImageInfo
 		Body io.ReadCloser
 	}
 
+	// ImageContent - comment struct.
 	ImageContent struct {
 		ImageInfo
 		Body []byte
 	}
 
+	// ImageHeader - comment struct.
 	ImageHeader struct {
 		ImageInfo
 		Header *multipart.FileHeader
 	}
 )
 
+// ToFile - comment method.
 func (i *ImageInfo) ToFile() FileInfo {
 	return FileInfo{
 		ContentType:  i.ContentType,
@@ -50,6 +55,7 @@ func (i *ImageInfo) ToFile() FileInfo {
 	}
 }
 
+// Original - comment method.
 func (i *ImageInfo) Original() string {
 	if i.OriginalName != "" {
 		return i.OriginalName
@@ -62,6 +68,7 @@ func (i *ImageInfo) Original() string {
 	return path.Base(i.Path)
 }
 
+// ToFile - comment method.
 func (i *Image) ToFile() File {
 	return File{
 		FileInfo: i.ImageInfo.ToFile(),
@@ -69,6 +76,7 @@ func (i *Image) ToFile() File {
 	}
 }
 
+// ToFile - comment method.
 func (i *ImageContent) ToFile() FileContent {
 	return FileContent{
 		FileInfo: i.ImageInfo.ToFile(),
@@ -76,6 +84,7 @@ func (i *ImageContent) ToFile() FileContent {
 	}
 }
 
+// ToFile - comment method.
 func (i *ImageHeader) ToFile() FileHeader {
 	return FileHeader{
 		FileInfo: i.ImageInfo.ToFile(),

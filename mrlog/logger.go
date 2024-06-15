@@ -2,11 +2,13 @@ package mrlog
 
 import (
 	"context"
-	"log"
 )
 
+//go:generate mockgen -source=logger.go -destination=./mock/logger.go
+
 type (
-	Logger interface {
+	// Logger - интерфейс логирования ошибок и сообщений через формирования события.
+	Logger interface { //nolint:interfacebloat
 		Level() Level
 		WithContext(ctx context.Context) context.Context
 
@@ -20,22 +22,21 @@ type (
 		Panic() LoggerEvent
 		Trace() LoggerEvent
 
-		Printf(format string, args ...any)
+		Printf(format string, args ...any) // поддержка стандартного интерфейса логгирования сообщений
 	}
 
+	// LoggerContext - контекст логгера для обогащения его дополнительными атрибутами.
 	LoggerContext interface {
 		Logger() Logger
 
-		CallerWithSkipFrame(count int) LoggerContext
 		Str(key, value string) LoggerContext
 		Bytes(key string, value []byte) LoggerContext
 		Int(key string, value int) LoggerContext
 		Any(key string, value any) LoggerContext
 	}
 
+	// LoggerEvent - инерфейс события, с возможностью его обогащения и отправки.
 	LoggerEvent interface {
-		Caller(skip ...int) LoggerEvent
-		CallerSkipFrame(skip int) LoggerEvent
 		Err(err error) LoggerEvent
 		Str(key, value string) LoggerEvent
 		Bytes(key string, value []byte) LoggerEvent
@@ -47,44 +48,4 @@ type (
 		MsgFunc(createMsg func() string)
 		Send()
 	}
-
-	Options struct {
-		Level           Level
-		JSONFormat      bool
-		TimestampFormat string
-		ConsoleColor    bool
-
-		// only if log level: Error, Fatal
-		IsAutoCallerOnFunc func(err error) bool
-	}
-
-	ctxKey struct{}
 )
-
-var def Logger = &DefaultLogger{
-	level:  DebugLevel,
-	native: log.Default(),
-}
-
-func Default() Logger {
-	return def
-}
-
-// SetDefault - WARNING: use only by the main process when it is starting
-func SetDefault(logger Logger) {
-	if logger != nil {
-		def = logger.With().Str("logger", "DEFAULT").Logger()
-	}
-}
-
-func WithContext(ctx context.Context, logger Logger) context.Context {
-	return context.WithValue(ctx, ctxKey{}, logger)
-}
-
-func Ctx(ctx context.Context) Logger {
-	if value, ok := ctx.Value(ctxKey{}).(Logger); ok {
-		return value
-	}
-
-	return def
-}

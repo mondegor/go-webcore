@@ -1,6 +1,7 @@
 package mrparser
 
 type (
+	// Parser - comment struct.
 	Parser struct {
 		*Bool
 		*DateTime
@@ -16,6 +17,7 @@ type (
 	}
 )
 
+// NewParser - создаёт объект Parser.
 func NewParser(
 	p1 *Bool,
 	p2 *DateTime,

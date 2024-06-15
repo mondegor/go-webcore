@@ -1,66 +1,74 @@
 package mrparser
 
-import (
-	e "github.com/mondegor/go-sysmess/mrerr"
-)
+import "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	FactoryErrHTTPRequestFileSizeMin = e.NewFactory(
-		"errHttpRequestFileSizeMin", e.ErrorTypeUser, "invalid file size, min size = {{ .value }}b")
+	// ErrHttpRequestFileSizeMin - comment error.
+	ErrHttpRequestFileSizeMin = mrerr.NewProto(
+		"errHttpRequestFileSizeMin", mrerr.ErrorKindUser, "invalid file size, min size = {{ .value }}b")
 
-	FactoryErrHTTPRequestFileSizeMax = e.NewFactory(
-		"errHttpRequestFileSizeMax", e.ErrorTypeUser, "invalid file size, max size = {{ .value }}b")
+	// ErrHttpRequestFileSizeMax - comment error.
+	ErrHttpRequestFileSizeMax = mrerr.NewProto(
+		"errHttpRequestFileSizeMax", mrerr.ErrorKindUser, "invalid file size, max size = {{ .value }}b")
 
-	FactoryErrHTTPRequestFileExtension = e.NewFactory(
-		"errHttpRequestFileExtension", e.ErrorTypeUser, "invalid file extension: {{ .value }}")
+	// ErrHttpRequestFileExtension - comment error.
+	ErrHttpRequestFileExtension = mrerr.NewProto(
+		"errHttpRequestFileExtension", mrerr.ErrorKindUser, "invalid file extension: {{ .value }}")
 
-	FactoryErrHTTPRequestFileTotalSizeMax = e.NewFactory(
-		"errHttpRequestFileTotalSizeMax", e.ErrorTypeUser, "invalid file total size, max total size = {{ .value }}b")
+	// ErrHttpRequestFileTotalSizeMax - comment error.
+	ErrHttpRequestFileTotalSizeMax = mrerr.NewProto(
+		"errHttpRequestFileTotalSizeMax", mrerr.ErrorKindUser, "invalid file total size, max total size = {{ .value }}b")
 
-	FactoryErrHTTPRequestFileContentType = e.NewFactory(
-		"errHttpRequestFileContentType", e.ErrorTypeUser, "the content type '{{ .value }}' does not match the detected type")
+	// ErrHttpRequestFileContentType - comment error.
+	ErrHttpRequestFileContentType = mrerr.NewProto(
+		"errHttpRequestFileContentType", mrerr.ErrorKindUser, "the content type '{{ .value }}' does not match the detected type")
 
-	FactoryErrHTTPRequestFileUnsupportedType = e.NewFactory(
-		"errHttpRequestFileUnsupportedType", e.ErrorTypeUser, "unsupported file type '{{ .value }}'")
+	// ErrHttpRequestFileUnsupportedType - comment error.
+	ErrHttpRequestFileUnsupportedType = mrerr.NewProto(
+		"errHttpRequestFileUnsupportedType", mrerr.ErrorKindUser, "unsupported file type '{{ .value }}'")
 
-	FactoryErrHTTPRequestImageWidthMax = e.NewFactory(
-		"errHttpRequestImageWidthMax", e.ErrorTypeUser, "invalid image width, max size = {{ .value }}px")
+	// ErrHttpRequestImageWidthMax - comment error.
+	ErrHttpRequestImageWidthMax = mrerr.NewProto(
+		"errHttpRequestImageWidthMax", mrerr.ErrorKindUser, "invalid image width, max size = {{ .value }}px")
 
-	FactoryErrHTTPRequestImageHeightMax = e.NewFactory(
-		"errHttpRequestImageHeightMax", e.ErrorTypeUser, "invalid image height, max size = {{ .value }}px")
+	// ErrHttpRequestImageHeightMax - comment error.
+	ErrHttpRequestImageHeightMax = mrerr.NewProto(
+		"errHttpRequestImageHeightMax", mrerr.ErrorKindUser, "invalid image height, max size = {{ .value }}px")
 )
 
+// WrapFileError  - comment func.
 func WrapFileError(err error, name string) error {
-	if FactoryErrHTTPRequestFileSizeMin.Is(err) {
-		return e.NewCustomError(name, err)
+	if ErrHttpRequestFileSizeMin.Is(err) {
+		return mrerr.NewCustomError(name, err)
 	}
 
-	if FactoryErrHTTPRequestFileSizeMax.Is(err) {
-		return e.NewCustomError(name, err)
+	if ErrHttpRequestFileSizeMax.Is(err) {
+		return mrerr.NewCustomError(name, err)
 	}
 
-	if FactoryErrHTTPRequestFileExtension.Is(err) {
-		return e.NewCustomError(name, err)
+	if ErrHttpRequestFileExtension.Is(err) {
+		return mrerr.NewCustomError(name, err)
 	}
 
-	if FactoryErrHTTPRequestFileContentType.Is(err) {
-		return e.NewCustomError(name, err)
+	if ErrHttpRequestFileContentType.Is(err) {
+		return mrerr.NewCustomError(name, err)
 	}
 
-	if FactoryErrHTTPRequestFileUnsupportedType.Is(err) {
-		return e.NewCustomError(name, err)
+	if ErrHttpRequestFileUnsupportedType.Is(err) {
+		return mrerr.NewCustomError(name, err)
 	}
 
 	return err
 }
 
+// WrapImageError  - comment func.
 func WrapImageError(err error, name string) error {
-	if FactoryErrHTTPRequestImageWidthMax.Is(err) {
-		return e.NewCustomError(name, err)
+	if ErrHttpRequestImageWidthMax.Is(err) {
+		return mrerr.NewCustomError(name, err)
 	}
 
-	if FactoryErrHTTPRequestImageHeightMax.Is(err) {
-		return e.NewCustomError(name, err)
+	if ErrHttpRequestImageHeightMax.Is(err) {
+		return mrerr.NewCustomError(name, err)
 	}
 
 	return WrapFileError(err, name)

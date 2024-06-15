@@ -8,15 +8,17 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
 const (
-	ListenTypeSock = "sock"
-	ListenTypePort = "port"
+	ListenTypeSock = "sock" // ListenTypeSock - тип прослушивания: сокет
+	ListenTypePort = "port" // ListenTypePort - тип прослушивания: IP + порт
 )
 
 type (
+	// ServerAdapter - comment struct.
 	ServerAdapter struct {
 		caption         string
 		server          *http.Server
@@ -24,6 +26,7 @@ type (
 		listenOpts      ListenOptions
 	}
 
+	// ServerOptions - опции для создания Server.
 	ServerOptions struct {
 		Caption         string
 		Handler         http.Handler
@@ -33,6 +36,7 @@ type (
 		Listen          ListenOptions
 	}
 
+	// ListenOptions - опции для создания Listen.
 	ListenOptions struct {
 		AppPath  string
 		Type     string
@@ -42,6 +46,7 @@ type (
 	}
 )
 
+// NewServerAdapter - создаёт объект ServerAdapter.
 func NewServerAdapter(ctx context.Context, opts ServerOptions) *ServerAdapter {
 	httpServer := &http.Server{
 		Handler: opts.Handler,
@@ -50,7 +55,7 @@ func NewServerAdapter(ctx context.Context, opts ServerOptions) *ServerAdapter {
 		// ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:  opts.ReadTimeout,
 		WriteTimeout: opts.WriteTimeout,
-		BaseContext: func(l net.Listener) context.Context {
+		BaseContext: func(_ net.Listener) context.Context {
 			return ctx
 		},
 	}
@@ -67,28 +72,29 @@ func NewServerAdapter(ctx context.Context, opts ServerOptions) *ServerAdapter {
 	}
 }
 
+// PrepareToStart - comment method.
 func (s *ServerAdapter) PrepareToStart(ctx context.Context) (execute func() error, interrupt func(error)) {
 	return func() error {
 			return s.Start(ctx)
-		}, func(err error) {
+		}, func(_ error) {
 			if err := s.Shutdown(ctx); err != nil {
 				mrlog.Ctx(ctx).Error().Err(err).Send()
 			}
 		}
 }
 
-// Start - exec server Serve()
+// Start - exec server Serve().
 func (s *ServerAdapter) Start(ctx context.Context) error {
 	logger := mrlog.Ctx(ctx).With().Str("server", s.caption).Logger()
 	logger.Info().Msg("Starting the server...")
 
 	listener, err := s.createListener(logger)
 	if err != nil {
-		return fmt.Errorf("failed start listening: %w", err)
+		return mrcore.ErrInternal.Wrap(fmt.Errorf("failed start listening: %w", err))
 	}
 
 	if err = s.server.Serve(listener); err != nil {
-		return err
+		return mrcore.ErrInternal.Wrap(err)
 	}
 
 	logger.Info().Msg("Stop the server listening")
@@ -96,6 +102,7 @@ func (s *ServerAdapter) Start(ctx context.Context) error {
 	return nil
 }
 
+// Shutdown - comment method.
 func (s *ServerAdapter) Shutdown(ctx context.Context) error {
 	logger := mrlog.Ctx(ctx).With().Str("server", s.caption).Logger()
 	logger.Info().Msg("Shutting down the server...")
@@ -104,7 +111,7 @@ func (s *ServerAdapter) Shutdown(ctx context.Context) error {
 	defer cancel()
 
 	if err := s.server.Shutdown(ctx); err != nil {
-		return err
+		return mrcore.ErrInternal.Wrap(err)
 	}
 
 	logger.Info().Msg("The server has been shutdown")
@@ -115,6 +122,7 @@ func (s *ServerAdapter) Shutdown(ctx context.Context) error {
 func (s *ServerAdapter) createListener(logger mrlog.Logger) (net.Listener, error) {
 	if s.listenOpts.Type == ListenTypeSock {
 		logger.Debug().Msg("Detect app real path")
+
 		appDir, err := filepath.Abs(filepath.Dir(s.listenOpts.AppPath))
 		if err != nil {
 			return nil, fmt.Errorf("app real path: %w", err)

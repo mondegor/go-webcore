@@ -8,8 +8,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-webcore/mrcore"
 
+	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrview"
 )
@@ -21,14 +21,19 @@ const (
 )
 
 type (
+	// ValidatorAdapter - comment struct.
 	ValidatorAdapter struct {
 		validate *validator.Validate
 	}
 )
 
-// Make sure the ValidatorAdapter conforms with the mrview.Validator interface
+// Make sure the ValidatorAdapter conforms with the mrview.Validator interface.
 var _ mrview.Validator = (*ValidatorAdapter)(nil)
 
+var errValidatorTagIsNotFound = mrerr.NewProto(
+	validatorErrorPrefix, mrerr.ErrorKindUser, "validator error: tag is empty").New()
+
+// New - создаёт объект ValidatorAdapter.
 func New() *ValidatorAdapter {
 	validate := validator.New()
 
@@ -48,7 +53,8 @@ func New() *ValidatorAdapter {
 	}
 }
 
-func (v *ValidatorAdapter) Register(tagName string, fn mrview.ValidatorTagNameFunc) error {
+// Register - comment method.
+func (v *ValidatorAdapter) Register(tagName string, fn func(value string) bool) error {
 	return v.validate.RegisterValidation(
 		tagName,
 		func(fl validator.FieldLevel) bool {
@@ -57,24 +63,25 @@ func (v *ValidatorAdapter) Register(tagName string, fn mrview.ValidatorTagNameFu
 	)
 }
 
+// Validate - comment method.
 func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 	err := v.validate.Struct(structure)
 
-	// error not found, OK
+	// errors not found, OK
 	if err == nil {
 		return nil
 	}
 
-	errors, ok := err.(validator.ValidationErrors)
+	errorList, ok := err.(validator.ValidationErrors) //nolint:errorlint
 	if !ok {
-		return mrcore.FactoryErrInternal.Wrap(err)
+		return mrcore.ErrInternal.Wrap(err)
 	}
 
-	fields := make([]*mrerr.CustomError, len(errors))
+	fields := make(mrerr.CustomErrors, len(errorList))
 	logger := mrlog.Ctx(ctx)
 
-	for i, errField := range errors {
-		fields[i] = mrerr.NewCustomErrorAppError(
+	for i, errField := range errorList {
+		fields[i] = mrerr.NewCustomError(
 			errField.Field(),
 			v.createAppError(errField),
 		)
@@ -105,36 +112,34 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 		)
 	}
 
-	return mrerr.CustomErrorList(fields)
+	return fields
 }
 
 func (v *ValidatorAdapter) createAppError(field validator.FieldError) *mrerr.AppError {
-	tag := field.Tag()
-
-	if len(tag) == 0 {
-		return mrerr.New(validatorErrorPrefix, validatorErrorPrefix)
+	if len(field.Tag()) == 0 {
+		return errValidatorTagIsNotFound
 	}
 
-	id := validatorErrorPrefix + "_" + tag
+	// TODO: шаблон динамической ошибки можно кэшировать
+
+	// здесь передаются все атрибуты поля, которые можно вывести пользователю,
+	id := validatorErrorPrefix + "_" + field.Tag()
 	message := id + ": name={{ .name }}, type={{ .type }}, value={{ .value }}"
-	param := field.Param()
+	args := [4]any{field.Field(), field.Kind().String(), field.Value()}
 
-	if param != "" {
-		return mrerr.New(
+	if field.Param() != "" {
+		args[3] = field.Param()
+
+		return mrerr.NewProto(
 			id,
+			mrerr.ErrorKindUser,
 			message+", param={{ .param }}",
-			field.Field(),
-			field.Kind().String(),
-			field.Value(),
-			param,
-		)
+		).New(args[:]...)
 	}
 
-	return mrerr.New(
+	return mrerr.NewProto(
 		id,
+		mrerr.ErrorKindUser,
 		message,
-		field.Field(),
-		field.Kind().String(),
-		field.Value(),
-	)
+	).New(args[:3]...)
 }

@@ -1,14 +1,12 @@
 package mrjulienrouter
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
-	"regexp"
 	"runtime"
-	"strings"
 
 	"github.com/julienschmidt/httprouter"
+
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 )
@@ -20,24 +18,22 @@ const (
 )
 
 type (
+	// RouterAdapter - comment struct.
 	RouterAdapter struct {
 		router             *httprouter.Router
 		generalHandler     http.Handler
-		handlerAdapterFunc func(next mrserver.HTTPHandlerFunc) http.HandlerFunc
+		handlerAdapterFunc func(next mrserver.HttpHandlerFunc) http.HandlerFunc
 		logger             mrlog.Logger
 	}
 )
 
-var (
-	// Make sure the RouterAdapter conforms with the mrserver.HTTPRouter interface
-	_ mrserver.HTTPRouter = (*RouterAdapter)(nil)
+// Make sure the RouterAdapter conforms with the mrserver.HttpRouter interface.
+var _ mrserver.HttpRouter = (*RouterAdapter)(nil)
 
-	regexpURLVars = regexp.MustCompile(`{([a-zA-Z][a-zA-Z0-9_]*)}`)
-)
-
+// New - создаёт объект RouterAdapter.
 func New(
 	logger mrlog.Logger,
-	adapterFunc func(next mrserver.HTTPHandlerFunc) http.HandlerFunc,
+	adapterFunc func(next mrserver.HttpHandlerFunc) http.HandlerFunc,
 	notFoundFunc http.HandlerFunc,
 	methodNotAllowedFunc http.HandlerFunc,
 ) *RouterAdapter {
@@ -59,6 +55,7 @@ func New(
 	}
 }
 
+// RegisterMiddleware - comment method.
 func (rt *RouterAdapter) RegisterMiddleware(handlers ...func(next http.Handler) http.Handler) {
 	// recursion call: handler1(handler2(handler3(router())))
 	for i := len(handlers) - 1; i >= 0; i-- {
@@ -66,16 +63,15 @@ func (rt *RouterAdapter) RegisterMiddleware(handlers ...func(next http.Handler) 
 
 		rt.logger.Debug().MsgFunc(
 			func() string {
-				return fmt.Sprintf(
-					"Registered Middleware %s",
-					runtime.FuncForPC(reflect.ValueOf(rt.generalHandler).Pointer()).Name(),
-				)
+				return "Registered Middleware " +
+					runtime.FuncForPC(reflect.ValueOf(rt.generalHandler).Pointer()).Name()
 			},
 		)
 	}
 }
 
-func (rt *RouterAdapter) Register(controllers ...mrserver.HTTPController) {
+// Register - comment method.
+func (rt *RouterAdapter) Register(controllers ...mrserver.HttpController) {
 	for i := range controllers {
 		for _, handler := range controllers[i].Handlers() {
 			rt.HandlerFunc(handler.Method, handler.URL, rt.handlerAdapterFunc(handler.Func))
@@ -83,8 +79,9 @@ func (rt *RouterAdapter) Register(controllers ...mrserver.HTTPController) {
 	}
 }
 
+// HandlerFunc - comment method.
 func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFunc) {
-	convertedPath := rt.convertURL(path)
+	convertedPath := ConvertURL(path)
 
 	if path != convertedPath {
 		path += " -> " + convertedPath
@@ -94,16 +91,7 @@ func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFu
 	rt.router.Handler(method, convertedPath, handler)
 }
 
+// ServeHTTP - comment method.
 func (rt *RouterAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rt.generalHandler.ServeHTTP(w, r)
-}
-
-func (rt *RouterAdapter) convertURL(url string) string {
-	url = strings.Replace(url, mrserver.VarRestOfURL, "*"+varRestOfURL, 1)
-
-	for _, m := range regexpURLVars.FindAllStringSubmatch(url, -1) {
-		url = strings.Replace(url, m[0], ":"+m[1], 1)
-	}
-
-	return url
 }

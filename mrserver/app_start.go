@@ -13,6 +13,7 @@ const (
 	signalChanLen = 10
 )
 
+// PrepareAppToStart  - comment func.
 func PrepareAppToStart(ctx context.Context) (execute func() error, interrupt func(error)) {
 	ctx, cancel := context.WithCancel(ctx)
 	signalStop := make(chan os.Signal, signalChanLen)
@@ -33,12 +34,14 @@ func PrepareAppToStart(ctx context.Context) (execute func() error, interrupt fun
 			select {
 			case signalApp := <-signalStop:
 				logger.Info().Msgf("Shutting down the application by signal: " + signalApp.String())
+
 				return nil
 			case <-ctx.Done():
 				logger.Info().Msgf("Shutting down the application by a child process")
+
 				return ctx.Err()
 			}
-		}, func(err error) {
+		}, func(_ error) {
 			cancel()
 		}
 }
