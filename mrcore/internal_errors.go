@@ -5,39 +5,39 @@ import (
 )
 
 var (
-	// ErrInternal - comment error.
+	// ErrInternal - internal error.
 	ErrInternal = mrerr.NewProto(
 		"errInternal", mrerr.ErrorKindInternal, "internal error")
 
-	// ErrInternalNilPointer - comment error.
+	// ErrInternalNilPointer - unexpected nil pointer.
 	ErrInternalNilPointer = mrerr.NewProto(
-		"errInternalNilPointer", mrerr.ErrorKindInternal, "nil pointer")
+		"errInternalNilPointer", mrerr.ErrorKindInternal, "unexpected nil pointer")
 
-	// ErrInternalTypeAssertion - comment error.
+	// ErrInternalTypeAssertion - invalid type assertion.
 	ErrInternalTypeAssertion = mrerr.NewProto(
 		"errInternalTypeAssertion", mrerr.ErrorKindInternal, "invalid type '{{ .type }}' assertion (value: {{ .value }})")
 
-	// ErrInternalInvalidType - comment error.
+	// ErrInternalInvalidType - invalid type, expected.
 	ErrInternalInvalidType = mrerr.NewProto(
 		"errInternalInvalidType", mrerr.ErrorKindInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
 
-	// ErrInternalKeyNotFoundInSource - comment error.
+	// ErrInternalKeyNotFoundInSource - key is not found in source.
 	ErrInternalKeyNotFoundInSource = mrerr.NewProto(
 		"errInternalKeyNotFoundInSource", mrerr.ErrorKindInternal, "key '{{ .key }}' is not found in source {{ .source }}")
 
-	// ErrInternalFailedToOpen - comment error.
+	// ErrInternalFailedToOpen - failed to open object.
 	ErrInternalFailedToOpen = mrerr.NewProto(
 		"errInternalFailedToOpen", mrerr.ErrorKindInternal, "failed to open object")
 
-	// ErrInternalFailedToClose - comment error.
+	// ErrInternalFailedToClose - failed to close object.
 	ErrInternalFailedToClose = mrerr.NewProto(
 		"errInternalFailedToClose", mrerr.ErrorKindInternal, "failed to close object")
 
-	// ErrInternalValueLenMax - comment error.
+	// ErrInternalValueLenMax - value has length greater then max characters.
 	ErrInternalValueLenMax = mrerr.NewProto(
 		"errInternalValueLenMax", mrerr.ErrorKindInternal, "value has length '{{ .curLength }}' greater then max '{{ .maxLength }}' characters")
 
-	// ErrInternalValueNotMatchRegexpPattern - comment error.
+	// ErrInternalValueNotMatchRegexpPattern - specified value does not match regexp pattern.
 	ErrInternalValueNotMatchRegexpPattern = mrerr.NewProto(
 		"errInternalValueNotMatchRegexpPattern", mrerr.ErrorKindInternal, "specified value '{{ .value }}' does not match regexp pattern '{{ .pattern }}'")
 )

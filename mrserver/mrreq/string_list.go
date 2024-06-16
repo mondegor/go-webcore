@@ -11,7 +11,7 @@ const (
 	maxLenStringsList = 2048
 )
 
-// ParseStrList  - comment func.
+// ParseStrList - comment func.
 func ParseStrList(r *http.Request, key string) ([]string, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 

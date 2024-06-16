@@ -58,7 +58,7 @@ func TimeToPointer(value time.Time, required ...bool) *time.Time {
 	return &value
 }
 
-// TimePointerCopy  - comment func.
+// TimePointerCopy - comment func.
 func TimePointerCopy(value *time.Time) *time.Time {
 	if value == nil || value.IsZero() {
 		return nil

@@ -5,13 +5,13 @@ import (
 )
 
 type (
-	// ControllerHandlers - comment type.
+	// ControllerHandlers - обработчики контроллера.
 	ControllerHandlers []mrserver.HttpHandler
 
-	// PrepareHandlerFunc - comment type.
+	// PrepareHandlerFunc - функция для подготовки обработчика (URL, разрешения).
 	PrepareHandlerFunc func(handler *mrserver.HttpHandler)
 
-	// ApplyEachControllerFunc - comment type.
+	// ApplyEachControllerFunc - вспомогательная функция для подготовки списка контроллеров.
 	ApplyEachControllerFunc func(list []mrserver.HttpController, err error) error
 )
 
@@ -20,7 +20,7 @@ func (c ControllerHandlers) Handlers() []mrserver.HttpHandler {
 	return c
 }
 
-// PrepareEachController  - comment func.
+// PrepareEachController - comment func.
 func PrepareEachController(list []mrserver.HttpController, operations ...PrepareHandlerFunc) []mrserver.HttpController {
 	for i := range list {
 		list[i] = PrepareController(list[i], operations...)
@@ -29,7 +29,7 @@ func PrepareEachController(list []mrserver.HttpController, operations ...Prepare
 	return list
 }
 
-// PrepareController  - comment func.
+// PrepareController - comment func.
 func PrepareController(c mrserver.HttpController, operations ...PrepareHandlerFunc) mrserver.HttpController { //nolint:ireturn,nolintlint
 	if len(operations) == 0 {
 		return c

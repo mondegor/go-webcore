@@ -6,7 +6,7 @@ import (
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
-// ParseRangeInt64  - comment func.
+// ParseRangeInt64 - comment func.
 func ParseRangeInt64(r *http.Request, key string) (mrtype.RangeInt64, error) {
 	minValue, err := ParseInt64(r, key+"-min", false)
 	if err != nil {

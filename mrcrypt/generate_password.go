@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	PassVowels      PassCharsKinds = 1  // PassVowels  - гласные буквы
-	PassConsonants  PassCharsKinds = 2  // PassConsonants  - согласные буквы
-	PassNumerals    PassCharsKinds = 4  // PassNumerals  - цифры
-	PassSigns       PassCharsKinds = 8  // PassSigns  - знаки
+	PassVowels      PassCharsKinds = 1  // PassVowels - гласные буквы
+	PassConsonants  PassCharsKinds = 2  // PassConsonants - согласные буквы
+	PassNumerals    PassCharsKinds = 4  // PassNumerals - цифры
+	PassSigns       PassCharsKinds = 8  // PassSigns - знаки
 	PassAbc         PassCharsKinds = 3  // PassAbc = PassVowels + PassConsonants
 	PassAbcNumerals PassCharsKinds = 7  // PassAbcNumerals = PassVowels + PassConsonants + PassNumerals
 	PassAll         PassCharsKinds = 15 // PassAll = PassVowels + PassConsonants + PassNumerals + PassSigns
@@ -22,7 +22,7 @@ const (
 )
 
 type (
-	// PassCharsKinds  - comment type.
+	// PassCharsKinds - вид символов используемых в пароле.
 	PassCharsKinds uint8
 
 	pwCharSet struct {
@@ -41,7 +41,7 @@ var pwCharSets = [pwCharSetLen]pwCharSet{
 	{PassSigns, 1, false, 6, []byte(".!?@$&")},
 }
 
-// GenPassword  - comment func.
+// GenPassword - comment func.
 func GenPassword(length int, charsKinds PassCharsKinds) string {
 	if length < 1 {
 		mrlog.Default().Warn().Err(fmt.Errorf("param 'length': %d < 1", length)).Send()

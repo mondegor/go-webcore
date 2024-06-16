@@ -12,7 +12,7 @@ const (
 )
 
 type (
-	// SortDirection - comment type.
+	// SortDirection - направление сортировки.
 	SortDirection uint8
 )
 

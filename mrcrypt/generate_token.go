@@ -10,17 +10,17 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// GenTokenBase64  - comment func.
+// GenTokenBase64 - comment func.
 func GenTokenBase64(length int) string {
 	return cutString(base64.StdEncoding.EncodeToString(genToken(length)), length)
 }
 
-// GenTokenHex  - comment func.
+// GenTokenHex - comment func.
 func GenTokenHex(length int) string {
 	return cutString(hex.EncodeToString(genToken(length)), length)
 }
 
-// GenTokenHexWithDelimiter  - comment func.
+// GenTokenHexWithDelimiter - comment func.
 func GenTokenHexWithDelimiter(length, repeat int) string {
 	if repeat < 1 {
 		mrlog.Default().Warn().Err(fmt.Errorf("param 'repeat': %d < 1", repeat)).Send()

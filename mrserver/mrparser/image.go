@@ -145,7 +145,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 		return nil, err
 	}
 
-	images := make([]mrtype.ImageHeader, countFiles)
+	images := make([]mrtype.ImageHeader, 0, countFiles)
 
 	for i := 0; i < countFiles; i++ {
 		err = func() error { // for defer file.Close()
@@ -167,16 +167,19 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 				return err
 			}
 
-			images[i] = mrtype.ImageHeader{
-				ImageInfo: mrtype.ImageInfo{
-					ContentType:  contentType,
-					OriginalName: fds[i].Filename,
-					Width:        meta.width,
-					Height:       meta.height,
-					Size:         fds[i].Size,
+			images = append(
+				images,
+				mrtype.ImageHeader{
+					ImageInfo: mrtype.ImageInfo{
+						ContentType:  contentType,
+						OriginalName: fds[i].Filename,
+						Width:        meta.width,
+						Height:       meta.height,
+						Size:         fds[i].Size,
+					},
+					Header: fds[i],
 				},
-				Header: fds[i],
-			}
+			)
 
 			return nil
 		}()

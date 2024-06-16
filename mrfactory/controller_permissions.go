@@ -35,7 +35,7 @@ func NewAppSection(ctx context.Context, opts mrperms.AppSectionOptions, access a
 	return mrperms.NewAppSection(opts)
 }
 
-// WithPermission  - comment func.
+// WithPermission - comment func.
 func WithPermission(permission string) PrepareHandlerFunc {
 	return func(handler *mrserver.HttpHandler) {
 		if handler.Permission == "" {
@@ -44,7 +44,7 @@ func WithPermission(permission string) PrepareHandlerFunc {
 	}
 }
 
-// WithMiddlewareCheckAccess  - comment func.
+// WithMiddlewareCheckAccess - comment func.
 func WithMiddlewareCheckAccess(ctx context.Context, section *mrperms.AppSection, access accessControl) PrepareHandlerFunc {
 	return func(handler *mrserver.HttpHandler) {
 		if !access.HasPermission(handler.Permission) {

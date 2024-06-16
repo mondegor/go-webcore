@@ -12,7 +12,7 @@ const (
 	maxLenDateTime = 64
 )
 
-// ParseDateTime  - comment func.
+// ParseDateTime - comment func.
 func ParseDateTime(r *http.Request, key string, required bool) (time.Time, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 

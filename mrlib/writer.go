@@ -7,7 +7,7 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// Write  - comment func.
+// Write - comment func.
 func Write(ctx context.Context, w io.Writer, bytes []byte) {
 	if len(bytes) < 1 {
 		return

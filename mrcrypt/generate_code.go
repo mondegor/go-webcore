@@ -9,7 +9,7 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// GenDigitCode  - comment func.
+// GenDigitCode - comment func.
 func GenDigitCode(length int) string {
 	if length < 1 {
 		mrlog.Default().Warn().Err(fmt.Errorf("param 'length': %d < 1", length)).Send()

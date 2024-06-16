@@ -8,7 +8,7 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
-// ParseRequiredBool  - comment func.
+// ParseRequiredBool - comment func.
 func ParseRequiredBool(r *http.Request, key string) (bool, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 
@@ -24,7 +24,7 @@ func ParseRequiredBool(r *http.Request, key string) (bool, error) {
 	return item, nil
 }
 
-// ParseNullableBool  - comment func.
+// ParseNullableBool - comment func.
 func ParseNullableBool(r *http.Request, key string) (*bool, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 

@@ -29,7 +29,7 @@ var (
 	accessLastTime time.Time
 )
 
-// HandlerGetStatInfoAsJSON  - comment func.
+// HandlerGetStatInfoAsJSON - comment func.
 func HandlerGetStatInfoAsJSON(unexpectedStatus int) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		statMutex.Lock()
@@ -57,7 +57,7 @@ func HandlerGetStatInfoAsJSON(unexpectedStatus int) http.HandlerFunc {
 	}
 }
 
-// ApplyStatRequest  - comment func.
+// ApplyStatRequest - comment func.
 func ApplyStatRequest(l mrlog.Logger, start time.Time, sr *mrserver.StatRequest, sw *mrserver.StatResponseWriter) {
 	r := sr.Request()
 

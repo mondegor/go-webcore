@@ -11,7 +11,7 @@ const (
 	maxLenString = 256
 )
 
-// ParseStr  - comment func.
+// ParseStr - comment func.
 func ParseStr(r *http.Request, key string, required bool) (string, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 

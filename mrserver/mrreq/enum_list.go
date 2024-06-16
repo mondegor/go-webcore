@@ -11,7 +11,7 @@ const (
 	maxLenEnumList = 256
 )
 
-// ParseEnumList  - comment func.
+// ParseEnumList - comment func.
 func ParseEnumList(r *http.Request, key string) ([]string, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 

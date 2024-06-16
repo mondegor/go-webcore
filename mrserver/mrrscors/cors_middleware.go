@@ -22,7 +22,7 @@ type (
 	}
 )
 
-// Middleware  - comment func.
+// Middleware - comment func.
 func Middleware(opts Options) func(next http.Handler) http.Handler {
 	options := cors.Options{
 		AllowedOrigins:   opts.AllowedOrigins,

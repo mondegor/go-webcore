@@ -11,7 +11,7 @@ const (
 	maxValuePageSize = 1000000
 )
 
-// ParsePageParams  - comment func.
+// ParsePageParams - comment func.
 func ParsePageParams(r *http.Request, keyIndex, keySize string) (mrtype.PageParams, error) {
 	index, err := ParseInt64(r, keyIndex, false)
 	if err != nil {

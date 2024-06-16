@@ -8,14 +8,14 @@ import (
 	"github.com/mondegor/go-webcore/mrlib"
 )
 
-// HandlerGetHealth  - comment func.
+// HandlerGetHealth - comment func.
 func HandlerGetHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 }
 
-// HandlerGetStatusOkAsJSON  - comment func.
+// HandlerGetStatusOkAsJSON - comment func.
 func HandlerGetStatusOkAsJSON() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -24,7 +24,7 @@ func HandlerGetStatusOkAsJSON() http.HandlerFunc {
 	}
 }
 
-// HandlerGetStructAsJSON  - comment func.
+// HandlerGetStructAsJSON - comment func.
 func HandlerGetStructAsJSON(data any, status int) (http.HandlerFunc, error) {
 	bytes, err := json.Marshal(data)
 	if err != nil {

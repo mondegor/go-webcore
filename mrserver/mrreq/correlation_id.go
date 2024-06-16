@@ -17,7 +17,7 @@ const (
 
 var regexpCorrelationID = regexp.MustCompile(`^[0-9a-fA-F][0-9a-fA-F-]+[0-9a-fA-F]$`)
 
-// ParseCorrelationID  - comment func.
+// ParseCorrelationID - comment func.
 func ParseCorrelationID(r *http.Request) (string, error) {
 	value := strings.TrimSpace(r.Header.Get(HeaderKeyCorrelationID))
 

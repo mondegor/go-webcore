@@ -3,40 +3,40 @@ package mrparser
 import "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	// ErrHttpRequestFileSizeMin - comment error.
+	// ErrHttpRequestFileSizeMin - invalid file size - min.
 	ErrHttpRequestFileSizeMin = mrerr.NewProto(
 		"errHttpRequestFileSizeMin", mrerr.ErrorKindUser, "invalid file size, min size = {{ .value }}b")
 
-	// ErrHttpRequestFileSizeMax - comment error.
+	// ErrHttpRequestFileSizeMax - invalid file size - max.
 	ErrHttpRequestFileSizeMax = mrerr.NewProto(
 		"errHttpRequestFileSizeMax", mrerr.ErrorKindUser, "invalid file size, max size = {{ .value }}b")
 
-	// ErrHttpRequestFileExtension - comment error.
+	// ErrHttpRequestFileExtension - invalid file extension.
 	ErrHttpRequestFileExtension = mrerr.NewProto(
 		"errHttpRequestFileExtension", mrerr.ErrorKindUser, "invalid file extension: {{ .value }}")
 
-	// ErrHttpRequestFileTotalSizeMax - comment error.
+	// ErrHttpRequestFileTotalSizeMax - invalid file total size - max.
 	ErrHttpRequestFileTotalSizeMax = mrerr.NewProto(
 		"errHttpRequestFileTotalSizeMax", mrerr.ErrorKindUser, "invalid file total size, max total size = {{ .value }}b")
 
-	// ErrHttpRequestFileContentType - comment error.
+	// ErrHttpRequestFileContentType - the content type does not match the detected type.
 	ErrHttpRequestFileContentType = mrerr.NewProto(
 		"errHttpRequestFileContentType", mrerr.ErrorKindUser, "the content type '{{ .value }}' does not match the detected type")
 
-	// ErrHttpRequestFileUnsupportedType - comment error.
+	// ErrHttpRequestFileUnsupportedType - unsupported file type.
 	ErrHttpRequestFileUnsupportedType = mrerr.NewProto(
 		"errHttpRequestFileUnsupportedType", mrerr.ErrorKindUser, "unsupported file type '{{ .value }}'")
 
-	// ErrHttpRequestImageWidthMax - comment error.
+	// ErrHttpRequestImageWidthMax - invalid image width - max.
 	ErrHttpRequestImageWidthMax = mrerr.NewProto(
 		"errHttpRequestImageWidthMax", mrerr.ErrorKindUser, "invalid image width, max size = {{ .value }}px")
 
-	// ErrHttpRequestImageHeightMax - comment error.
+	// ErrHttpRequestImageHeightMax - invalid image height - max.
 	ErrHttpRequestImageHeightMax = mrerr.NewProto(
 		"errHttpRequestImageHeightMax", mrerr.ErrorKindUser, "invalid image height, max size = {{ .value }}px")
 )
 
-// WrapFileError  - comment func.
+// WrapFileError - comment func.
 func WrapFileError(err error, name string) error {
 	if ErrHttpRequestFileSizeMin.Is(err) {
 		return mrerr.NewCustomError(name, err)
@@ -61,7 +61,7 @@ func WrapFileError(err error, name string) error {
 	return err
 }
 
-// WrapImageError  - comment func.
+// WrapImageError - comment func.
 func WrapImageError(err error, name string) error {
 	if ErrHttpRequestImageWidthMax.Is(err) {
 		return mrerr.NewCustomError(name, err)

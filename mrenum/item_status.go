@@ -18,7 +18,7 @@ const (
 )
 
 type (
-	// ItemStatus - comment type.
+	// ItemStatus - статус элемента.
 	ItemStatus uint8
 )
 

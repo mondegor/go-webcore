@@ -10,7 +10,7 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// HandlerGetNotFoundAsJSON  - comment func.
+// HandlerGetNotFoundAsJSON - comment func.
 func HandlerGetNotFoundAsJSON(unexpectedStatus int) http.HandlerFunc {
 	return HandlerErrorResponse(
 		http.StatusNotFound,
@@ -20,7 +20,7 @@ func HandlerGetNotFoundAsJSON(unexpectedStatus int) http.HandlerFunc {
 	)
 }
 
-// HandlerGetMethodNotAllowedAsJSON  - comment func.
+// HandlerGetMethodNotAllowedAsJSON - comment func.
 func HandlerGetMethodNotAllowedAsJSON(unexpectedStatus int) http.HandlerFunc {
 	return HandlerErrorResponse(
 		http.StatusMethodNotAllowed,
@@ -30,7 +30,7 @@ func HandlerGetMethodNotAllowedAsJSON(unexpectedStatus int) http.HandlerFunc {
 	)
 }
 
-// HandlerGetFatalErrorAsJSON  - comment func.
+// HandlerGetFatalErrorAsJSON - comment func.
 func HandlerGetFatalErrorAsJSON(unexpectedStatus int) http.HandlerFunc {
 	return HandlerErrorResponse(
 		http.StatusInternalServerError,
@@ -40,7 +40,7 @@ func HandlerGetFatalErrorAsJSON(unexpectedStatus int) http.HandlerFunc {
 	)
 }
 
-// HandlerErrorResponse  - comment func.
+// HandlerErrorResponse - comment func.
 func HandlerErrorResponse(status, unexpectedStatus int, title, details string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bytes, err := json.Marshal(

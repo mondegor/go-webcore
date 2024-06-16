@@ -28,10 +28,10 @@ func WrapProto(proto *mrerr.ProtoAppError) ManagedError {
 
 // WrapProtoList - comment func.
 func WrapProtoList(protos []*mrerr.ProtoAppError) []ManagedError {
-	errors := make([]ManagedError, 0, len(protos))
+	errors := make([]ManagedError, len(protos))
 
 	for i := range protos {
-		errors = append(errors, WrapProto(protos[i]))
+		errors[i] = WrapProto(protos[i])
 	}
 
 	return errors

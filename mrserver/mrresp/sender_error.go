@@ -11,7 +11,6 @@ import (
 	"github.com/mondegor/go-sysmess/mrlang"
 
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrdebug"
 	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
@@ -24,6 +23,7 @@ type (
 		errorHandler     mrcore.ErrorHandler
 		statusGetter     mrserver.ErrorStatusGetter
 		unexpectedStatus int
+		isDebug          bool
 	}
 )
 
@@ -36,12 +36,14 @@ func NewErrorSender(
 	errorHandler mrcore.ErrorHandler,
 	statusGetter mrserver.ErrorStatusGetter,
 	unexpectedStatus int,
+	isDebug bool,
 ) *ErrorSender {
 	return &ErrorSender{
 		encoder:          encoder,
 		errorHandler:     errorHandler,
 		statusGetter:     statusGetter,
 		unexpectedStatus: unexpectedStatus,
+		isDebug:          isDebug,
 	}
 }
 
@@ -133,7 +135,7 @@ func (rs *ErrorSender) getErrorListResponse(ctx context.Context, errors ...*mrer
 		attrs[i].ID = customError.CustomCode()
 		attrs[i].Value = customError.Err().Translate(mrlang.Ctx(ctx)).Reason
 
-		if mrdebug.IsDebug() {
+		if rs.isDebug {
 			attrs[i].DebugInfo = rs.debugInfo(customError.Err())
 		}
 	}
@@ -151,7 +153,7 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.
 		ErrorTraceID: appError.InstanceID(),
 	}
 
-	if mrdebug.IsDebug() {
+	if rs.isDebug {
 		if response.Details != "" {
 			response.Details += "\n"
 		}

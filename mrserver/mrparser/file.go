@@ -133,21 +133,24 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 		return nil, err
 	}
 
-	files := make([]mrtype.FileHeader, countFiles)
+	files := make([]mrtype.FileHeader, 0, countFiles)
 
 	for i := 0; i < countFiles; i++ {
 		if err = p.checkFile(fds[i]); err != nil {
 			return nil, err
 		}
 
-		files[i] = mrtype.FileHeader{
-			FileInfo: mrtype.FileInfo{
-				ContentType:  p.detectedContentType(fds[i]),
-				OriginalName: fds[i].Filename,
-				Size:         fds[i].Size,
+		files = append(
+			files,
+			mrtype.FileHeader{
+				FileInfo: mrtype.FileInfo{
+					ContentType:  p.detectedContentType(fds[i]),
+					OriginalName: fds[i].Filename,
+					Size:         fds[i].Size,
+				},
+				Header: fds[i],
 			},
-			Header: fds[i],
-		}
+		)
 	}
 
 	return files, nil

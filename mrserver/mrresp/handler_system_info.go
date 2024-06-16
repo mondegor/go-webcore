@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrdebug"
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
@@ -14,6 +13,7 @@ type (
 	SystemInfoConfig struct {
 		Name      string
 		Version   string
+		IsDebug   bool
 		StartedAt time.Time
 	}
 
@@ -27,7 +27,7 @@ type (
 	}
 )
 
-// HandlerGetSystemInfoAsJSON  - comment func.
+// HandlerGetSystemInfoAsJSON - comment func.
 func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) {
 	hostName, err := os.Hostname()
 	if err != nil {
@@ -39,7 +39,7 @@ func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) 
 			Name:      cfg.Name,
 			Version:   cfg.Version,
 			HostName:  hostName,
-			IsDebug:   mrdebug.IsDebug(),
+			IsDebug:   cfg.IsDebug,
 			LogLevel:  mrlog.Default().Level().String(),
 			StartedAt: cfg.StartedAt.Format(time.RFC3339Nano),
 		},

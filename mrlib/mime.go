@@ -41,7 +41,7 @@ func NewMimeTypeList(items []MimeType) *MimeTypeList {
 	}
 }
 
-// NewListByExts  - comment func.
+// NewListByExts - comment method.
 func (mt *MimeTypeList) NewListByExts(exts ...string) (*MimeTypeList, error) {
 	mimeList := make([]MimeType, 0, len(exts))
 
@@ -63,7 +63,7 @@ func (mt *MimeTypeList) NewListByExts(exts ...string) (*MimeTypeList, error) {
 	return NewMimeTypeList(mimeList), nil
 }
 
-// CheckExt  - comment func.
+// CheckExt - comment method.
 func (mt *MimeTypeList) CheckExt(ext string) error {
 	if _, err := mt.getContentType(ext); err != nil {
 		return err
@@ -72,7 +72,7 @@ func (mt *MimeTypeList) CheckExt(ext string) error {
 	return nil
 }
 
-// CheckExtByFileName  - comment func.
+// CheckExtByFileName - comment method.
 func (mt *MimeTypeList) CheckExtByFileName(name string) error {
 	if _, err := mt.getContentType(path.Ext(name)); err != nil {
 		return err
@@ -81,7 +81,7 @@ func (mt *MimeTypeList) CheckExtByFileName(name string) error {
 	return nil
 }
 
-// CheckContentType  - comment func.
+// CheckContentType - comment method.
 func (mt *MimeTypeList) CheckContentType(contentType string) error {
 	if _, err := mt.getExt(contentType); err != nil {
 		return err
@@ -90,7 +90,7 @@ func (mt *MimeTypeList) CheckContentType(contentType string) error {
 	return nil
 }
 
-// ContentType  - comment func.
+// ContentType - comment method.
 func (mt *MimeTypeList) ContentType(ext string) string {
 	value, err := mt.getContentType(ext)
 	if err != nil {
@@ -100,7 +100,7 @@ func (mt *MimeTypeList) ContentType(ext string) string {
 	return value
 }
 
-// ContentTypeByFileName  - comment func.
+// ContentTypeByFileName - comment method.
 func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
 	value, err := mt.getContentType(path.Ext(name))
 	if err != nil {
@@ -110,7 +110,7 @@ func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
 	return value
 }
 
-// Ext  - comment func.
+// Ext - comment method.
 func (mt *MimeTypeList) Ext(contentType string) string {
 	value, err := mt.getExt(contentType)
 	if err != nil {

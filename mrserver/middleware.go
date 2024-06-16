@@ -22,7 +22,7 @@ import (
 
 // go get -u github.com/rs/xid
 
-// MiddlewareGeneral  - comment func.
+// MiddlewareGeneral - comment func.
 func MiddlewareGeneral(
 	tr *mrlang.Translator,
 	statFunc func(l mrlog.Logger, start time.Time, sr *StatRequest, sw *StatResponseWriter),
@@ -68,7 +68,7 @@ func MiddlewareGeneral(
 	}
 }
 
-// MiddlewareRecoverHandler  - comment func.
+// MiddlewareRecoverHandler - comment func.
 func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(next http.Handler) http.Handler {
 	if fatalFunc == nil {
 		fatalFunc = func(w http.ResponseWriter, _ *http.Request) {
@@ -105,7 +105,7 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 	}
 }
 
-// MiddlewareHandlerAdapter  - comment func.
+// MiddlewareHandlerAdapter - comment func.
 func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HttpHandlerFunc) http.HandlerFunc {
 	return func(next HttpHandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -116,7 +116,7 @@ func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HttpHandlerFunc) 
 	}
 }
 
-// MiddlewareHandlerCheckAccess  - comment func.
+// MiddlewareHandlerCheckAccess - comment func.
 func MiddlewareHandlerCheckAccess(
 	handlerName string,
 	access mrperms.AccessRightsFactory,
@@ -141,7 +141,7 @@ func MiddlewareHandlerCheckAccess(
 	}
 }
 
-// MiddlewareHandlerIdempotency  - comment func.
+// MiddlewareHandlerIdempotency - comment func.
 func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender ResponseSender) func(next HttpHandlerFunc) HttpHandlerFunc {
 	return func(next HttpHandlerFunc) HttpHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {

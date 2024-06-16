@@ -14,7 +14,7 @@ const (
 
 var regexpEnum = regexp.MustCompile(`^[A-Z]([A-Z0-9_]+)?[A-Z0-9]$`)
 
-// ParseEnum  - comment func.
+// ParseEnum - comment func.
 func ParseEnum(r *http.Request, key string, required bool) (string, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 

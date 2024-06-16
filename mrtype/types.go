@@ -3,13 +3,13 @@ package mrtype
 import "github.com/mondegor/go-webcore/mrenum"
 
 type (
-	// KeyInt32 - comment type.
+	// KeyInt32 - целочисленный ID записи.
 	KeyInt32 int32
 
-	// KeyInt64 - comment type.
+	// KeyInt64 - целочисленный ID записи.
 	KeyInt64 int64
 
-	// KeyString - comment type.
+	// KeyString - строковый ID записи.
 	KeyString string
 
 	// RangeInt64 - comment struct.
@@ -18,13 +18,13 @@ type (
 		Max int64
 	}
 
-	// PageParams - comment struct.
+	// PageParams - параметры для выборки части списка элементов.
 	PageParams struct {
 		Index uint64 // pageIndex
 		Size  uint64 // pageSize
 	}
 
-	// SortParams - comment struct.
+	// SortParams - параметры для сортировки списка элементов по указанному полю.
 	SortParams struct {
 		FieldName string               // sortField
 		Direction mrenum.SortDirection // sortDirection

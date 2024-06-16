@@ -5,47 +5,47 @@ import (
 )
 
 var (
-	// ErrHttpResponseParseData - comment error.
+	// ErrHttpResponseParseData - response data is not valid.
 	ErrHttpResponseParseData = mrerr.NewProto(
 		"errHttpResponseParseData", mrerr.ErrorKindInternal, "response data is not valid")
 
-	// ErrHttpFileUpload - comment error.
+	// ErrHttpFileUpload - the file with the specified key was not uploaded.
 	ErrHttpFileUpload = mrerr.NewProto(
 		"errHttpFileUpload", mrerr.ErrorKindUser, "the file with the specified key '{{ .key }}' was not uploaded")
 
-	// ErrHttpMultipartFormFile - comment error.
+	// ErrHttpMultipartFormFile - the file with the specified key cannot be processed.
 	ErrHttpMultipartFormFile = mrerr.NewProto(
 		"errHttpMultipartFormFile", mrerr.ErrorKindSystem, "the file with the specified key '{{ .key }}' cannot be processed")
 
-	// ErrHttpClientUnauthorized - comment error.
+	// ErrHttpClientUnauthorized - 401. client is unauthorized.
 	ErrHttpClientUnauthorized = mrerr.NewProto(
 		"errHttpClientUnauthorized", mrerr.ErrorKindUser, "401. client is unauthorized")
 
-	// ErrHttpAccessForbidden - comment error.
+	// ErrHttpAccessForbidden - 403. access forbidden.
 	ErrHttpAccessForbidden = mrerr.NewProto(
 		"errHttpAccessForbidden", mrerr.ErrorKindUser, "403. access forbidden")
 
-	// ErrHttpResourceNotFound - comment error.
+	// ErrHttpResourceNotFound - 404. resource not found.
 	ErrHttpResourceNotFound = mrerr.NewProto(
 		"errHttpResourceNotFound", mrerr.ErrorKindUser, "404. resource not found")
 
-	// ErrHttpRequestParseData - comment error.
+	// ErrHttpRequestParseData - request body is not valid.
 	ErrHttpRequestParseData = mrerr.NewProto(
 		"errHttpRequestParseData", mrerr.ErrorKindInternal, "request body is not valid")
 
-	// ErrHttpRequestParseParam - comment error.
+	// ErrHttpRequestParseParam - request param with key of type contains incorrect value.
 	ErrHttpRequestParseParam = mrerr.NewProto(
 		"errHttpRequestParseParam", mrerr.ErrorKindUser, "request param with key '{{ .key }}' of type '{{ .type }}' contains incorrect value '{{ .value }}'")
 
-	// ErrHttpRequestParamEmpty - comment error.
+	// ErrHttpRequestParamEmpty - request param with key is empty.
 	ErrHttpRequestParamEmpty = mrerr.NewProto(
-		"errHttpRequestParamEmpty", mrerr.ErrorKindUser, "request param with key '{{ .key }}' is empty'")
+		"errHttpRequestParamEmpty", mrerr.ErrorKindUser, "request param with key '{{ .key }}' is empty")
 
-	// ErrHttpRequestParamMax - comment error.
+	// ErrHttpRequestParamMax - request param with key contains value greater then max.
 	ErrHttpRequestParamMax = mrerr.NewProto(
 		"errHttpRequestParamMax", mrerr.ErrorKindUser, "request param with key '{{ .key }}' contains value greater then max '{{ .max }}'")
 
-	// ErrHttpRequestParamLenMax - comment error.
+	// ErrHttpRequestParamLenMax - request param with key has value length greater then max characters.
 	ErrHttpRequestParamLenMax = mrerr.NewProto(
 		"errHttpRequestParamLenMax", mrerr.ErrorKindUser, "request param with key '{{ .key }}' has value length greater then max '{{ .maxLength }}' characters")
 )

@@ -8,7 +8,7 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// IP2int  - comment func.
+// IP2int - comment func.
 func IP2int(ip net.IP) (uint32, error) {
 	if len(ip) == 16 {
 		return 0, errors.New("no sane way to convert ipv6 into uint32")
@@ -17,7 +17,7 @@ func IP2int(ip net.IP) (uint32, error) {
 	return binary.BigEndian.Uint32(ip), nil
 }
 
-// IP2intMust  - comment func.
+// IP2intMust - comment func.
 func IP2intMust(ip net.IP) uint32 {
 	value, err := IP2int(ip)
 	if err != nil {
@@ -29,7 +29,7 @@ func IP2intMust(ip net.IP) uint32 {
 	return value
 }
 
-// Int2ip  - comment func.
+// Int2ip - comment func.
 func Int2ip(number uint32) net.IP {
 	ip := make(net.IP, 4)
 

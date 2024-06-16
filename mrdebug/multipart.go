@@ -8,7 +8,7 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// MultipartForm  - comment func.
+// MultipartForm - comment func.
 func MultipartForm(ctx context.Context, form *multipart.Form) {
 	logger := mrlog.Ctx(ctx).With().Str("func", "MultipartForm").Logger()
 
@@ -35,7 +35,7 @@ func MultipartForm(ctx context.Context, form *multipart.Form) {
 	}
 }
 
-// MultipartFileHeader  - comment func.
+// MultipartFileHeader - comment func.
 func MultipartFileHeader(ctx context.Context, hdr *multipart.FileHeader) {
 	logger := mrlog.Ctx(ctx).With().Str("func", "MultipartFileHeader").Logger()
 

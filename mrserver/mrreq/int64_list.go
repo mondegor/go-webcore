@@ -12,7 +12,7 @@ const (
 	maxLenInt64List = 256
 )
 
-// ParseInt64List  - comment func.
+// ParseInt64List - comment func.
 func ParseInt64List(r *http.Request, key string) ([]int64, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 
@@ -25,15 +25,15 @@ func ParseInt64List(r *http.Request, key string) ([]int64, error) {
 	}
 
 	itemsTmp := strings.Split(value, ",")
-	items := make([]int64, len(itemsTmp))
+	items := make([]int64, 0, len(itemsTmp))
 
-	for i, item := range itemsTmp {
-		itemN, err := strconv.ParseInt(strings.TrimSpace(item), 10, 64)
+	for i := range itemsTmp {
+		itemN, err := strconv.ParseInt(strings.TrimSpace(itemsTmp[i]), 10, 64)
 		if err != nil {
 			return nil, mrcore.ErrHttpRequestParseParam.Wrap(err, key, "Int64", value)
 		}
 
-		items[i] = itemN
+		items = append(items, itemN)
 	}
 
 	return items, nil

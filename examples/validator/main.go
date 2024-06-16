@@ -52,7 +52,7 @@ func main() {
 	}
 }
 
-// ValidateLogin  - comment func.
+// ValidateLogin - comment func.
 func ValidateLogin(value string) bool {
 	return regexpLogin.MatchString(value)
 }

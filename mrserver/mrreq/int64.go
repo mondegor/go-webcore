@@ -12,7 +12,7 @@ const (
 	maxLenInt64 = 32
 )
 
-// ParseInt64  - comment func.
+// ParseInt64 - comment func.
 func ParseInt64(r *http.Request, key string, required bool) (int64, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 

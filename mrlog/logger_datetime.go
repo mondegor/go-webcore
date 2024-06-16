@@ -7,7 +7,7 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
-// ParseDateTimeFormat  - comment func.
+// ParseDateTimeFormat - comment func.
 func ParseDateTimeFormat(str string) (string, error) {
 	switch str {
 	case "RFC3339":

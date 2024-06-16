@@ -13,7 +13,7 @@ const (
 	maxLenUUID = 64
 )
 
-// ParseUUID  - comment func.
+// ParseUUID - comment func.
 func ParseUUID(r *http.Request, key string, required bool) (uuid.UUID, error) {
 	value := strings.TrimSpace(r.URL.Query().Get(key))
 

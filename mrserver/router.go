@@ -22,7 +22,8 @@ type (
 		Handlers() []HttpHandler
 	}
 
-	// HttpHandler - http обработчик, к которому привязаны метод, URL и разрешение контролирующее запуск этого обработчика.
+	// HttpHandler - http обработчик, к которому привязаны метод, URL и разрешение
+	// контролирующее запуск этого обработчика.
 	HttpHandler struct {
 		Method     string
 		URL        string
@@ -30,6 +31,7 @@ type (
 		Func       HttpHandlerFunc
 	}
 
-	// HttpHandlerFunc  - comment func.
+	// HttpHandlerFunc - изменённый дизайн стандартного HTTP обработчика
+	// с возможностью возврата ошибки вместо её обработки в самом обработчике.
 	HttpHandlerFunc func(w http.ResponseWriter, r *http.Request) error
 )

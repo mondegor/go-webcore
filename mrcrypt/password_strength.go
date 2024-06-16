@@ -8,8 +8,8 @@ const (
 	PassStrengthNotRated PassStrength = iota // PassStrengthNotRated - пароль без оценки
 	PassStrengthWeak                         // PassStrengthWeak - слабый пароль
 	PassStrengthMedium                       // PassStrengthMedium - средний пароль
-	PassStrengthStrong                       // PassStrengthStrong - сильный пароль
-	PassStrengthBest                         // PassStrengthBest - самый сильный пароль
+	PassStrengthStrong                       // PassStrengthStrong - надёжный пароль
+	PassStrengthBest                         // PassStrengthBest - самый надёжный пароль
 
 	passTypeSmallABC passTypeChars = iota
 	passTypeBigABC
@@ -23,8 +23,9 @@ const (
 )
 
 type (
-	// PassStrength - comment type.
-	PassStrength  uint8
+	// PassStrength - надёжность пароля.
+	PassStrength uint8
+
 	passTypeChars uint8
 )
 
@@ -36,7 +37,7 @@ var passStrengthName = map[PassStrength]string{
 	PassStrengthBest:     "THE_BEST",
 }
 
-// PasswordStrength  - comment func.
+// PasswordStrength - comment func.
 func PasswordStrength(value string) PassStrength {
 	length := len(value)
 

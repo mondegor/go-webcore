@@ -9,7 +9,7 @@ import (
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
-// URLPathParam  - comment func.
+// URLPathParam - comment func.
 func URLPathParam(r *http.Request, name string) string {
 	if ctx, ok := r.Context().Value(chi.RouteCtxKey).(*chi.Context); ok {
 		if name == mrserver.VarRestOfURL {

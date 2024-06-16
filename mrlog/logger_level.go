@@ -14,7 +14,7 @@ const (
 )
 
 type (
-	// Level - comment type.
+	// Level - уровень логирования.
 	Level int8
 )
 
@@ -38,7 +38,7 @@ var (
 	}
 )
 
-// ParseLevel  - comment func.
+// ParseLevel - comment func.
 func ParseLevel(str string) (Level, error) {
 	if value, ok := levelValue[str]; ok {
 		return value, nil

@@ -3,15 +3,15 @@ package mrreq
 import "github.com/mondegor/go-sysmess/mrerr"
 
 var (
-	// ErrHttpRequestCorrelationID - comment error.
+	// ErrHttpRequestCorrelationID - header 'X-Correlation-Id' contains incorrect value.
 	ErrHttpRequestCorrelationID = mrerr.NewProto(
 		"errHttpRequestCorrelationID", mrerr.ErrorKindInternal, "header 'X-Correlation-Id' contains incorrect value '{{ .value }}'")
 
-	// ErrHttpRequestUserIP - comment error.
+	// ErrHttpRequestUserIP - userIP is not IP:port.
 	ErrHttpRequestUserIP = mrerr.NewProto(
-		"errHttpRequestUserIP", mrerr.ErrorKindInternal, "UserIP '{{ .value }}' is not IP:port")
+		"errHttpRequestUserIP", mrerr.ErrorKindInternal, "userIP '{{ .value }}' is not IP:port")
 
-	// ErrHttpRequestParseUserIP - comment error.
+	// ErrHttpRequestParseUserIP - userIP contains incorrect value.
 	ErrHttpRequestParseUserIP = mrerr.NewProto(
-		"errHttpRequestParseUserIP", mrerr.ErrorKindInternal, "UserIP contains incorrect value '{{ .value }}'")
+		"errHttpRequestParseUserIP", mrerr.ErrorKindInternal, "userIP contains incorrect value '{{ .value }}'")
 )
