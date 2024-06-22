@@ -42,7 +42,7 @@ func (l *Provider) Lock(ctx context.Context, key string) (unlock func(), err err
 }
 
 // Get - comment method.
-func (l *Provider) Get(ctx context.Context, key string) (mridempotency.Responser, error) { //nolint:ireturn,nolintlint
+func (l *Provider) Get(ctx context.Context, key string) (mridempotency.Responser, error) {
 	l.traceCmd(ctx, "Get:"+key, key)
 
 	return nopresponser.New(), nil

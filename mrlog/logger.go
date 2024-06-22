@@ -8,7 +8,7 @@ import (
 
 type (
 	// Logger - интерфейс логирования ошибок и сообщений через формирования события.
-	Logger interface { //nolint:interfacebloat
+	Logger interface {
 		Level() Level
 		WithContext(ctx context.Context) context.Context
 

@@ -5,9 +5,9 @@ import "github.com/mondegor/go-sysmess/mrerr"
 type (
 	// ManagedError - comment struct.
 	ManagedError struct {
-		Err             *mrerr.ProtoAppError
-		WithIDGenerator bool
-		WithCaller      bool
+		Err           *mrerr.ProtoAppError
+		WithCaller    bool
+		WithOnCreated bool
 	}
 )
 
@@ -15,14 +15,16 @@ type (
 func WrapProto(proto *mrerr.ProtoAppError) ManagedError {
 	if proto.Kind() == mrerr.ErrorKindInternal || proto.Kind() == mrerr.ErrorKindSystem {
 		return ManagedError{
-			Err:             proto,
-			WithIDGenerator: true,
-			WithCaller:      true,
+			Err:           proto,
+			WithCaller:    true,
+			WithOnCreated: true,
 		}
 	}
 
 	return ManagedError{
-		Err: proto,
+		Err:           proto,
+		WithCaller:    false,
+		WithOnCreated: false,
 	}
 }
 
@@ -38,28 +40,28 @@ func WrapProtoList(protos []*mrerr.ProtoAppError) []ManagedError {
 }
 
 // WrapProtoExtra - comment func.
-func WrapProtoExtra(proto *mrerr.ProtoAppError, withIDGenerator, withCaller bool) ManagedError {
+func WrapProtoExtra(proto *mrerr.ProtoAppError, withCaller, withOnCreated bool) ManagedError {
 	return ManagedError{
-		Err:             proto,
-		WithIDGenerator: withIDGenerator,
-		WithCaller:      withCaller,
+		Err:           proto,
+		WithCaller:    withCaller,
+		WithOnCreated: withOnCreated,
 	}
 }
 
 // WrapProtoExtraEnabled - comment func.
 func WrapProtoExtraEnabled(proto *mrerr.ProtoAppError) ManagedError {
 	return ManagedError{
-		Err:             proto,
-		WithIDGenerator: true,
-		WithCaller:      true,
+		Err:           proto,
+		WithCaller:    true,
+		WithOnCreated: true,
 	}
 }
 
 // WrapProtoExtraDisabled - comment func.
 func WrapProtoExtraDisabled(proto *mrerr.ProtoAppError) ManagedError {
 	return ManagedError{
-		Err:             proto,
-		WithIDGenerator: false,
-		WithCaller:      false,
+		Err:           proto,
+		WithCaller:    false,
+		WithOnCreated: false,
 	}
 }

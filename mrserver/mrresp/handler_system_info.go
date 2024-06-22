@@ -11,19 +11,21 @@ import (
 type (
 	// SystemInfoConfig - comment struct.
 	SystemInfoConfig struct {
-		Name      string
-		Version   string
-		IsDebug   bool
-		StartedAt time.Time
+		Name        string
+		Version     string
+		Environment string
+		IsDebug     bool
+		StartedAt   time.Time
 	}
 
 	systemInfoResponse struct {
-		Name      string `json:"name"`
-		Version   string `json:"version"`
-		HostName  string `json:"hostName"`
-		IsDebug   bool   `json:"isDebug"`
-		LogLevel  string `json:"logLevel"`
-		StartedAt string `json:"startedAt"`
+		Name        string `json:"name"`
+		Version     string `json:"version"`
+		Environment string `json:"environment"`
+		HostName    string `json:"hostName"`
+		IsDebug     bool   `json:"isDebug"`
+		LogLevel    string `json:"logLevel"`
+		StartedAt   string `json:"startedAt"`
 	}
 )
 
@@ -36,12 +38,13 @@ func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) 
 
 	return HandlerGetStructAsJSON(
 		systemInfoResponse{
-			Name:      cfg.Name,
-			Version:   cfg.Version,
-			HostName:  hostName,
-			IsDebug:   cfg.IsDebug,
-			LogLevel:  mrlog.Default().Level().String(),
-			StartedAt: cfg.StartedAt.Format(time.RFC3339Nano),
+			Name:        cfg.Name,
+			Version:     cfg.Version,
+			Environment: cfg.Environment,
+			HostName:    hostName,
+			IsDebug:     cfg.IsDebug,
+			LogLevel:    mrlog.Default().Level().String(),
+			StartedAt:   cfg.StartedAt.Format(time.RFC3339Nano),
 		},
 		http.StatusOK,
 	)

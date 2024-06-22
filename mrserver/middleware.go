@@ -2,6 +2,7 @@ package mrserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -86,12 +87,14 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 						panic(rvr)
 					}
 
-					if isDebug {
-						os.Stderr.Write([]byte(fmt.Sprintf("%+v", r)))
+					errorMessage := fmt.Sprintf("%s %s %s; panic: %v\n", r.Proto, r.URL, r.Method, rvr)
+
+					if !isDebug {
+						os.Stderr.Write([]byte(errorMessage))
 						os.Stderr.Write(debug.Stack())
 					} else {
 						mrlog.Ctx(ctx).Error().
-							Str("panic", fmt.Sprintf("%+v", r)).
+							Err(errors.New(errorMessage)).
 							Bytes("CallStack", debug.Stack()).
 							Send()
 					}

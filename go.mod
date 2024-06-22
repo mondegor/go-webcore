@@ -3,13 +3,14 @@ module github.com/mondegor/go-webcore
 go 1.18
 
 require (
-	github.com/go-chi/chi/v5 v5.0.12
+	github.com/getsentry/sentry-go v0.28.1
+	github.com/go-chi/chi/v5 v5.0.14
 	github.com/go-playground/assert/v2 v2.2.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-sysmess v0.10.3
+	github.com/mondegor/go-sysmess v0.10.5
 	github.com/rs/cors v1.11.0
 	github.com/rs/xid v1.5.0
 	github.com/rs/zerolog v1.33.0

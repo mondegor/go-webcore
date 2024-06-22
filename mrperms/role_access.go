@@ -89,7 +89,7 @@ func NewAccessControl(opts AccessControlOptions) (*RoleAccessControl, error) {
 }
 
 // NewAccessRights - comment method.
-func (a *RoleAccessControl) NewAccessRights(roles ...string) AccessRights { //nolint:ireturn,nolintlint
+func (a *RoleAccessControl) NewAccessRights(roles ...string) AccessRights {
 	return newRoleGroup(a, roles)
 }
 

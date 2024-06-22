@@ -9,19 +9,17 @@ import (
 type (
 	// ErrorManager - comment struct.
 	ErrorManager struct {
-		generatorID func() string
-		caller      func() mrerr.StackTracer
-		mu          sync.Mutex
-		list        []ManagedError
+		extra mrerr.ProtoExtra
+		mu    sync.Mutex
+		list  []ManagedError
 	}
 )
 
 // NewErrorManager - создаёт объект ErrorManager.
-func NewErrorManager(generatorID func() string, caller func() mrerr.StackTracer) *ErrorManager {
+func NewErrorManager(extra mrerr.ProtoExtra) *ErrorManager {
 	return &ErrorManager{
-		generatorID: generatorID,
-		caller:      caller,
-		mu:          sync.Mutex{},
+		extra: extra,
+		mu:    sync.Mutex{},
 	}
 }
 
@@ -46,17 +44,16 @@ func (e *ErrorManager) registerList(items []ManagedError) {
 }
 
 func (e *ErrorManager) apply(item ManagedError) {
-	generatorID := e.generatorID
-	caller := e.caller
-
-	if !item.WithIDGenerator {
-		generatorID = nil
-	}
+	extra := e.extra
 
 	if !item.WithCaller {
-		caller = nil
+		extra.Caller = nil
+	}
+
+	if !item.WithOnCreated {
+		extra.OnCreated = nil
 	}
 
 	// WARNING: происходит изменение объекта ошибки
-	*item.Err = mrerr.WithExtra(*item.Err, generatorID, caller)
+	*item.Err = mrerr.WithExtra(*item.Err, extra)
 }

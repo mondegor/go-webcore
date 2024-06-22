@@ -94,10 +94,10 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 		}
 	}
 
-	// сюда могут приходит следующие типы ошибок:
+	// сюда могут приходить следующие типы ошибок:
 	// 1. AppError + Internal/System/User;
-	// 1. ProtoAppError + Internal/System/User;
-	// 3. error - ошибка, которая не была обёрнута в AppError;
+	// 1. ProtoAppError + Internal/System/User (нужно найти её и добавить вызов New или Wrap);
+	// 3. error - ошибка, которая не была обёрнута в ProtoAppError (нужно найти её и обернуть);
 	rs.errorHandler.Process(ctx, err)
 
 	appError = mrcore.CastToAppError(err)
@@ -148,7 +148,7 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.
 	response := ErrorDetailsResponse{
 		Title:        errMessage.Reason,
 		Details:      errMessage.DetailsToString(),
-		Request:      r.URL.Path,
+		Request:      r.Method + " " + r.URL.Path,
 		Time:         time.Now().UTC().Format(time.RFC3339),
 		ErrorTraceID: appError.InstanceID(),
 	}

@@ -2,6 +2,7 @@ package mrserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -94,7 +95,9 @@ func (s *ServerAdapter) Start(ctx context.Context) error {
 	}
 
 	if err = s.server.Serve(listener); err != nil {
-		return mrcore.ErrInternal.Wrap(err)
+		if !errors.Is(err, http.ErrServerClosed) {
+			return mrcore.ErrInternal.Wrap(err)
+		}
 	}
 
 	logger.Info().Msg("Stop the server listening")

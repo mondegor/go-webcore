@@ -30,7 +30,7 @@ func PrepareEachController(list []mrserver.HttpController, operations ...Prepare
 }
 
 // PrepareController - comment func.
-func PrepareController(c mrserver.HttpController, operations ...PrepareHandlerFunc) mrserver.HttpController { //nolint:ireturn,nolintlint
+func PrepareController(c mrserver.HttpController, operations ...PrepareHandlerFunc) mrserver.HttpController {
 	if len(operations) == 0 {
 		return c
 	}
