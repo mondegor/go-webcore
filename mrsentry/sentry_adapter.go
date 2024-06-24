@@ -13,7 +13,7 @@ import (
 
 const (
 	connectionName      = "Sentry"
-	errorKindName       = "errorKind"
+	errorKindTagName    = "error_kind"
 	defaultFlushTimeout = 2 * time.Second
 )
 
@@ -72,7 +72,8 @@ func (a *Adapter) Cli() *sentry.Client {
 func (a *Adapter) CaptureAppError(err *mrerr.AppError) (instanceID string) {
 	sentry.CurrentHub().WithScope(
 		func(scope *sentry.Scope) {
-			scope.SetTag(errorKindName, err.Kind().String())
+			// TODO: добавить отправку аргументов и атрибутов ошибки с помощью scope.SetExtras()
+			scope.SetTag(errorKindTagName, err.Kind().String())
 			scope.AddEventProcessor(
 				func(event *sentry.Event, _ *sentry.EventHint) *sentry.Event {
 					var unwrappedErr errorInfo = err

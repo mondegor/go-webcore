@@ -1,6 +1,17 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-06-24
+### Added
+- Добавлены `prometheus` метрики `ObserveRequest` для сбора статистики http запросов;
+
+### Changed
+- Заменено: `IP2intMust` -> `IP2int`;
+
+### Removed
+- Удалена поддержка соединения http сервера по сокету,
+  также удалены `ListenTypeSock`, `ListenTypePort`;
+
 ## 2024-06-22
 ### Added
 - Добавлен планировщик задач `mrworker`.`mrschedule`;

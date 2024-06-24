@@ -26,7 +26,7 @@ import (
 // MiddlewareGeneral - comment func.
 func MiddlewareGeneral(
 	tr *mrlang.Translator,
-	statFunc func(l mrlog.Logger, start time.Time, sr *StatRequest, sw *StatResponseWriter),
+	observeRequestFunc func(l mrlog.Logger, start time.Time, sr *StatRequest, sw *StatResponseWriter),
 ) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -60,9 +60,7 @@ func MiddlewareGeneral(
 				},
 			)
 
-			defer func() {
-				statFunc(logger, start, sr, sw)
-			}()
+			defer observeRequestFunc(logger, start, sr, sw)
 
 			next.ServeHTTP(sw, r)
 		})

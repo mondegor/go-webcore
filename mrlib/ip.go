@@ -4,8 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"net"
-
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 // IP2int - comment func.
@@ -17,13 +15,11 @@ func IP2int(ip net.IP) (uint32, error) {
 	return binary.BigEndian.Uint32(ip), nil
 }
 
-// IP2intMust - comment func.
-func IP2intMust(ip net.IP) uint32 {
+// MustIP2int - comment func.
+func MustIP2int(ip net.IP) uint32 {
 	value, err := IP2int(ip)
 	if err != nil {
-		mrlog.Default().Error().Err(err).Send()
-
-		return 0
+		panic(err)
 	}
 
 	return value

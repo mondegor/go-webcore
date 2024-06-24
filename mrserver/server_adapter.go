@@ -6,16 +6,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"path/filepath"
 	"time"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlog"
-)
-
-const (
-	ListenTypeSock = "sock" // ListenTypeSock - тип прослушивания: сокет
-	ListenTypePort = "port" // ListenTypePort - тип прослушивания: IP + порт
 )
 
 type (
@@ -39,11 +33,8 @@ type (
 
 	// ListenOptions - опции для создания Listen.
 	ListenOptions struct {
-		AppPath  string
-		Type     string
-		SockName string
-		BindIP   string
-		Port     string
+		BindIP string
+		Port   string
 	}
 )
 
@@ -123,42 +114,15 @@ func (s *ServerAdapter) Shutdown(ctx context.Context) error {
 }
 
 func (s *ServerAdapter) createListener(logger mrlog.Logger) (net.Listener, error) {
-	if s.listenOpts.Type == ListenTypeSock {
-		logger.Debug().Msg("Detect app real path")
+	addr := fmt.Sprintf("%s:%s", s.listenOpts.BindIP, s.listenOpts.Port)
+	logger.Debug().Msgf("Listen to TCP: %s", addr)
 
-		appDir, err := filepath.Abs(filepath.Dir(s.listenOpts.AppPath))
-		if err != nil {
-			return nil, fmt.Errorf("app real path: %w", err)
-		}
-
-		socketPath := filepath.Join(appDir, s.listenOpts.SockName)
-		logger.Debug().Msgf("Listen to unix socket: %s", socketPath)
-
-		listener, err := net.Listen("unix", socketPath)
-
-		if err == nil {
-			logger.Info().Msgf("The server is listening unix socket: %s", socketPath)
-		}
-
-		return listener, err
-	} else if s.listenOpts.Type == ListenTypePort {
-		addr := fmt.Sprintf("%s:%s", s.listenOpts.BindIP, s.listenOpts.Port)
-		logger.Debug().Msgf("Listen to tcp: %s", addr)
-
-		listener, err := net.Listen("tcp", addr)
-
-		if err == nil {
-			logger.Info().Msgf("The server is listening to port %s", addr)
-		}
-
-		return listener, err
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return nil, err
 	}
 
-	availableValues := fmt.Sprintf("Available values: %s, %s", ListenTypePort, ListenTypeSock)
+	logger.Info().Msgf("The server is listening to port %s", addr)
 
-	if s.listenOpts.Type == "" {
-		return nil, fmt.Errorf("listen type is required. %s", availableValues)
-	}
-
-	return nil, fmt.Errorf("listen type '%s' is unknown. %s", s.listenOpts.Type, availableValues)
+	return listener, nil
 }
