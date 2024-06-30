@@ -87,7 +87,7 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 
 					errorMessage := fmt.Sprintf("%s %s %s; panic: %v\n", r.Proto, r.URL, r.Method, rvr)
 
-					if !isDebug {
+					if isDebug {
 						os.Stderr.Write([]byte(errorMessage))
 						os.Stderr.Write(debug.Stack())
 					} else {

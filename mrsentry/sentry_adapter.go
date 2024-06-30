@@ -28,6 +28,7 @@ type (
 	Options struct {
 		Dsn              string
 		Environment      string
+		AppVersion       string
 		TracesSampleRate float64
 		FlushTimeout     time.Duration
 		StackTraceBounds []string
@@ -40,6 +41,7 @@ func New(opts Options) (*Adapter, error) {
 	sentryOpts := sentry.ClientOptions{
 		Dsn:              opts.Dsn,
 		Environment:      opts.Environment,
+		Release:          opts.AppVersion,
 		TracesSampleRate: opts.TracesSampleRate,
 		Debug:            opts.IsDebug,
 	}
