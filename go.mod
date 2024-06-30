@@ -1,8 +1,6 @@
 module github.com/mondegor/go-webcore
 
-go 1.21
-
-toolchain go1.22.1
+go 1.22
 
 require (
 	github.com/getsentry/sentry-go v0.28.1
