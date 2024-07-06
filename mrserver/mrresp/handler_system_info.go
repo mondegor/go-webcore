@@ -15,6 +15,7 @@ type (
 		Version     string
 		Environment string
 		IsDebug     bool
+		LogLevel    mrlog.Level
 		StartedAt   time.Time
 	}
 
@@ -43,7 +44,7 @@ func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) 
 			Environment: cfg.Environment,
 			HostName:    hostName,
 			IsDebug:     cfg.IsDebug,
-			LogLevel:    mrlog.Default().Level().String(),
+			LogLevel:    cfg.LogLevel.String(),
 			StartedAt:   cfg.StartedAt.Format(time.RFC3339Nano),
 		},
 		http.StatusOK,

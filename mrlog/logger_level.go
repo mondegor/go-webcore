@@ -20,21 +20,21 @@ type (
 
 var (
 	levelName = map[Level]string{
-		DebugLevel: "debug",
-		InfoLevel:  "info",
-		WarnLevel:  "warn",
-		ErrorLevel: "error",
-		FatalLevel: "fatal",
-		TraceLevel: "trace",
+		DebugLevel: "DEBUG",
+		InfoLevel:  "INFO",
+		WarnLevel:  "WARN",
+		ErrorLevel: "ERROR",
+		FatalLevel: "FATAL",
+		TraceLevel: "TRACE",
 	}
 
 	levelValue = map[string]Level{
-		"debug": DebugLevel,
-		"info":  InfoLevel,
-		"warn":  WarnLevel,
-		"error": ErrorLevel,
-		"fatal": FatalLevel,
-		"trace": TraceLevel,
+		"DEBUG": DebugLevel,
+		"INFO":  InfoLevel,
+		"WARN":  WarnLevel,
+		"ERROR": ErrorLevel,
+		"FATAL": FatalLevel,
+		"TRACE": TraceLevel,
 	}
 )
 
