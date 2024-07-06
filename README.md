@@ -1,4 +1,4 @@
-# Описание GoWebCore v0.19.2
+# Описание GoWebCore v0.19.3
 Этот репозиторий содержит описание библиотеки GoWebCore.
 
 ## Статус библиотеки
@@ -25,7 +25,7 @@
 - парсеры для работы с файлами и изображениями;
 
 ## Подключение библиотеки к проекту
-`go get -u github.com/mondegor/go-webcore@v0.19.2`
+`go get -u github.com/mondegor/go-webcore@v0.19.3`
 
 ## Установка библиотеки для её локальной разработки
 
@@ -39,8 +39,11 @@
 > Перед запуском консольных скриптов сервиса необходимо скачать и установить утилиту Mrcmd.\
 > Инструкция по её установке находится [здесь](https://github.com/mondegor/mrcmd#readme)
 
+- `mrcmd go help` - выводит список всех доступных go команд (docker версия);
+- `mrcmd go-dev help` // выводит список всех доступных go-dev команд (локальная версия);
 - `mrcmd go-dev fmt` // исправляет форматирование кода (gofumpt -l -w -extra ./)
 - `mrcmd go-dev goimports-fix` // исправление imports, если это требуется (goimports -d -local ${GO_DEV_LOCAL_PACKAGE} ./)
-- `mrcmd go-dev check` // статический анализ кода библиотеки
+- `mrcmd go-dev check` // статический анализ кода библиотеки (линтеры: govet, staticcheck, errcheck)
 - `mrcmd go-dev test` // запуск тестов библиотеки
-- `mrcmd go-dev help` // выводит список всех доступных команд
+- `mrcmd golangci-lint check` // запуск линтеров для проверки кода (на основе `.golangci.yaml`)
+- `mrcmd plantuml build-all` // генерирует файлы изображений из `.puml` [подробнее](https://github.com/mondegor/mrcmd-plugins/blob/master/plantuml/README.md#%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B0-%D1%81-%D0%B4%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D0%B5%D0%B9-%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D0%B0-markdown--plantuml)
