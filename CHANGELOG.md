@@ -1,6 +1,12 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-07-12
+### Added
+- Добавлена валидация `mrview.ValidateTripleSize`;
+- Добавлена заглушка логгера `mrlog.noplog`; 
+- Добавлены `mrlib.RoundFloat`, `RoundFloat2` `RoundFloat4` `RoundFloat8` для обнуления незначимых знаков после запятой;
+
 ## 2024-07-06
 ### Changed
 - Строковые значения `LogLevel` приведены к единому стандарту `enum` (теперь они в верхнем регистре);

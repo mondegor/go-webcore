@@ -115,9 +115,9 @@ func (e *eventAdapter) Send() {
 }
 
 func (e *eventAdapter) write(message string) {
-	if e.done != nil {
-		defer e.done(message)
-	}
-
 	e.logger.Print(message)
+
+	if e.done != nil {
+		e.done(message)
+	}
 }

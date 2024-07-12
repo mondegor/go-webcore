@@ -3,7 +3,7 @@ package mrjulienrouter_test
 import (
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/mondegor/go-webcore/mrserver/mrjulienrouter"
 )
