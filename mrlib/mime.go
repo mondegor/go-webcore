@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"strings"
 )
 
 type (
@@ -26,6 +27,7 @@ func NewMimeTypeList(items []MimeType) *MimeTypeList {
 	mimeMap := make(map[string]string, len(items))
 
 	for _, item := range items {
+		item.Extension = strings.TrimPrefix(item.Extension, ".")
 		extMap[item.Extension] = item.ContentType
 
 		// т.к. у одного типа может быть несколько расширений,

@@ -21,12 +21,12 @@ func Version() string {
 	value := strings.TrimSpace(string(b))
 
 	// если указана любая ветка кроме мастера
-	if value != "master" && value != "main" {
+	if value != "master" && value != "main" && value != "HEAD" {
 		return value
 	}
 
 	// Примеры тегов:
-	//   v2.3.7-0-a5efc
+	//   v0.14.7-0-de1493e0
 	//   v0.8.1-0-gd3a5efc-dirty
 	cmd = exec.Command("git", "describe", "--long", "--always", "--dirty")
 
