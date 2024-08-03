@@ -8,20 +8,20 @@ import (
 )
 
 type (
-	// MimeTypeList - comment struct.
+	// MimeTypeList - хранит соответствие расширений их типам файлов (в обе стороны).
 	MimeTypeList struct {
 		extMap         map[string]string
 		contentTypeMap map[string]string
 	}
 
-	// MimeType - comment struct.
+	// MimeType - хранит расширение и соответствующий ему тип файла.
 	MimeType struct {
 		Extension   string `yaml:"ext"`
 		ContentType string `yaml:"type"`
 	}
 )
 
-// NewMimeTypeList - создаёт объект MimeTypeList.
+// NewMimeTypeList - создаёт объект MimeTypeList на основе списка соответствий расширений и файлов.
 func NewMimeTypeList(items []MimeType) *MimeTypeList {
 	extMap := make(map[string]string, len(items))
 	mimeMap := make(map[string]string, len(items))
@@ -43,7 +43,8 @@ func NewMimeTypeList(items []MimeType) *MimeTypeList {
 	}
 }
 
-// NewListByExts - comment method.
+// NewListByExts - создаёт новый объект MimeTypeList, в который войдут указанные расширения,
+// если хотя бы одно расширение не зарегистрировано в текущем списке, то будет выдана ошибка.
 func (mt *MimeTypeList) NewListByExts(exts ...string) (*MimeTypeList, error) {
 	mimeList := make([]MimeType, 0, len(exts))
 
@@ -65,7 +66,7 @@ func (mt *MimeTypeList) NewListByExts(exts ...string) (*MimeTypeList, error) {
 	return NewMimeTypeList(mimeList), nil
 }
 
-// CheckExt - comment method.
+// CheckExt - возвращается ошибка, если указанное расширение не зарегистрировано в списке.
 func (mt *MimeTypeList) CheckExt(ext string) error {
 	if _, err := mt.getContentType(ext); err != nil {
 		return err
@@ -74,7 +75,7 @@ func (mt *MimeTypeList) CheckExt(ext string) error {
 	return nil
 }
 
-// CheckExtByFileName - comment method.
+// CheckExtByFileName - возвращается ошибка, если расширение указанного файла не зарегистрировано в списке.
 func (mt *MimeTypeList) CheckExtByFileName(name string) error {
 	if _, err := mt.getContentType(path.Ext(name)); err != nil {
 		return err
@@ -83,7 +84,7 @@ func (mt *MimeTypeList) CheckExtByFileName(name string) error {
 	return nil
 }
 
-// CheckContentType - comment method.
+// CheckContentType - возвращается ошибка, если указанный тип файла не зарегистрирован в списке.
 func (mt *MimeTypeList) CheckContentType(contentType string) error {
 	if _, err := mt.getExt(contentType); err != nil {
 		return err
@@ -92,7 +93,8 @@ func (mt *MimeTypeList) CheckContentType(contentType string) error {
 	return nil
 }
 
-// ContentType - comment method.
+// ContentType - возвращается тип файла по указанному расширению,
+// если тип не найден, то вернётся пустая строка.
 func (mt *MimeTypeList) ContentType(ext string) string {
 	value, err := mt.getContentType(ext)
 	if err != nil {
@@ -102,7 +104,8 @@ func (mt *MimeTypeList) ContentType(ext string) string {
 	return value
 }
 
-// ContentTypeByFileName - comment method.
+// ContentTypeByFileName - возвращается тип файла по расширению указанного файла,
+// если тип не найден, то вернётся пустая строка.
 func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
 	value, err := mt.getContentType(path.Ext(name))
 	if err != nil {
@@ -112,7 +115,8 @@ func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
 	return value
 }
 
-// Ext - comment method.
+// Ext - возвращается расширение по указанному типу файла,
+// если расширение не найдено, то вернётся пустая строка.
 func (mt *MimeTypeList) Ext(contentType string) string {
 	value, err := mt.getExt(contentType)
 	if err != nil {

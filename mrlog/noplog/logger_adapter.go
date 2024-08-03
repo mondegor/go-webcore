@@ -16,7 +16,7 @@ type (
 var _ mrlog.Logger = (*LoggerAdapter)(nil)
 
 // New - создаёт объект LoggerAdapter.
-func New(_ mrlog.Level) *LoggerAdapter {
+func New() *LoggerAdapter {
 	return &LoggerAdapter{}
 }
 
@@ -39,22 +39,22 @@ func (l *LoggerAdapter) With() mrlog.LoggerContext {
 
 // Info - comment method.
 func (l *LoggerAdapter) Info() mrlog.LoggerEvent {
-	return nil
+	return (*eventAdapter)(nil)
 }
 
 // Debug - comment method.
 func (l *LoggerAdapter) Debug() mrlog.LoggerEvent {
-	return nil
+	return (*eventAdapter)(nil)
 }
 
 // Warn - comment method.
 func (l *LoggerAdapter) Warn() mrlog.LoggerEvent {
-	return nil
+	return (*eventAdapter)(nil)
 }
 
 // Error - comment method.
 func (l *LoggerAdapter) Error() mrlog.LoggerEvent {
-	return nil
+	return (*eventAdapter)(nil)
 }
 
 // Fatal - comment method.
@@ -77,7 +77,7 @@ func (l *LoggerAdapter) Panic() mrlog.LoggerEvent {
 
 // Trace - comment method.
 func (l *LoggerAdapter) Trace() mrlog.LoggerEvent {
-	return nil
+	return (*eventAdapter)(nil)
 }
 
 // Printf - comment method.

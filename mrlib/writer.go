@@ -7,7 +7,7 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// Write - comment func.
+// Write - адаптер для вызова io.Writer указанного объекта с логированием ошибки.
 func Write(ctx context.Context, w io.Writer, bytes []byte) {
 	if len(bytes) < 1 {
 		return

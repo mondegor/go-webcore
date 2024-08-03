@@ -9,21 +9,21 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// CallEachFunc - comment func.
+// CallEachFunc - последовательно вызываются все функции из указанного списка.
 func CallEachFunc(ctx context.Context, list []func(ctx context.Context)) {
 	for _, f := range list {
 		f(ctx)
 	}
 }
 
-// CloseFunc - comment func.
+// CloseFunc - возвращается функция, для вызова Close с указанным объектом.
 func CloseFunc(object io.Closer) func(ctx context.Context) {
 	return func(ctx context.Context) {
 		Close(ctx, object)
 	}
 }
 
-// Close - comment func.
+// Close - адаптер для вызова io.Closer указанного объекта с логированием результата.
 func Close(ctx context.Context, object io.Closer) {
 	logger := mrlog.Ctx(ctx)
 

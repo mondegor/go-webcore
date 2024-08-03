@@ -40,21 +40,37 @@ func (e *eventAdapter) Any(_ string, _ any) mrlog.LoggerEvent {
 
 // Msg - comment method.
 func (e *eventAdapter) Msg(_ string) {
+	if e == nil {
+		return
+	}
+
 	e.execDone()
 }
 
 // Msgf - comment method.
 func (e *eventAdapter) Msgf(_ string, _ ...any) {
+	if e == nil {
+		return
+	}
+
 	e.execDone()
 }
 
 // MsgFunc - comment method.
 func (e *eventAdapter) MsgFunc(_ func() string) {
+	if e == nil {
+		return
+	}
+
 	e.execDone()
 }
 
 // Send - comment method.
 func (e *eventAdapter) Send() {
+	if e == nil {
+		return
+	}
+
 	e.execDone()
 }
 

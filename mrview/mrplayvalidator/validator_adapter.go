@@ -9,6 +9,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/mondegor/go-sysmess/mrerr"
 
+	"github.com/mondegor/go-webcore/mrlib"
+
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrview"
@@ -81,9 +83,10 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 	logger := mrlog.Ctx(ctx)
 
 	for i, errField := range errorList {
+		fieldName := mrlib.CutBefore(errField.Namespace(), '.')
 		fields[i] = mrerr.NewCustomError(
-			errField.Field(),
-			v.createAppError(errField),
+			fieldName,
+			v.createAppError(fieldName, errField),
 		)
 
 		logger.Debug().Str("validate.field", errField.Namespace()).MsgFunc(
@@ -91,16 +94,14 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 				return fmt.Sprintf(
 					"{Field: %s, "+
 						"StructNamespace: %s, "+
-						"StructField: %s, "+
 						"Tag: %s, "+
 						"ActualTag: %s, "+
 						"Kind: %v, "+
 						"Type: %v, "+
 						"Value: %v, "+
 						"Param: %s}",
-					errField.Field(),
+					fieldName,
 					errField.StructNamespace(),
-					errField.StructField(),
 					errField.Tag(),
 					errField.ActualTag(),
 					errField.Kind(),
@@ -115,7 +116,7 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 	return fields
 }
 
-func (v *ValidatorAdapter) createAppError(field validator.FieldError) *mrerr.AppError {
+func (v *ValidatorAdapter) createAppError(fieldName string, field validator.FieldError) *mrerr.AppError {
 	if len(field.Tag()) == 0 {
 		return errValidatorTagIsNotFound
 	}
@@ -125,7 +126,7 @@ func (v *ValidatorAdapter) createAppError(field validator.FieldError) *mrerr.App
 	// здесь передаются все атрибуты поля, которые можно вывести пользователю,
 	id := validatorErrorPrefix + "_" + field.Tag()
 	message := id + ": name={{ .name }}, type={{ .type }}, value={{ .value }}"
-	args := [4]any{field.Field(), field.Kind().String(), field.Value()}
+	args := [4]any{fieldName, field.Kind().String(), field.Value()}
 
 	if field.Param() != "" {
 		args[3] = field.Param()

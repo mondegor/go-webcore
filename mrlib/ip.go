@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-// IP2int - comment func.
+// IP2int - возвращает IP в виде числа или ошибку, если конвертация невозможна.
 func IP2int(ip net.IP) (uint32, error) {
 	if len(ip) == 16 {
 		return 0, errors.New("no sane way to convert ipv6 into uint32")
@@ -15,7 +15,7 @@ func IP2int(ip net.IP) (uint32, error) {
 	return binary.BigEndian.Uint32(ip), nil
 }
 
-// MustIP2int - comment func.
+// MustIP2int - возвращает IP в виде числа или panic, если конвертация невозможна.
 func MustIP2int(ip net.IP) uint32 {
 	value, err := IP2int(ip)
 	if err != nil {
@@ -25,7 +25,7 @@ func MustIP2int(ip net.IP) uint32 {
 	return value
 }
 
-// Int2ip - comment func.
+// Int2ip - возвращает net.IP полученного из указанного целого числа.
 func Int2ip(number uint32) net.IP {
 	ip := make(net.IP, 4)
 

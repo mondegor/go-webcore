@@ -40,6 +40,12 @@ type (
 		FilterInt64List(r *http.Request, key string) []int64
 	}
 
+	// RequestParserFloat64 - парсер данных запроса для преобразования их во float64.
+	RequestParserFloat64 interface {
+		FilterFloat64(r *http.Request, key string) float64
+		FilterRangeFloat64(r *http.Request, key string) mrtype.RangeFloat64
+	}
+
 	// RequestParserKeyInt32 - парсер данных запроса для преобразования их в mrtype.KeyInt32.
 	RequestParserKeyInt32 interface {
 		PathKeyInt32(r *http.Request, name string) mrtype.KeyInt32

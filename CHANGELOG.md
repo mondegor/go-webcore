@@ -1,6 +1,21 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-08-03
+### Added
+- Добавлен интерфейс парсера `mrserver.RequestParserFloat64` и его реализация;
+- Добавлены комментарии к некоторым сущностям;
+- Добавлены функции:
+    - `mrlib.CutBefore()`;
+    - `mrlib.EqualFloat()`;
+
+### Changed
+- Изменены название метрик в `NewObserveRequest`, добавлен `namespace` в качестве параметра;
+- При валидации `mrplayvalidator.Validate()` формируется более полное имя поля, где произошла ошибка;
+
+### Fixed
+- Доработана заглушка логгера `noplog.LoggerAdapter`;
+
 ## 2024-07-20
 ### Changed
 - Изменены название метрик в `NewObserveRequest`, добавлен `namespace` в качестве параметра;
