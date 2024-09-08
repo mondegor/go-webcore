@@ -10,12 +10,16 @@ const (
 	PassStrengthMedium                       // PassStrengthMedium - средний пароль
 	PassStrengthStrong                       // PassStrengthStrong - надёжный пароль
 	PassStrengthBest                         // PassStrengthBest - самый надёжный пароль
+)
 
+const (
 	passTypeSmallABC passTypeChars = iota
 	passTypeBigABC
 	passTypeNumeral
 	passTypeSign
+)
 
+const (
 	passTypeNumeralLen  = 10
 	passTypeBigABCLen   = 26
 	passTypeSmallABCLen = 26
@@ -38,7 +42,7 @@ var passStrengthName = map[PassStrength]string{
 }
 
 // PasswordStrength - comment func.
-func PasswordStrength(value string) PassStrength {
+func (l *Lib) PasswordStrength(value string) PassStrength {
 	length := len(value)
 
 	if length < 1 {

@@ -22,7 +22,7 @@ type (
 		Panic() LoggerEvent
 		Trace() LoggerEvent
 
-		Printf(format string, args ...any) // поддержка стандартного интерфейса логгирования сообщений
+		Printf(format string, args ...any) // поддержка стандартного интерфейса логирования сообщений
 	}
 
 	// LoggerContext - контекст логгера для обогащения его дополнительными атрибутами.

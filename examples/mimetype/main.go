@@ -1,18 +1,12 @@
 package main
 
 import (
-	"log"
-
 	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrlog/mrlogbase"
 )
 
 func main() {
-	logger := mrlogbase.New(mrlog.DebugLevel).With().Str("example", "mimetype").Logger()
-	if err := mrlog.SetDefault(logger); err != nil {
-		log.Fatal(err)
-	}
+	logger := mrlog.Default().With().Str("example", "mimetype").Logger()
 
 	mime := mrlib.NewMimeTypeList(getMimeTypeListFromConfig())
 

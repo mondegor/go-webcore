@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 const (
@@ -34,28 +32,21 @@ type (
 	}
 )
 
-var pwCharSets = [pwCharSetLen]pwCharSet{
-	{PassVowels, 2, true, 10, []byte("aeiuyAEIUY")}, // oO - символы удалены, чтобы не перепутать с нулём
-	{PassConsonants, 2, true, 40, []byte("bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ")},
-	{PassNumerals, 1, false, 9, []byte("123456789")}, // 0 - символ удалён, чтобы не перепутать с oO
-	{PassSigns, 1, false, 6, []byte(".!?@$&")},
-}
-
 // GenPassword - comment func.
-func GenPassword(length int, charsKinds PassCharsKinds) string {
+func (l *Lib) GenPassword(length int, charsKinds PassCharsKinds) string {
 	if length < 1 {
-		mrlog.Default().Warn().Err(fmt.Errorf("param 'length': %d < 1", length)).Send()
+		l.logger.Warn().Err(fmt.Errorf("param 'length': %d < 1", length)).Send()
 		length = 1
 	}
 
 	if length > 128 {
-		mrlog.Default().Warn().Err(fmt.Errorf("param 'length': %d > 128", length)).Send()
+		l.logger.Warn().Err(fmt.Errorf("param 'length': %d > 128", length)).Send()
 		length = 128
 	}
 
 	if charsKinds == 0 {
 		charsKinds = PassAll
-		mrlog.Default().Warn().Err(errors.New("param 'charsKinds' is zero")).Send() //nolint:wsl
+		l.logger.Warn().Err(errors.New("param 'charsKinds' is zero")).Send() //nolint:wsl
 	}
 
 	var (
@@ -64,8 +55,8 @@ func GenPassword(length int, charsKinds PassCharsKinds) string {
 	)
 
 	for i := 0; i < pwCharSetLen; i++ {
-		if (pwCharSets[abcLen].kind & charsKinds) > 0 {
-			abc[abcLen] = pwCharSets[i]
+		if (l.pwCharSets[abcLen].kind & charsKinds) > 0 {
+			abc[abcLen] = l.pwCharSets[i]
 			abcLen++
 		}
 	}
@@ -87,7 +78,7 @@ func GenPassword(length int, charsKinds PassCharsKinds) string {
 		var abcIndex int
 
 		for {
-			abcIndex = getRandValue(abcLen)
+			abcIndex = l.getRandValue(abcLen)
 
 			// если выбранный тип можно использовать для генерации первого и последнего символа
 			// или если символ не первый и не последний
@@ -110,16 +101,16 @@ func GenPassword(length int, charsKinds PassCharsKinds) string {
 		}
 
 		// обращение к случайному символу типа
-		result[i] = abc[abcIndex].letters[getRandValue(abc[abcIndex].lettersLen)]
+		result[i] = abc[abcIndex].letters[l.getRandValue(abc[abcIndex].lettersLen)]
 	}
 
 	return string(result)
 }
 
-func getRandValue(max int) int {
+func (l *Lib) getRandValue(max int) int {
 	value, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
 	if err != nil {
-		mrlog.Default().Error().Err(err).Send()
+		l.logger.Error().Err(err).Send()
 
 		return 0
 	}

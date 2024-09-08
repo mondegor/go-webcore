@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"log"
+	"os"
 
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrlog/zerolog/factory"
@@ -11,9 +12,11 @@ import (
 func main() {
 	logger, err := factory.NewZeroLogAdapter(
 		factory.Options{
+			Stdout:          os.Stdout,
 			Level:           mrlog.InfoLevel.String(),
-			JsonFormat:      true,
+			JsonFormat:      false,
 			TimestampFormat: "RFC3339Nano",
+			ConsoleColor:    true,
 		},
 	)
 	if err != nil {

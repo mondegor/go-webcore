@@ -4,12 +4,11 @@ import (
 	"context"
 
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrlog/mrlogbase"
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
 func main() {
-	logger := mrlogbase.New(mrlog.DebugLevel).With().Str("example", "shutdown").Logger()
+	logger := mrlog.Default().With().Str("example", "shutdown").Logger()
 
 	ctx, cancel := context.WithCancel(logger.WithContext(context.Background()))
 	defer cancel()

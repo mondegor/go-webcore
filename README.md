@@ -1,4 +1,4 @@
-# Описание GoWebCore v0.20.3
+# Описание GoWebCore v0.21.0
 Этот репозиторий содержит описание библиотеки GoWebCore.
 
 ## Статус библиотеки
@@ -25,7 +25,7 @@
 - парсеры для работы с файлами и изображениями;
 
 ## Подключение библиотеки к проекту
-`go get -u github.com/mondegor/go-webcore@v0.20.3`
+`go get -u github.com/mondegor/go-webcore@v0.21.0`
 
 ## Установка библиотеки для её локальной разработки
 
@@ -42,7 +42,7 @@
 - `mrcmd go help` - выводит список всех доступных go команд (docker версия);
 - `mrcmd go-dev help` // выводит список всех доступных go-dev команд (локальная версия);
 - `mrcmd go-dev fmt` // исправляет форматирование кода (gofumpt -l -w -extra ./)
-- `mrcmd go-dev goimports-fix` // исправление imports, если это требуется (goimports -d -local ${GO_DEV_LOCAL_PACKAGE} ./)
+- `mrcmd go-dev goimports-fix` // исправление imports, если это требуется (goimports -d -local ${GO_DEV_IMPORTS_LOCAL_PREFIXES} ./)
 - `mrcmd go-dev check` // статический анализ кода библиотеки (линтеры: govet, staticcheck, errcheck)
 - `mrcmd go-dev test` // запуск тестов библиотеки
 - `mrcmd golangci-lint check` // запуск линтеров для проверки кода (на основе `.golangci.yaml`)

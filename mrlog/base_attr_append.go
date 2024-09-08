@@ -1,4 +1,4 @@
-package mrlogbase
+package mrlog
 
 import (
 	"fmt"

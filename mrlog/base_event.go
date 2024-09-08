@@ -1,10 +1,8 @@
-package mrlogbase
+package mrlog
 
 import (
 	"fmt"
 	"log"
-
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 type (
@@ -16,10 +14,10 @@ type (
 )
 
 // Make sure the Image conforms with the mrlog.LoggerEvent interface.
-var _ mrlog.LoggerEvent = (*eventAdapter)(nil)
+var _ LoggerEvent = (*eventAdapter)(nil)
 
 // Err - comment method.
-func (e *eventAdapter) Err(err error) mrlog.LoggerEvent {
+func (e *eventAdapter) Err(err error) LoggerEvent {
 	if e == nil {
 		return e
 	}
@@ -31,7 +29,7 @@ func (e *eventAdapter) Err(err error) mrlog.LoggerEvent {
 }
 
 // Str - comment method.
-func (e *eventAdapter) Str(key, value string) mrlog.LoggerEvent {
+func (e *eventAdapter) Str(key, value string) LoggerEvent {
 	if e == nil {
 		return e
 	}
@@ -43,7 +41,7 @@ func (e *eventAdapter) Str(key, value string) mrlog.LoggerEvent {
 }
 
 // Bytes - comment method.
-func (e *eventAdapter) Bytes(key string, value []byte) mrlog.LoggerEvent {
+func (e *eventAdapter) Bytes(key string, value []byte) LoggerEvent {
 	if e == nil {
 		return e
 	}
@@ -55,7 +53,7 @@ func (e *eventAdapter) Bytes(key string, value []byte) mrlog.LoggerEvent {
 }
 
 // Int - comment method.
-func (e *eventAdapter) Int(key string, value int) mrlog.LoggerEvent {
+func (e *eventAdapter) Int(key string, value int) LoggerEvent {
 	if e == nil {
 		return e
 	}
@@ -67,7 +65,7 @@ func (e *eventAdapter) Int(key string, value int) mrlog.LoggerEvent {
 }
 
 // Any - comment method.
-func (e *eventAdapter) Any(key string, value any) mrlog.LoggerEvent {
+func (e *eventAdapter) Any(key string, value any) LoggerEvent {
 	if e == nil {
 		return e
 	}

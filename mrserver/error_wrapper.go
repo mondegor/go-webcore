@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	// HttpErrorStatusGetter - only for: 401, 403, 404, 418, 5XX.
+	// HttpErrorStatusGetter - only for: 401, 403, 404, 418, 422, 5XX.
 	HttpErrorStatusGetter struct {
 		unexpectedStatus int
 	}
@@ -36,13 +36,15 @@ func (g *HttpErrorStatusGetter) ErrorStatus(err error) int {
 		return http.StatusForbidden
 	}
 
-	status := http.StatusInternalServerError
+	if errors.Is(err, mrcore.ErrHttpRequestParseData) {
+		return http.StatusUnprocessableEntity
+	}
 
-	// если ошибка явно не обработана разработчиком (ни чем не обёрнута),
+	// если ошибка явно необработанна разработчиком (ни чем не обёрнута),
 	// то вместо 500 отображается указанный g.unexpectedStatus
-	if g.unexpectedStatus != status && mrcore.IsUnexpectedError(err) {
+	if g.unexpectedStatus != http.StatusInternalServerError && mrcore.IsUnexpectedError(err) {
 		return g.unexpectedStatus
 	}
 
-	return status
+	return http.StatusInternalServerError
 }

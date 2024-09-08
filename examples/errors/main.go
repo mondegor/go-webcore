@@ -5,11 +5,10 @@ import (
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrlog/mrlogbase"
 )
 
 func main() {
-	logger := mrlogbase.New(mrlog.DebugLevel).With().Str("example", "errors").Logger()
+	logger := mrlog.Default().With().Str("example", "errors").Logger()
 
 	logger.Error().Err(mrcore.ErrInternal).Msg("this is ErrInternal")
 	logger.Error().Err(mrcore.ErrInternalTypeAssertion.New("MY-TYPE", "MY-VALUE")).Send()

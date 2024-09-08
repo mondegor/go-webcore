@@ -2,12 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"regexp"
 
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrlog/mrlogbase"
+
 	"github.com/mondegor/go-webcore/mrview/mrplayvalidator"
 )
 
@@ -21,34 +19,32 @@ type (
 var regexpLogin = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9\-]+[a-zA-Z]$`)
 
 func main() {
-	logger := mrlogbase.New(mrlog.DebugLevel).With().Str("example", "validator").Logger()
-	if err := mrlog.SetDefault(logger); err != nil {
-		log.Fatal(err)
-	}
+	logger := mrlog.New(mrlog.DebugLevel).With().Str("example", "validator").Logger()
+	ctx := mrlog.WithContext(context.Background(), logger)
 
 	validator := mrplayvalidator.New()
 
 	if err := validator.Register("login", ValidateLogin); err != nil {
-		fmt.Println(err)
+		logger.Info().Err(err).Msg("critical error")
 		return
 	}
 
 	user1 := User{Login: "valid-login"}
 
-	if err := validator.Validate(context.Background(), &user1); err != nil {
-		fmt.Println(err)
+	if err := validator.Validate(ctx, &user1); err != nil {
+		logger.Info().Err(err).Msg("USER MESSAGE")
 	}
 
 	user2 := User{Login: "not-valid-login!"}
 
-	if err := validator.Validate(context.Background(), &user2); err != nil {
-		fmt.Println(err)
+	if err := validator.Validate(ctx, &user2); err != nil {
+		logger.Info().Err(err).Msg("USER MESSAGE")
 	}
 
 	user3 := User{Login: "really-long-login-len-24"}
 
-	if err := validator.Validate(context.Background(), &user3); err != nil {
-		fmt.Println(err)
+	if err := validator.Validate(ctx, &user3); err != nil {
+		logger.Info().Err(err).Msg("USER MESSAGE")
 	}
 }
 

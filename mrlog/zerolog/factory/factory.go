@@ -16,6 +16,7 @@ import (
 type (
 	// Options - опции для создания Logger.
 	Options struct {
+		Stdout           io.Writer
 		Level            string
 		JsonFormat       bool
 		TimestampFormat  string
@@ -37,28 +38,30 @@ func NewZeroLogAdapter(opts Options) (logger *mrzerolog.LoggerAdapter, err error
 			return nil, err
 		}
 
-		// TODO: не безопасно!!! можно использовать только
-		// TODO: при инициализации в глобальном потоке и только один раз!!!
+		// TODO: небезопасно!!! можно использовать только
+		//       при инициализации в глобальном потоке и только один раз!!!
 		if zerolog.TimeFieldFormat != opts.TimestampFormat {
 			zerolog.TimeFieldFormat = opts.TimestampFormat
 		}
 	}
 
-	var out io.Writer = os.Stdout
+	if opts.Stdout == nil {
+		opts.Stdout = os.Stderr
+	}
 
 	if !opts.JsonFormat {
 		if opts.TimestampFormat == "" {
 			opts.TimestampFormat = time.Kitchen
 		}
 
-		out = zerolog.ConsoleWriter{
-			Out:        out,
+		opts.Stdout = zerolog.ConsoleWriter{
+			Out:        opts.Stdout,
 			TimeFormat: opts.TimestampFormat,
 			NoColor:    !opts.ConsoleColor,
 		}
 	}
 
-	zero := zerolog.New(out)
+	zero := zerolog.New(opts.Stdout)
 
 	if opts.TimestampFormat != "" {
 		zero = zero.With().Timestamp().Logger()

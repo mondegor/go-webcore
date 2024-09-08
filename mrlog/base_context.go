@@ -1,25 +1,21 @@
-package mrlogbase
-
-import (
-	"github.com/mondegor/go-webcore/mrlog"
-)
+package mrlog
 
 type (
 	contextAdapter struct {
-		logger LoggerAdapter
+		logger BaseLogger
 	}
 )
 
 // Make sure the Image conforms with the mrlog.LoggerContext interface.
-var _ mrlog.LoggerContext = (*contextAdapter)(nil)
+var _ LoggerContext = (*contextAdapter)(nil)
 
 // Logger - comment method.
-func (c *contextAdapter) Logger() mrlog.Logger {
+func (c *contextAdapter) Logger() Logger {
 	return &c.logger
 }
 
 // Str - comment method.
-func (c *contextAdapter) Str(key, value string) mrlog.LoggerContext {
+func (c *contextAdapter) Str(key, value string) LoggerContext {
 	cp := *c
 	cp.logger.context = appendValue(appendKey(cp.logger.context, key), value)
 
@@ -27,7 +23,7 @@ func (c *contextAdapter) Str(key, value string) mrlog.LoggerContext {
 }
 
 // Bytes - comment method.
-func (c *contextAdapter) Bytes(key string, value []byte) mrlog.LoggerContext {
+func (c *contextAdapter) Bytes(key string, value []byte) LoggerContext {
 	cp := *c
 	cp.logger.context = appendValue(appendKey(cp.logger.context, key), value)
 
@@ -35,7 +31,7 @@ func (c *contextAdapter) Bytes(key string, value []byte) mrlog.LoggerContext {
 }
 
 // Int - comment method.
-func (c *contextAdapter) Int(key string, value int) mrlog.LoggerContext {
+func (c *contextAdapter) Int(key string, value int) LoggerContext {
 	cp := *c
 	cp.logger.context = appendValue(appendKey(cp.logger.context, key), value)
 
@@ -43,7 +39,7 @@ func (c *contextAdapter) Int(key string, value int) mrlog.LoggerContext {
 }
 
 // Any - comment method.
-func (c *contextAdapter) Any(key string, value any) mrlog.LoggerContext {
+func (c *contextAdapter) Any(key string, value any) LoggerContext {
 	cp := *c
 	cp.logger.context = appendValue(appendKey(cp.logger.context, key), value)
 
