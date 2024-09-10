@@ -25,8 +25,8 @@ func HandlerGetStatusOkAsJSON() http.HandlerFunc {
 }
 
 // HandlerGetStructAsJSON - comment func.
-func HandlerGetStructAsJSON(data any, status int) (http.HandlerFunc, error) {
-	bytes, err := json.Marshal(data)
+func HandlerGetStructAsJSON(structure any, status int) (http.HandlerFunc, error) {
+	bytes, err := json.Marshal(structure)
 	if err != nil {
 		return nil, mrcore.ErrHttpResponseParseData.Wrap(err)
 	}

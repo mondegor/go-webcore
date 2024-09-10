@@ -1,4 +1,4 @@
-package mrserver
+package mrapp
 
 import (
 	"context"
@@ -13,8 +13,8 @@ const (
 	signalChanLen = 10
 )
 
-// PrepareAppToStart - comment func.
-func PrepareAppToStart(ctx context.Context) (execute func() error, interrupt func(error)) {
+// PrepareToStart - comment func.
+func PrepareToStart(ctx context.Context) (execute func() error, interrupt func(error)) {
 	ctx, cancel := context.WithCancel(ctx)
 	signalStop := make(chan os.Signal, signalChanLen)
 
