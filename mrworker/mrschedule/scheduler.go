@@ -33,21 +33,17 @@ func NewScheduler(errorHandler mrcore.ErrorHandler, tasks ...mrworker.Task) *Sch
 	}
 }
 
-// PrepareToStart - comment method.
-func (s *Scheduler) PrepareToStart(ctx context.Context) (execute func() error, interrupt func(error)) {
-	return func() error {
-			return s.Start(ctx)
-		}, func(_ error) {
-			s.Stop()
-		}
+// Caption - возвращает название планировщика.
+func (s *Scheduler) Caption() string {
+	return schedulerName
 }
 
 // Start - запуск планировщика задач.
-func (s *Scheduler) Start(ctx context.Context) error {
-	logger := mrlog.Ctx(ctx).With().Str("service", schedulerName).Logger()
+func (s *Scheduler) Start(ctx context.Context, ready func()) error {
+	logger := mrlog.Ctx(ctx).With().Str("process", schedulerName).Logger()
 	ctx = mrlog.WithContext(ctx, logger)
 
-	if err := s.startup(ctx); err != nil {
+	if err := s.startup(ctx, logger); err != nil {
 		return err
 	}
 
@@ -55,11 +51,9 @@ func (s *Scheduler) Start(ctx context.Context) error {
 	wg := sync.WaitGroup{}
 
 	for i := range s.tasks {
-		task := s.tasks[i]
-
 		wg.Add(1)
 
-		go func(ctx context.Context) {
+		go func(ctx context.Context, task mrworker.Task) {
 			defer wg.Done()
 
 			ticker := time.NewTicker(task.Period())
@@ -77,12 +71,16 @@ func (s *Scheduler) Start(ctx context.Context) error {
 						}
 					}(ctx)
 				case <-ctx.Done():
-					logger.Info().Msgf("Interrupt task %s", task.Caption())
+					logger.Info().Msgf("Interrupt task '%s'", task.Caption())
 
 					return
 				}
 			}
-		}(ctx)
+		}(ctx, s.tasks[i])
+	}
+
+	if ready != nil {
+		ready()
 	}
 
 	select {
@@ -95,24 +93,26 @@ func (s *Scheduler) Start(ctx context.Context) error {
 	cancel()
 	wg.Wait()
 
-	logger.Info().Msg("The scheduler has been shutdown")
+	logger.Info().Msg("The scheduler has been stopped")
 
 	return nil
 }
 
-// Stop - остановка планировщика задач.
-func (s *Scheduler) Stop() {
+// Shutdown - корректная остановка планировщика задач.
+func (s *Scheduler) Shutdown(_ context.Context) error {
 	close(s.done)
+
+	return nil
 }
 
-func (s *Scheduler) startup(ctx context.Context) error {
+func (s *Scheduler) startup(ctx context.Context, logger mrlog.Logger) error {
 	for _, task := range s.tasks {
 		if task.Period() == 0 {
-			return fmt.Errorf("task %s has zero period", task.Caption())
+			return fmt.Errorf("task '%s' has zero period", task.Caption())
 		}
 
 		if task.Timeout() == 0 {
-			return fmt.Errorf("task %s has zero timeout", task.Caption())
+			return fmt.Errorf("task '%s' has zero timeout", task.Caption())
 		}
 
 		// последовательный первый запуск задач, если они требуют этого
@@ -120,6 +120,8 @@ func (s *Scheduler) startup(ctx context.Context) error {
 		if !task.Startup() {
 			continue
 		}
+
+		logger.Info().Msgf("Startup the task '%s'...", task.Caption())
 
 		if err := task.Do(ctx); err != nil {
 			return err

@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	// Bool - comment struct.
+	// Bool - парсер bool значений.
 	Bool struct{}
 )
 
@@ -21,7 +21,8 @@ func NewBool() *Bool {
 	return &Bool{}
 }
 
-// FilterNullableBool - comment method.
+// FilterNullableBool - возвращает bool значение поступившее из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается nil значение.
 func (p *Bool) FilterNullableBool(r *http.Request, key string) *bool {
 	value, err := mrreq.ParseNullableBool(r, key)
 	if err != nil {

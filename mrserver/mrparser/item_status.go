@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	// ItemStatus - comment struct.
+	// ItemStatus - парсер mrenum.ItemStatus.
 	ItemStatus struct {
 		defaultItems []mrenum.ItemStatus
 	}
@@ -24,14 +24,15 @@ func NewItemStatus() *ItemStatus {
 	return &ItemStatus{}
 }
 
-// NewItemStatusWithDefault - создаёт объект ItemStatus.
+// NewItemStatusWithDefault - создаёт объект ItemStatus со статусами по умолчанию.
 func NewItemStatusWithDefault(items []mrenum.ItemStatus) *ItemStatus {
 	return &ItemStatus{
 		defaultItems: items,
 	}
 }
 
-// FilterStatusList - comment method.
+// FilterStatusList - возвращает массив mrenum.ItemStatus поступивший из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается пустой массив.
 func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.ItemStatus {
 	items, err := p.parseList(r, key)
 	if err != nil {

@@ -8,12 +8,12 @@ type (
 	ctxKey struct{}
 )
 
-// WithContext - возвращается контекст с указанным логгером.
+// WithContext - возвращает контекст с указанным логгером.
 func WithContext(ctx context.Context, logger Logger) context.Context {
 	return context.WithValue(ctx, ctxKey{}, logger)
 }
 
-// Ctx - возвращается логер из указанного контекста,
+// Ctx - возвращает логгер из указанного контекста,
 // если он не был установлен ранее, то возвращается логгер по умолчанию.
 func Ctx(ctx context.Context) Logger {
 	if value, ok := ctx.Value(ctxKey{}).(Logger); ok {

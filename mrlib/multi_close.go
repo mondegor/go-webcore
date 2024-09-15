@@ -16,7 +16,7 @@ func CallEachFunc(ctx context.Context, list []func(ctx context.Context)) {
 	}
 }
 
-// CloseFunc - возвращается функция, для вызова Close с указанным объектом.
+// CloseFunc - возвращает функцию, для вызова Close с указанным объектом.
 func CloseFunc(object io.Closer) func(ctx context.Context) {
 	return func(ctx context.Context) {
 		Close(ctx, object)

@@ -8,13 +8,14 @@ import (
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
+	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
 type (
-	// File - comment struct.
+	// File - парсер файлов.
 	File struct {
 		allowedMimeTypes        *mrlib.MimeTypeList
 		minSize                 int64
@@ -24,7 +25,7 @@ type (
 		checkRequestContentType bool
 	}
 
-	// FileOptions - опции для создания File.
+	// FileOptions - опции для создания объекта File.
 	FileOptions struct {
 		AllowedMimeTypes        *mrlib.MimeTypeList
 		MinSize                 int64
@@ -39,9 +40,10 @@ type (
 var _ mrserver.RequestParserFile = (*File)(nil)
 
 // NewFile - создаёт объект File.
-func NewFile(opts FileOptions) *File {
+func NewFile(logger mrlog.Logger, opts FileOptions) *File {
 	if opts.AllowedMimeTypes == nil {
 		opts.AllowedMimeTypes = mrlib.NewMimeTypeList(
+			logger,
 			[]mrlib.MimeType{
 				{
 					Extension:   ".pdf",
@@ -69,7 +71,8 @@ func NewFile(opts FileOptions) *File {
 	}
 }
 
-// FormFile - WARNING: you don't forget to call result.Body.Close().
+// FormFile - возвращает информацию о файле со ссылкой для чтения файла из MultipartForm.
+// WARNING: you don't forget to call result.Body.Close().
 func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 	hdr, err := mrreq.FormFile(r, key)
 	if err != nil {
@@ -95,7 +98,8 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 	}, nil
 }
 
-// FormFileContent - only for short files.
+// FormFileContent - возвращает информацию о файле и сам файл из MultipartForm.
+// WARNING: only for short files.
 func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent, error) {
 	file, err := p.FormFile(r, key)
 	if err != nil {
@@ -116,7 +120,7 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent,
 	}, nil
 }
 
-// FormFiles - comment method.
+// FormFiles - возвращает массив заголовков на файлы из MultipartForm.
 func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, error) {
 	fds, err := mrreq.FormFiles(r, key, 0)
 	if err != nil {

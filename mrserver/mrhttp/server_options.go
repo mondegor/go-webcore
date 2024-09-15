@@ -1,4 +1,4 @@
-package mrhttpserver
+package mrhttp
 
 import (
 	"time"

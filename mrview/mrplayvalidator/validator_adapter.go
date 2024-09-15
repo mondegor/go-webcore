@@ -9,9 +9,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/mondegor/go-sysmess/mrerr"
 
-	"github.com/mondegor/go-webcore/mrlib"
-
 	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrview"
 )

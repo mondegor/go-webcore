@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"path"
 	"strings"
+
+	"github.com/mondegor/go-webcore/mrlog"
 )
 
 type (
@@ -12,6 +14,7 @@ type (
 	MimeTypeList struct {
 		extMap         map[string]string
 		contentTypeMap map[string]string
+		logger         mrlog.Logger
 	}
 
 	// MimeType - хранит расширение и соответствующий ему тип файла.
@@ -22,7 +25,7 @@ type (
 )
 
 // NewMimeTypeList - создаёт объект MimeTypeList на основе списка соответствий расширений и файлов.
-func NewMimeTypeList(items []MimeType) *MimeTypeList {
+func NewMimeTypeList(logger mrlog.Logger, items []MimeType) *MimeTypeList {
 	extMap := make(map[string]string, len(items))
 	mimeMap := make(map[string]string, len(items))
 
@@ -40,12 +43,13 @@ func NewMimeTypeList(items []MimeType) *MimeTypeList {
 	return &MimeTypeList{
 		extMap:         extMap,
 		contentTypeMap: mimeMap,
+		logger:         logger,
 	}
 }
 
 // NewListByExts - создаёт новый объект MimeTypeList, в который войдут указанные расширения,
 // если хотя бы одно расширение не зарегистрировано в текущем списке, то будет выдана ошибка.
-func (mt *MimeTypeList) NewListByExts(exts ...string) (*MimeTypeList, error) {
+func (mt *MimeTypeList) NewListByExts(logger mrlog.Logger, exts ...string) (*MimeTypeList, error) {
 	mimeList := make([]MimeType, 0, len(exts))
 
 	for _, ext := range exts {
@@ -63,10 +67,10 @@ func (mt *MimeTypeList) NewListByExts(exts ...string) (*MimeTypeList, error) {
 		)
 	}
 
-	return NewMimeTypeList(mimeList), nil
+	return NewMimeTypeList(logger, mimeList), nil
 }
 
-// CheckExt - возвращается ошибка, если указанное расширение не зарегистрировано в списке.
+// CheckExt - возвращает ошибку, если указанное расширение не зарегистрировано в списке.
 func (mt *MimeTypeList) CheckExt(ext string) error {
 	if _, err := mt.getContentType(ext); err != nil {
 		return err
@@ -75,7 +79,7 @@ func (mt *MimeTypeList) CheckExt(ext string) error {
 	return nil
 }
 
-// CheckExtByFileName - возвращается ошибка, если расширение указанного файла не зарегистрировано в списке.
+// CheckExtByFileName - возвращает ошибку, если расширение указанного файла не зарегистрировано в списке.
 func (mt *MimeTypeList) CheckExtByFileName(name string) error {
 	if _, err := mt.getContentType(path.Ext(name)); err != nil {
 		return err
@@ -84,7 +88,7 @@ func (mt *MimeTypeList) CheckExtByFileName(name string) error {
 	return nil
 }
 
-// CheckContentType - возвращается ошибка, если указанный тип файла не зарегистрирован в списке.
+// CheckContentType - возвращает ошибку, если указанный тип файла не зарегистрирован в списке.
 func (mt *MimeTypeList) CheckContentType(contentType string) error {
 	if _, err := mt.getExt(contentType); err != nil {
 		return err
@@ -93,33 +97,39 @@ func (mt *MimeTypeList) CheckContentType(contentType string) error {
 	return nil
 }
 
-// ContentType - возвращается тип файла по указанному расширению,
-// если тип не найден, то вернётся пустая строка.
+// ContentType - возвращает тип файла по указанному расширению,
+// если тип не найден, то возвращается пустая строка.
 func (mt *MimeTypeList) ContentType(ext string) string {
 	value, err := mt.getContentType(ext)
 	if err != nil {
+		mt.logger.Warn().Err(err).Send()
+
 		return ""
 	}
 
 	return value
 }
 
-// ContentTypeByFileName - возвращается тип файла по расширению указанного файла,
-// если тип не найден, то вернётся пустая строка.
+// ContentTypeByFileName - возвращает тип файла по расширению указанного файла,
+// если тип не найден, то возвращается пустая строка.
 func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
 	value, err := mt.getContentType(path.Ext(name))
 	if err != nil {
+		mt.logger.Warn().Err(err).Send()
+
 		return ""
 	}
 
 	return value
 }
 
-// Ext - возвращается расширение по указанному типу файла,
-// если расширение не найдено, то вернётся пустая строка.
+// Ext - возвращает расширение по указанному типу файла,
+// если расширение не найдено, то возвращается пустая строка.
 func (mt *MimeTypeList) Ext(contentType string) string {
 	value, err := mt.getExt(contentType)
 	if err != nil {
+		mt.logger.Warn().Err(err).Send()
+
 		return ""
 	}
 

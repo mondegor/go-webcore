@@ -6,13 +6,12 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/mondegor/go-webcore/mrlog"
-
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
 
 type (
-	// UUID - comment struct.
+	// UUID - парсер UUID.
 	UUID struct {
 		pathFunc mrserver.RequestParserParamFunc
 	}
@@ -28,7 +27,7 @@ func NewUUID(pathFunc mrserver.RequestParserParamFunc) *UUID {
 	}
 }
 
-// PathParamUUID - comment method.
+// PathParamUUID - возвращает именованный UUID содержащийся в URL пути.
 func (p *UUID) PathParamUUID(r *http.Request, name string) uuid.UUID {
 	value, err := uuid.Parse(p.pathFunc(r, name))
 	if err != nil {
@@ -40,7 +39,8 @@ func (p *UUID) PathParamUUID(r *http.Request, name string) uuid.UUID {
 	return value
 }
 
-// FilterUUID - comment method.
+// FilterUUID - возвращает UUID поступивший из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается uuid.Nil.
 func (p *UUID) FilterUUID(r *http.Request, key string) uuid.UUID {
 	value, err := mrreq.ParseUUID(r, key, false)
 	if err != nil {

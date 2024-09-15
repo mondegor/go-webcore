@@ -5,7 +5,6 @@ import (
 	"regexp"
 
 	"github.com/mondegor/go-webcore/mrlog"
-
 	"github.com/mondegor/go-webcore/mrview/mrplayvalidator"
 )
 

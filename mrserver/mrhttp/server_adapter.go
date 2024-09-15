@@ -1,4 +1,4 @@
-package mrhttpserver
+package mrhttp
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// Диаграмма действия таймаутов сервера.
+// Диаграмма действия таймаутов http сервера.
 //
 // [Idle] [Wait] [TLS handshake] [Req.Headers] [Request body] [Response] [Idle]
 //        |---------https-------||--------------------------|            - ReadTimeout
@@ -26,7 +26,7 @@ const (
 )
 
 type (
-	// Adapter - comment struct.
+	// Adapter - Адаптер http сервера.
 	Adapter struct {
 		caption         string
 		srv             *http.Server
@@ -46,59 +46,59 @@ func NewAdapter(ctx context.Context, handler http.Handler, opts ...Option) *Adap
 		},
 	}
 
-	adapter := &Adapter{
+	a := &Adapter{
 		caption:         defaultCaption,
 		srv:             httpServer,
 		shutdownTimeout: defaultShutdownTimeout,
 	}
 
-	for _, opt := range opts {
-		opt(adapter)
-	}
+	a.applyOptions(opts)
 
-	return adapter
+	return a
 }
 
-// PrepareToStart - comment method.
-func (s *Adapter) PrepareToStart(ctx context.Context) (execute func() error, interrupt func(error)) {
-	return func() error {
-			return s.Start(ctx)
-		}, func(_ error) {
-			if err := s.Shutdown(ctx); err != nil {
-				mrlog.Ctx(ctx).Error().Err(err).Send()
-			}
-		}
+// Caption - возвращает название http сервера.
+func (a *Adapter) Caption() string {
+	return a.caption
 }
 
 // Start - запуск http сервера.
-func (s *Adapter) Start(ctx context.Context) error {
-	logger := mrlog.Ctx(ctx).With().Str("server", s.caption).Logger()
-	logger.Info().Msgf("Starting the server with address: %s", s.srv.Addr)
+func (a *Adapter) Start(ctx context.Context, ready func()) error {
+	logger := mrlog.Ctx(ctx).With().Str("server", a.caption).Logger()
+	logger.Info().Msgf("Starting the server with address: %s", a.srv.Addr)
 
-	if err := s.srv.ListenAndServe(); err != nil {
+	if ready != nil {
+		ready()
+	}
+
+	if err := a.srv.ListenAndServe(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
 			return mrcore.ErrInternal.Wrap(err)
 		}
 	}
 
-	logger.Info().Msg("Stop the server listening")
+	logger.Info().Msg("The server has been stopped")
 
 	return nil
 }
 
 // Shutdown - корректная остановка http сервера.
-func (s *Adapter) Shutdown(ctx context.Context) error {
-	logger := mrlog.Ctx(ctx).With().Str("server", s.caption).Logger()
+func (a *Adapter) Shutdown(ctx context.Context) error {
+	logger := mrlog.Ctx(ctx).With().Str("server", a.caption).Logger()
 	logger.Info().Msg("Shutting down the server...")
 
-	ctx, cancel := context.WithTimeout(ctx, s.shutdownTimeout)
+	ctx, cancel := context.WithTimeout(ctx, a.shutdownTimeout)
 	defer cancel()
 
-	if err := s.srv.Shutdown(ctx); err != nil {
+	if err := a.srv.Shutdown(ctx); err != nil {
 		return mrcore.ErrInternal.Wrap(err)
 	}
 
-	logger.Info().Msg("The server has been shutdown")
-
 	return nil
+}
+
+func (a *Adapter) applyOptions(opts []Option) {
+	for _, opt := range opts {
+		opt(a)
+	}
 }

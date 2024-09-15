@@ -17,13 +17,13 @@ import (
 	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrperms"
-
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
 
 // go get -u github.com/rs/xid
 
-// MiddlewareGeneral - comment func.
+// MiddlewareGeneral - промежуточный обработчик, который устанавливает в контекст
+// correlationID, language, logger. А также другие параметры, которые используются в статистике запросов.
 func MiddlewareGeneral(
 	tr *mrlang.Translator,
 	observeRequestFunc func(l mrlog.Logger, start time.Time, sr *StatRequest, sw *StatResponseWriter),
@@ -67,7 +67,7 @@ func MiddlewareGeneral(
 	}
 }
 
-// MiddlewareRecoverHandler - comment func.
+// MiddlewareRecoverHandler - промежуточный обработчик для перехвата panic.
 func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(next http.Handler) http.Handler {
 	if fatalFunc == nil {
 		fatalFunc = func(w http.ResponseWriter, _ *http.Request) {
@@ -106,7 +106,7 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 	}
 }
 
-// MiddlewareHandlerAdapter - comment func.
+// MiddlewareHandlerAdapter - переходник с HttpHandlerFunc на http.HandlerFunc.
 func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HttpHandlerFunc) http.HandlerFunc {
 	return func(next HttpHandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +117,7 @@ func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HttpHandlerFunc) 
 	}
 }
 
-// MiddlewareHandlerCheckAccess - comment func.
+// MiddlewareHandlerCheckAccess - промежуточный обработчик проверки доступа к секции и конечному обработчику.
 func MiddlewareHandlerCheckAccess(
 	handlerName string,
 	access mrperms.AccessRightsFactory,
@@ -142,7 +142,7 @@ func MiddlewareHandlerCheckAccess(
 	}
 }
 
-// MiddlewareHandlerIdempotency - comment func.
+// MiddlewareHandlerIdempotency - промежуточный обработчик для организации идемпотентных запросов.
 func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender ResponseSender) func(next HttpHandlerFunc) HttpHandlerFunc {
 	return func(next HttpHandlerFunc) HttpHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {
@@ -156,9 +156,12 @@ func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender Respon
 				return err
 			}
 
-			if cachedResponse, err := provider.Get(r.Context(), idempotencyKey); err != nil {
+			cachedResponse, err := provider.Get(r.Context(), idempotencyKey)
+			if err != nil {
 				return err
-			} else if cachedResponse != nil {
+			}
+
+			if cachedResponse != nil {
 				return sender.SendBytes(
 					w,
 					cachedResponse.StatusCode(),
@@ -175,11 +178,11 @@ func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender Respon
 
 			sw := NewCacheableResponseWriter(w)
 
-			if err := next(sw, r); err != nil {
+			if err = next(sw, r); err != nil {
 				return err
 			}
 
-			if err := provider.Store(r.Context(), idempotencyKey, sw); err != nil {
+			if err = provider.Store(r.Context(), idempotencyKey, sw); err != nil {
 				mrlog.Ctx(r.Context()).Error().Err(err).Send()
 			}
 

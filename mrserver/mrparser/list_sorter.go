@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	// ListSorter - comment struct.
+	// ListSorter - парсер параметров для сортировки списка элементов.
 	ListSorter struct {
 		paramNameSortField     string
 		paramNameSortDirection string
@@ -45,7 +45,7 @@ func NewListSorter(opts ListSorterOptions) *ListSorter {
 	return &ls
 }
 
-// SortParams - comment method.
+// SortParams - возвращает распарсенные параметры сортировки списка элементов.
 func (p *ListSorter) SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams {
 	value, err := mrreq.ParseSortParams(
 		r,

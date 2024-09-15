@@ -8,7 +8,7 @@ import (
 func main() {
 	logger := mrlog.Default().With().Str("example", "mimetype").Logger()
 
-	mime := mrlib.NewMimeTypeList(getMimeTypeListFromConfig())
+	mime := mrlib.NewMimeTypeList(logger, getMimeTypeListFromConfig())
 
 	logger.Info().Msgf(".json content-type: [%s]", mime.ContentType("json"))
 	logger.Info().Msgf(".jpeg content-type: [%s]", mime.ContentType(".jpeg"))

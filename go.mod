@@ -3,13 +3,13 @@ module github.com/mondegor/go-webcore
 go 1.22
 
 require (
-	github.com/getsentry/sentry-go v0.28.1
+	github.com/getsentry/sentry-go v0.29.0
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/go-playground/validator/v10 v10.22.1
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-sysmess v0.10.12
+	github.com/mondegor/go-sysmess v0.11.1
 	github.com/prometheus/client_golang v1.20.3
 	github.com/rs/cors v1.11.1
 	github.com/rs/xid v1.6.0
@@ -40,3 +40,5 @@ require (
 	golang.org/x/text v0.18.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 )
+
+// replace github.com/mondegor/go-sysmess => ../go-sysmess

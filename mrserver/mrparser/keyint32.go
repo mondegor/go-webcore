@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	// KeyInt32 - comment struct.
+	// KeyInt32 - парсер mrtype.KeyInt32 числа.
 	KeyInt32 struct {
 		pathFunc mrserver.RequestParserParamFunc
 	}
@@ -27,7 +27,7 @@ func NewKeyInt32(pathFunc mrserver.RequestParserParamFunc) *KeyInt32 {
 	}
 }
 
-// PathKeyInt32 - comment method.
+// PathKeyInt32 - возвращает именованное mrtype.KeyInt32 число содержащееся в URL пути.
 func (p *KeyInt32) PathKeyInt32(r *http.Request, name string) mrtype.KeyInt32 {
 	value, err := strconv.ParseInt(p.pathFunc(r, name), 10, 32)
 	if err != nil {
@@ -39,7 +39,8 @@ func (p *KeyInt32) PathKeyInt32(r *http.Request, name string) mrtype.KeyInt32 {
 	return mrtype.KeyInt32(value)
 }
 
-// FilterKeyInt32 - comment method.
+// FilterKeyInt32 - возвращает mrtype.KeyInt32 число поступившее из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается нулевое значение.
 func (p *KeyInt32) FilterKeyInt32(r *http.Request, key string) mrtype.KeyInt32 {
 	value, err := mrreq.ParseInt64(r, key, false)
 	if err != nil {
@@ -51,7 +52,8 @@ func (p *KeyInt32) FilterKeyInt32(r *http.Request, key string) mrtype.KeyInt32 {
 	return mrtype.KeyInt32(value)
 }
 
-// FilterKeyInt32List - comment method.
+// FilterKeyInt32List - возвращает массив mrtype.KeyInt32 чисел поступивший из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается пустой массив.
 func (p *KeyInt32) FilterKeyInt32List(r *http.Request, key string) []mrtype.KeyInt32 {
 	value, err := mrreq.ParseInt64List(r, key)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	// ListPager - comment struct.
+	// ListPager - парсер параметров для выборки части списка элементов.
 	ListPager struct {
 		paramNamePageIndex string
 		paramNamePageSize  string
@@ -58,7 +58,7 @@ func NewListPager(opts ListPagerOptions) *ListPager {
 	return &lp
 }
 
-// PageParams - comment method.
+// PageParams - возвращает распарсенные параметры выборки части списка элементов.
 func (p *ListPager) PageParams(r *http.Request) mrtype.PageParams {
 	value, err := mrreq.ParsePageParams(
 		r,

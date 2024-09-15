@@ -1,7 +1,7 @@
 package mrparser
 
 type (
-	// Parser - comment struct.
+	// Parser - агрегатор базовых парсеров.
 	Parser struct {
 		*Bool
 		*DateTime

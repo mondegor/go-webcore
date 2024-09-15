@@ -4,16 +4,13 @@ import (
 	"context"
 
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver/mrapp"
+	"github.com/mondegor/go-webcore/mrrun"
 )
 
 func main() {
 	logger := mrlog.Default().With().Str("example", "shutdown").Logger()
 
-	ctx, cancel := context.WithCancel(logger.WithContext(context.Background()))
-	defer cancel()
-
-	exec, intr := mrapp.PrepareToStart(ctx)
+	_, exec, intr := mrrun.MakeSignalHandler(logger.WithContext(context.Background()))
 	defer intr(nil)
 
 	if err := exec(); err != nil {

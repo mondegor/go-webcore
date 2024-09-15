@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	// DateTime - comment struct.
+	// DateTime - парсер даты и времени.
 	DateTime struct{}
 )
 
@@ -22,7 +22,8 @@ func NewDateTime() *DateTime {
 	return &DateTime{}
 }
 
-// FilterDateTime - comment method.
+// FilterDateTime - возвращает дата и время поступившие из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается nil значение.
 func (p *DateTime) FilterDateTime(r *http.Request, key string) time.Time {
 	value, err := mrreq.ParseDateTime(r, key, false)
 	if err != nil {

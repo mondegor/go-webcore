@@ -36,7 +36,7 @@ var (
 		"errHttpRequestImageHeightMax", mrerr.ErrorKindUser, "invalid image height, max size = {{ .value }}px")
 )
 
-// WrapFileError - comment func.
+// WrapFileError - оборачивает ошибки связанные с парсингом файла.
 func WrapFileError(err error, name string) error {
 	if ErrHttpRequestFileSizeMin.Is(err) {
 		return mrerr.NewCustomError(name, err)
@@ -61,7 +61,7 @@ func WrapFileError(err error, name string) error {
 	return err
 }
 
-// WrapImageError - comment func.
+// WrapImageError - оборачивает ошибки связанные с парсингом изображения.
 func WrapImageError(err error, name string) error {
 	if ErrHttpRequestImageWidthMax.Is(err) {
 		return mrerr.NewCustomError(name, err)

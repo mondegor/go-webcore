@@ -71,7 +71,7 @@ func (f *StatusFlow) PossibleToStatuses(from mrstatus.Getter) []mrstatus.Getter 
 	return nil
 }
 
-// PossibleFromStatuses - возвращается список статусов из которых можно переключиться в указанный статус.
+// PossibleFromStatuses - возвращает список статусов из которых можно переключиться в указанный статус.
 func (f *StatusFlow) PossibleFromStatuses(to mrstatus.Getter) []mrstatus.Getter {
 	if fromStatuses, ok := f.toFromMap[to]; !ok {
 		return fromStatuses

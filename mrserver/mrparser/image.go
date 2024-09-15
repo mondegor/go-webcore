@@ -14,7 +14,7 @@ import (
 )
 
 type (
-	// Image - comment struct.
+	// Image - парсер изображений.
 	Image struct {
 		file      *File
 		maxWidth  int32
@@ -40,9 +40,10 @@ type (
 var _ mrserver.RequestParserImage = (*Image)(nil)
 
 // NewImage - создаёт объект Image.
-func NewImage(opts ImageOptions) *Image {
+func NewImage(logger mrlog.Logger, opts ImageOptions) *Image {
 	if opts.File.AllowedMimeTypes == nil {
 		opts.File.AllowedMimeTypes = mrlib.NewMimeTypeList(
+			logger,
 			[]mrlib.MimeType{
 				{
 					Extension:   ".gif",
@@ -61,14 +62,15 @@ func NewImage(opts ImageOptions) *Image {
 	}
 
 	return &Image{
-		file:      NewFile(opts.File),
+		file:      NewFile(logger, opts.File),
 		maxWidth:  opts.MaxWidth,
 		maxHeight: opts.MaxHeight,
 		checkBody: opts.CheckBody,
 	}
 }
 
-// FormImage - WARNING: you don't forget to call result.Body.Close().
+// FormImage - возвращает информацию об изображении со ссылкой для чтения файла изображения из MultipartForm.
+// WARNING: you don't forget to call result.Body.Close().
 func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	hdr, err := mrreq.FormFile(r, key)
 	if err != nil {
@@ -107,7 +109,8 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	}, nil
 }
 
-// FormImageContent - only for short files.
+// FormImageContent - возвращает информацию об изображении и сам файл изображения из MultipartForm.
+// WARNING: only for short files.
 func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageContent, error) {
 	file, err := p.FormImage(r, key)
 	if err != nil {
@@ -128,7 +131,7 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageConte
 	}, nil
 }
 
-// FormImages - comment method.
+// FormImages - возвращает массив заголовков на файлы изображений из MultipartForm.
 func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, error) {
 	fds, err := mrreq.FormFiles(r, key, 0)
 	if err != nil {

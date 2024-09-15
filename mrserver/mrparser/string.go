@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	// String - comment struct.
+	// String - парсер строки.
 	String struct {
 		pathFunc mrserver.RequestParserParamFunc
 	}
@@ -25,23 +25,26 @@ func NewString(pathFunc mrserver.RequestParserParamFunc) *String {
 	}
 }
 
-// PathParamString - comment method.
+// PathParamString - возвращает именованная строка содержащаяся в URL пути.
+// Если ключ name не найден, то возвращается пустое значение.
 func (p *String) PathParamString(r *http.Request, name string) string {
 	return p.pathFunc(r, name)
 }
 
-// RawParamString - returns nil if the param not found.
-func (p *String) RawParamString(r *http.Request, key string) *string {
-	if !r.URL.Query().Has(key) {
+// RawParamString - возвращает именованная строка содержащаяся в URL пути.
+// Если ключ name не найден, то возвращается nil значение.
+func (p *String) RawParamString(r *http.Request, name string) *string {
+	if !r.URL.Query().Has(name) {
 		return nil
 	}
 
-	value := r.URL.Query().Get(key)
+	value := r.URL.Query().Get(name)
 
 	return &value
 }
 
-// FilterString - comment method.
+// FilterString - возвращает строка поступившая из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается пустое значение.
 func (p *String) FilterString(r *http.Request, key string) string {
 	value, err := mrreq.ParseStr(r, key, false)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	// Int64 - comment struct.
+	// Int64 - парсер int числа.
 	Int64 struct {
 		pathFunc mrserver.RequestParserParamFunc
 	}
@@ -27,7 +27,7 @@ func NewInt64(pathFunc mrserver.RequestParserParamFunc) *Int64 {
 	}
 }
 
-// PathParamInt64 - comment method.
+// PathParamInt64 - возвращает именованное int число содержащееся в URL пути.
 func (p *Int64) PathParamInt64(r *http.Request, name string) int64 {
 	value, err := strconv.ParseInt(p.pathFunc(r, name), 10, 64)
 	if err != nil {
@@ -39,7 +39,8 @@ func (p *Int64) PathParamInt64(r *http.Request, name string) int64 {
 	return value
 }
 
-// FilterInt64 - comment method.
+// FilterInt64 - возвращает int число поступившее из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается нулевое значение.
 func (p *Int64) FilterInt64(r *http.Request, key string) int64 {
 	value, err := mrreq.ParseInt64(r, key, false)
 	if err != nil {
@@ -51,7 +52,8 @@ func (p *Int64) FilterInt64(r *http.Request, key string) int64 {
 	return value
 }
 
-// FilterRangeInt64 - comment method.
+// FilterRangeInt64 - возвращает интервал состоящий из двух int чисел поступивший из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается нулевой интервал.
 func (p *Int64) FilterRangeInt64(r *http.Request, key string) mrtype.RangeInt64 {
 	value, err := mrreq.ParseRangeInt64(r, key)
 	if err != nil {
@@ -63,7 +65,8 @@ func (p *Int64) FilterRangeInt64(r *http.Request, key string) mrtype.RangeInt64 
 	return value
 }
 
-// FilterInt64List - comment method.
+// FilterInt64List - возвращает массив int чисел поступивший из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается пустой массив.
 func (p *Int64) FilterInt64List(r *http.Request, key string) []int64 {
 	items, err := mrreq.ParseInt64List(r, key)
 	if err != nil {

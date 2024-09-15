@@ -10,7 +10,7 @@ import (
 )
 
 type (
-	// Float64 - comment struct.
+	// Float64 - парсер числа с плавающей запятой.
 	Float64 struct{}
 )
 
@@ -22,7 +22,8 @@ func NewFloat64() *Float64 {
 	return &Float64{}
 }
 
-// FilterFloat64 - comment method.
+// FilterFloat64 - возвращает число с плавающей запятой поступившее из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается нулевое значение.
 func (p *Float64) FilterFloat64(r *http.Request, key string) float64 {
 	value, err := mrreq.ParseFloat64(r, key, false)
 	if err != nil {
@@ -34,7 +35,8 @@ func (p *Float64) FilterFloat64(r *http.Request, key string) float64 {
 	return value
 }
 
-// FilterRangeFloat64 - comment method.
+// FilterRangeFloat64 - возвращает интервал состоящий из двух чисел с плавающей запятой поступивший из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается нулевой интервал.
 func (p *Float64) FilterRangeFloat64(r *http.Request, key string) mrtype.RangeFloat64 {
 	value, err := mrreq.ParseRangeFloat64(r, key)
 	if err != nil {
