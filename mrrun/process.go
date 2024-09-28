@@ -18,4 +18,9 @@ type (
 		Add(execute func() error, interrupt func(error))
 		Run() error
 	}
+
+	// ProcessWaiter - ожидатель процессов.
+	ProcessWaiter interface {
+		WaitingForStartup(chProcesses ...chan struct{})
+	}
 )

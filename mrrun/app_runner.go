@@ -7,7 +7,8 @@ import (
 type (
 	// AppRunner - компонент запуска группы процессов.
 	AppRunner struct {
-		runner ProcessRunner
+		runner      ProcessRunner
+		chProcesses []chan struct{}
 	}
 )
 
@@ -26,43 +27,72 @@ func (r *AppRunner) Add(execute func() error, interrupt func(error)) {
 
 // AddSignalHandler - добавляет функции для отслеживания/прекращения отслеживания
 // сигналов системы. Возвращает контекст, в котором установлена его отмена при перехвате системного события.
+// А также возвращает chFirst, при помощи которого можно гарантировать, что отслеживание сигналов системы запущено первым процессом.
 // Это необходимо для корректной (graceful) остановки приложения.
-func (r *AppRunner) AddSignalHandler(ctx context.Context) context.Context {
-	ctx, execute, interrupt := MakeSignalHandler(ctx)
-	r.runner.Add(execute, interrupt)
+func (r *AppRunner) AddSignalHandler(ctx context.Context) (ctxWithCancel context.Context, chFirst chan struct{}) {
+	ctx, executer := MakeSignalHandler(ctx)
+	r.runner.Add(executer.Execute, executer.Interrupt)
+	r.chProcesses = append(r.chProcesses, executer.StartedOk)
 
-	return ctx
+	return ctx, executer.StartedOk
 }
 
 // AddProcess - добавляет функции запуска и остановки процесса.
 // Запуск будет осуществлён параллельно с другими добавленными процессами.
 func (r *AppRunner) AddProcess(ctx context.Context, process Process) {
-	execute, interrupt := MakeExecuter(ctx, process)
-	r.runner.Add(execute, interrupt)
+	executer := MakeExecuter(ctx, process)
+	r.runner.Add(executer.Execute, executer.Interrupt)
 }
 
-// AddHeadProcess - добавляет функции запуска и остановки процесса.
+// AddFirstProcess - добавляет функции запуска и остановки процесса.
 // Также возвращает канал, по которому будет передано событие, что процесс запущен.
 // Запуск будет осуществлён параллельно с другими добавленными процессами.
-func (r *AppRunner) AddHeadProcess(ctx context.Context, process Process) (chHead chan struct{}) {
-	chHead, execute, interrupt := MakeNextExecuter(ctx, process, nil)
-	r.runner.Add(execute, interrupt)
+func (r *AppRunner) AddFirstProcess(ctx context.Context, process Process) (chFirst chan struct{}) {
+	executer := MakeNextExecuter(ctx, process, nil)
+	r.runner.Add(executer.Execute, executer.Interrupt)
+	r.chProcesses = append(r.chProcesses, executer.StartedOk)
 
-	return chHead
+	return executer.StartedOk
 }
 
 // AddNextProcess - добавляет функции запуска и остановки процесса.
 // Также возвращает канал, по которому будет передано событие, что процесс запущен.
 // Запуск процесса будет осуществлён только при получении события по каналу chPrev (если канал указан).
 func (r *AppRunner) AddNextProcess(ctx context.Context, process Process, chPrev chan struct{}) (chNext chan struct{}) {
-	chNext, execute, interrupt := MakeNextExecuter(ctx, process, chPrev)
-	r.runner.Add(execute, interrupt)
+	executer := MakeNextExecuter(ctx, process, chPrev)
+	r.runner.Add(executer.Execute, executer.Interrupt)
+	r.chProcesses = append(r.chProcesses, executer.StartedOk)
 
-	return chNext
+	return executer.StartedOk
 }
 
-// Run - запуск всех добавленных ранее процессов.
+// Run - запуск всех добавленных процессов.
+// Если функция onStartup указана, то её вызов произойдёт только после того, как
+// все процессы будут запущены (но проверяться будут только те процессы, которым созданы каналы запуска).
 // Возвращает ошибку, если хотя бы работа одного процесса прервалась.
-func (r *AppRunner) Run() error {
+func (r *AppRunner) Run(onStartup ...func()) error {
+	if len(onStartup) > 0 {
+		r.waitingForStartup(onStartup[0])
+	}
+
 	return r.runner.Run()
+}
+
+// waitingForStartup - ожидание запуска всех процессов для перевода приложения в запущенное состояние.
+func (r *AppRunner) waitingForStartup(onStartup func()) {
+	if len(r.chProcesses) == 0 {
+		onStartup()
+
+		return
+	}
+
+	go func() {
+		for _, chProcess := range r.chProcesses {
+			if chProcess != nil {
+				<-chProcess
+			}
+		}
+
+		onStartup()
+	}()
 }

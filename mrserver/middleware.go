@@ -85,13 +85,14 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 						panic(rvr)
 					}
 
-					errorMessage := fmt.Sprintf("%s %s %s; panic: %v\n", r.Proto, r.URL, r.Method, rvr)
+					errorMessage := fmt.Sprintf("HTTP method %s %s %s; panic: %v", r.Proto, r.URL, r.Method, rvr)
 
 					if isDebug {
-						os.Stderr.Write([]byte(errorMessage))
+						os.Stderr.Write([]byte(errorMessage + "\n"))
 						os.Stderr.Write(debug.Stack())
 					} else {
-						mrlog.Ctx(ctx).Error().
+						mrlog.Ctx(ctx).
+							Error().
 							Err(errors.New(errorMessage)).
 							Bytes("CallStack", debug.Stack()).
 							Send()

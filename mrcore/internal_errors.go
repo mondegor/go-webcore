@@ -33,7 +33,7 @@ var (
 	ErrInternalFailedToClose = mrerr.NewProto(
 		"errInternalFailedToClose", mrerr.ErrorKindInternal, "failed to close object")
 
-	// ErrInternalValueLenMax - value has length greater then max characters.
+	// ErrInternalValueLenMax - value has length greater than max characters.
 	ErrInternalValueLenMax = mrerr.NewProto(
 		"errInternalValueLenMax", mrerr.ErrorKindInternal, "value has length '{{ .curLength }}' greater then max '{{ .maxLength }}' characters")
 

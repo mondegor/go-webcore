@@ -10,10 +10,10 @@ import (
 func main() {
 	logger := mrlog.Default().With().Str("example", "shutdown").Logger()
 
-	_, exec, intr := mrrun.MakeSignalHandler(logger.WithContext(context.Background()))
-	defer intr(nil)
+	_, executer := mrrun.MakeSignalHandler(logger.WithContext(context.Background()))
+	defer executer.Interrupt(nil)
 
-	if err := exec(); err != nil {
+	if err := executer.Execute(); err != nil {
 		logger.Info().Msg("Application stopped with error")
 	} else {
 		logger.Info().Msg("Application stopped")

@@ -19,11 +19,10 @@ import (
 type (
 	// ErrorSender - comment struct.
 	ErrorSender struct {
-		encoder          mrserver.ResponseEncoder
-		errorHandler     mrcore.ErrorHandler
-		statusGetter     mrserver.ErrorStatusGetter
-		unexpectedStatus int
-		isDebug          bool
+		encoder      mrserver.ResponseEncoder
+		errorHandler mrcore.ErrorHandler
+		statusGetter mrserver.ErrorStatusGetter
+		isDebug      bool
 	}
 )
 
@@ -35,15 +34,13 @@ func NewErrorSender(
 	encoder mrserver.ResponseEncoder,
 	errorHandler mrcore.ErrorHandler,
 	statusGetter mrserver.ErrorStatusGetter,
-	unexpectedStatus int,
 	isDebug bool,
 ) *ErrorSender {
 	return &ErrorSender{
-		encoder:          encoder,
-		errorHandler:     errorHandler,
-		statusGetter:     statusGetter,
-		unexpectedStatus: unexpectedStatus,
-		isDebug:          isDebug,
+		encoder:      encoder,
+		errorHandler: errorHandler,
+		statusGetter: statusGetter,
+		isDebug:      isDebug,
 	}
 }
 
@@ -117,7 +114,7 @@ func (rs *ErrorSender) sendStructResponse(
 ) {
 	bytes, err := json.Marshal(structResponse)
 	if err != nil {
-		status = rs.unexpectedStatus
+		status = http.StatusUnprocessableEntity
 		bytes = nil
 
 		mrlog.Ctx(ctx).Error().Err(mrcore.ErrHttpResponseParseData.Wrap(err)).Msg("marshal failed")

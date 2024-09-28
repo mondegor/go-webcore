@@ -44,8 +44,8 @@ func NewAccessControl(opts AccessControlOptions) (*RoleAccessControl, error) {
 
 	ma := RoleAccessControl{
 		roles:       make(roleMap, len(opts.Roles)),
-		privileges:  make(privilegeMap, 0),
-		permissions: make(permissionMap, 0),
+		privileges:  make(privilegeMap),
+		permissions: make(permissionMap),
 	}
 
 	var roleID uint16

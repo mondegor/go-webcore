@@ -12,8 +12,8 @@ type (
 		Process(ctx context.Context, err error)
 	}
 
-	// UsecaseErrorWrapper - помощник для оборачивания UseCase ошибок.
-	UsecaseErrorWrapper interface {
+	// UseCaseErrorWrapper - помощник для оборачивания UseCase ошибок.
+	UseCaseErrorWrapper interface {
 		IsNotFoundError(err error) bool
 		WrapErrorFailed(err error, source string) error
 		WrapErrorNotFoundOrFailed(err error, source string) error

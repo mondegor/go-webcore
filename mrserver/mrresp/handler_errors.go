@@ -10,38 +10,35 @@ import (
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
-// HandlerGetNotFoundAsJSON - comment func.
-func HandlerGetNotFoundAsJSON(unexpectedStatus int) http.HandlerFunc {
+// HandlerGetNotFoundAsJSON - возвращает обработчик для формирования 404 ошибки.
+func HandlerGetNotFoundAsJSON() http.HandlerFunc {
 	return HandlerErrorResponse(
 		http.StatusNotFound,
-		unexpectedStatus,
 		"404 Not Found",
 		"The server cannot find the requested resource",
 	)
 }
 
-// HandlerGetMethodNotAllowedAsJSON - comment func.
-func HandlerGetMethodNotAllowedAsJSON(unexpectedStatus int) http.HandlerFunc {
+// HandlerGetMethodNotAllowedAsJSON - возвращает обработчик для формирования 405 ошибки.
+func HandlerGetMethodNotAllowedAsJSON() http.HandlerFunc {
 	return HandlerErrorResponse(
 		http.StatusMethodNotAllowed,
-		unexpectedStatus,
 		"405 Method Not Allowed",
 		"The server knows the request method, but the target resource doesn't support this method",
 	)
 }
 
-// HandlerGetFatalErrorAsJSON - comment func.
-func HandlerGetFatalErrorAsJSON(unexpectedStatus int) http.HandlerFunc {
+// HandlerGetFatalErrorAsJSON - возвращает обработчик для формирования 500 ошибки.
+func HandlerGetFatalErrorAsJSON() http.HandlerFunc {
 	return HandlerErrorResponse(
 		http.StatusInternalServerError,
-		unexpectedStatus,
 		"Internal server error",
 		"The server encountered an unexpected condition that prevented it from fulfilling the request",
 	)
 }
 
-// HandlerErrorResponse - comment func.
-func HandlerErrorResponse(status, unexpectedStatus int, title, details string) http.HandlerFunc {
+// HandlerErrorResponse - возвращает обработчик для формирования ошибки согласно RFC 7807 (Problem Details for HTTP APIs).
+func HandlerErrorResponse(status int, title, details string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bytes, err := json.Marshal(
 			ErrorDetailsResponse{
@@ -52,7 +49,7 @@ func HandlerErrorResponse(status, unexpectedStatus int, title, details string) h
 			},
 		)
 		if err != nil {
-			status = unexpectedStatus
+			status = http.StatusUnprocessableEntity
 			bytes = nil
 
 			mrlog.Ctx(r.Context()).Error().Err(mrcore.ErrHttpResponseParseData.Wrap(err)).Msg("marshal failed")

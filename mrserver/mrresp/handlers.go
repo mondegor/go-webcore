@@ -1,21 +1,13 @@
 package mrresp
 
 import (
-	"encoding/json"
+	"context"
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
 )
 
-// HandlerGetHealth - comment func.
-func HandlerGetHealth() http.HandlerFunc {
-	return func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}
-}
-
-// HandlerGetStatusOkAsJSON - comment func.
+// HandlerGetStatusOkAsJSON - возвращает обработчик, который формирует ответ OK в JSON формате.
 func HandlerGetStatusOkAsJSON() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -24,16 +16,15 @@ func HandlerGetStatusOkAsJSON() http.HandlerFunc {
 	}
 }
 
-// HandlerGetStructAsJSON - comment func.
-func HandlerGetStructAsJSON(structure any, status int) (http.HandlerFunc, error) {
-	bytes, err := json.Marshal(structure)
-	if err != nil {
-		return nil, mrcore.ErrHttpResponseParseData.Wrap(err)
-	}
-
+// HandlerGetHealth - обработчик для использования в качестве проверки работоспособности сервиса.
+func HandlerGetHealth(isAvailable func(ctx context.Context) bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		status := http.StatusOK
+
+		if !isAvailable(r.Context()) {
+			status = http.StatusServiceUnavailable
+		}
+
 		w.WriteHeader(status)
-		mrlib.Write(r.Context(), w, bytes)
-	}, nil
+	}
 }

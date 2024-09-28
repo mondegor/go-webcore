@@ -7,31 +7,34 @@ import (
 )
 
 type (
-	// UsecaseErrorWrapper - comment struct.
-	UsecaseErrorWrapper struct{}
+	// UseCaseErrorWrapper - помощник для оборачивания ошибок в часто используемые UseCase ошибки.
+	UseCaseErrorWrapper struct{}
 )
 
-// Make sure the Image conforms with the mrcore.UsecaseErrorWrapper interface.
-var _ mrcore.UsecaseErrorWrapper = (*UsecaseErrorWrapper)(nil)
+// Make sure the Image conforms with the mrcore.UseCaseErrorWrapper interface.
+var _ mrcore.UseCaseErrorWrapper = (*UseCaseErrorWrapper)(nil)
 
-// NewUsecaseErrorWrapper - создаёт объект UsecaseErrorWrapper.
-func NewUsecaseErrorWrapper() *UsecaseErrorWrapper {
-	return &UsecaseErrorWrapper{}
+// NewUseCaseErrorWrapper - создаёт объект UseCaseErrorWrapper.
+func NewUseCaseErrorWrapper() *UseCaseErrorWrapper {
+	return &UseCaseErrorWrapper{}
 }
 
-// IsNotFoundError - comment method.
-func (h *UsecaseErrorWrapper) IsNotFoundError(err error) bool {
+// IsNotFoundError - проверяет, является ли ошибка связанной с тем,
+// что запрос валидный, но запись не найдена или её изменение не потребовалось.
+func (h *UseCaseErrorWrapper) IsNotFoundError(err error) bool {
 	return errors.Is(err, mrcore.ErrStorageNoRowFound) ||
 		errors.Is(err, mrcore.ErrStorageRowsNotAffected)
 }
 
-// WrapErrorFailed - comment method.
-func (h *UsecaseErrorWrapper) WrapErrorFailed(err error, source string) error {
+// WrapErrorFailed - возвращает ошибку с указанием источника, обёрнутую в
+// mrcore.ErrUseCaseTemporarilyUnavailable или mrcore.ErrUseCaseOperationFailed.
+func (h *UseCaseErrorWrapper) WrapErrorFailed(err error, source string) error {
 	return h.wrapErrorFailed(err, "source", source)
 }
 
-// WrapErrorNotFoundOrFailed - comment method.
-func (h *UsecaseErrorWrapper) WrapErrorNotFoundOrFailed(err error, source string) error {
+// WrapErrorNotFoundOrFailed - возвращает ошибку с указанием источника, обёрнутую в
+// mrcore.ErrUseCaseEntityNotFound, mrcore.ErrUseCaseTemporarilyUnavailable или mrcore.ErrUseCaseOperationFailed.
+func (h *UseCaseErrorWrapper) WrapErrorNotFoundOrFailed(err error, source string) error {
 	if h.IsNotFoundError(err) {
 		return mrcore.ErrUseCaseEntityNotFound.Wrap(err)
 	}
@@ -39,13 +42,15 @@ func (h *UsecaseErrorWrapper) WrapErrorNotFoundOrFailed(err error, source string
 	return h.wrapErrorFailed(err, "source", source)
 }
 
-// WrapErrorEntityFailed - comment method.
-func (h *UsecaseErrorWrapper) WrapErrorEntityFailed(err error, entityName string, entityData any) error {
+// WrapErrorEntityFailed - возвращает ошибку с указанием сущности и её данных, обёрнутую в
+// mrcore.ErrUseCaseTemporarilyUnavailable или mrcore.ErrUseCaseOperationFailed.
+func (h *UseCaseErrorWrapper) WrapErrorEntityFailed(err error, entityName string, entityData any) error {
 	return h.wrapErrorFailed(err, entityName, entityData)
 }
 
-// WrapErrorEntityNotFoundOrFailed - comment method.
-func (h *UsecaseErrorWrapper) WrapErrorEntityNotFoundOrFailed(err error, entityName string, entityData any) error {
+// WrapErrorEntityNotFoundOrFailed - возвращает ошибку с указанием сущности и её данных, обёрнутую в
+// mrcore.ErrUseCaseEntityNotFound, mrcore.ErrUseCaseTemporarilyUnavailable или mrcore.ErrUseCaseOperationFailed.
+func (h *UseCaseErrorWrapper) WrapErrorEntityNotFoundOrFailed(err error, entityName string, entityData any) error {
 	if h.IsNotFoundError(err) {
 		return mrcore.ErrUseCaseEntityNotFound.Wrap(err)
 	}
@@ -53,7 +58,7 @@ func (h *UsecaseErrorWrapper) WrapErrorEntityNotFoundOrFailed(err error, entityN
 	return h.wrapErrorFailed(err, entityName, entityData)
 }
 
-func (h *UsecaseErrorWrapper) wrapErrorFailed(err error, name string, data any) error {
+func (h *UseCaseErrorWrapper) wrapErrorFailed(err error, name string, data any) error {
 	wrapper := mrcore.ErrUseCaseTemporarilyUnavailable
 
 	if errors.Is(err, mrcore.ErrStorageQueryFailed) {

@@ -26,7 +26,7 @@ type (
 
 	// Options - опции для создания Adapter.
 	Options struct {
-		Dsn              string
+		DSN              string
 		Environment      string
 		AppVersion       string
 		TracesSampleRate float64
@@ -39,7 +39,7 @@ type (
 // New - создаёт объект Adapter.
 func New(opts Options) (*Adapter, error) {
 	sentryOpts := sentry.ClientOptions{
-		Dsn:              opts.Dsn,
+		Dsn:              opts.DSN,
 		Environment:      opts.Environment,
 		Release:          opts.AppVersion,
 		TracesSampleRate: opts.TracesSampleRate,

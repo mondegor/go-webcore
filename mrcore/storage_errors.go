@@ -13,6 +13,10 @@ var (
 	ErrStorageConnectionIsNotOpened = mrerr.NewProto(
 		"errStorageConnectionIsNotOpened", mrerr.ErrorKindInternal, "connection '{{ .name }}' is not opened")
 
+	// ErrStorageConnectionIsBusy - connection is busy.
+	ErrStorageConnectionIsBusy = mrerr.NewProto(
+		"errStorageConnectionIsBusy", mrerr.ErrorKindInternal, "connection '{{ .name }}' is busy")
+
 	// ErrStorageConnectionFailed - connection is failed.
 	ErrStorageConnectionFailed = mrerr.NewProto(
 		"errStorageConnectionFailed", mrerr.ErrorKindSystem, "connection '{{ .name }}' is failed")
