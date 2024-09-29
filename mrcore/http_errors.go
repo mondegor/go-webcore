@@ -41,11 +41,11 @@ var (
 	ErrHttpRequestParamEmpty = mrerr.NewProto(
 		"errHttpRequestParamEmpty", mrerr.ErrorKindUser, "request param with key '{{ .key }}' is empty")
 
-	// ErrHttpRequestParamMax - request param with key contains value greater then max.
+	// ErrHttpRequestParamMax - request param with key contains value greater than max.
 	ErrHttpRequestParamMax = mrerr.NewProto(
 		"errHttpRequestParamMax", mrerr.ErrorKindUser, "request param with key '{{ .key }}' contains value greater then max '{{ .max }}'")
 
-	// ErrHttpRequestParamLenMax - request param with key has value length greater then max characters.
+	// ErrHttpRequestParamLenMax - request param with key has value length greater than max characters.
 	ErrHttpRequestParamLenMax = mrerr.NewProto(
 		"errHttpRequestParamLenMax", mrerr.ErrorKindUser, "request param with key '{{ .key }}' has value length greater then max '{{ .maxLength }}' characters")
 )

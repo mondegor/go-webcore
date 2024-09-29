@@ -9,7 +9,6 @@ import (
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
-
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
