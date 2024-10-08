@@ -12,7 +12,6 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrview"
 )
 
 // go get -u github.com/go-playground/validator/v10
@@ -22,14 +21,11 @@ const (
 )
 
 type (
-	// ValidatorAdapter - comment struct.
+	// ValidatorAdapter - адаптер валидатора структур и их полей на базе тегов.
 	ValidatorAdapter struct {
 		validate *validator.Validate
 	}
 )
-
-// Make sure the ValidatorAdapter conforms with the mrview.Validator interface.
-var _ mrview.Validator = (*ValidatorAdapter)(nil)
 
 var errValidatorTagIsNotFound = mrerr.NewProto(
 	validatorErrorPrefix, mrerr.ErrorKindUser, "validator error: tag is empty").New()
@@ -54,7 +50,7 @@ func New() *ValidatorAdapter {
 	}
 }
 
-// Register - comment method.
+// Register - регистрирует новые именованные функции валидации полей.
 func (v *ValidatorAdapter) Register(tagName string, fn func(value string) bool) error {
 	return v.validate.RegisterValidation(
 		tagName,
@@ -64,7 +60,8 @@ func (v *ValidatorAdapter) Register(tagName string, fn func(value string) bool) 
 	)
 }
 
-// Validate - comment method.
+// Validate - возвращает результат валидации указанной структуру
+// или ошибку с полями, в которых обнаружены проблемы.
 func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 	err := v.validate.Struct(structure)
 

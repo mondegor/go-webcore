@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/google/uuid"
@@ -13,9 +12,10 @@ const (
 	maxLenUUID = 64
 )
 
-// ParseUUID - comment func.
-func ParseUUID(r *http.Request, key string, required bool) (uuid.UUID, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseUUID - возвращает UUID значение из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то в зависимости от required возвращается нулевой UUID или ошибка.
+func ParseUUID(getter valueGetter, key string, required bool) (uuid.UUID, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		if required {

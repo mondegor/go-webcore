@@ -17,7 +17,7 @@ import (
 )
 
 type (
-	// ErrorSender - comment struct.
+	// ErrorSender - формирует и отправляет клиенту ответ об ошибке.
 	ErrorSender struct {
 		encoder      mrserver.ResponseEncoder
 		errorHandler mrcore.ErrorHandler
@@ -25,9 +25,6 @@ type (
 		isDebug      bool
 	}
 )
-
-// Make sure the ErrorSender conforms with the mrserver.ErrorResponseSender interface.
-var _ mrserver.ErrorResponseSender = (*ErrorSender)(nil)
 
 // NewErrorSender - создаёт объект ErrorSender.
 func NewErrorSender(
@@ -44,7 +41,7 @@ func NewErrorSender(
 	}
 }
 
-// SendError - отправляет клиенту ответ с ошибкой в одном из статусов: 4xx, 5XX и её деталями.
+// SendError - отправляет клиенту ответ об ошибке с одним из статусов: 4XX, 5XX и её деталями.
 func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err error) {
 	ctx := r.Context()
 	sendResponse := func(status int, response any) {
@@ -57,51 +54,53 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 		)
 	}
 
-	var appError *mrerr.AppError
-
 	if customError, ok := err.(*mrerr.CustomError); ok { //nolint:errorlint
-		if customError.IsValid() {
-			sendResponse(
-				http.StatusBadRequest,
-				rs.getErrorListResponse(r.Context(), customError),
-			)
+		if !customError.IsValid() {
+			err = customError.Err()
 
-			return
+			goto InternalErrorSection
 		}
 
-		appError = customError.Err()
+		sendResponse(
+			http.StatusBadRequest,
+			rs.getErrorListResponse(r.Context(), customError),
+		)
+
+		return // OK, пользовательская ошибка обработана
 	}
 
 	if customErrorList, ok := err.(mrerr.CustomErrors); ok { //nolint:errorlint
 		for _, customError := range customErrorList {
 			if !customError.IsValid() {
-				appError = customError.Err() // берётся первая попавшаяся необработанная ошибка
+				err = customError.Err() // берётся первая попавшаяся необработанная ошибка
 
-				break
+				goto InternalErrorSection
 			}
 		}
 
-		if appError == nil {
-			sendResponse(
-				http.StatusBadRequest,
-				rs.getErrorListResponse(r.Context(), customErrorList...),
-			)
+		sendResponse(
+			http.StatusBadRequest,
+			rs.getErrorListResponse(r.Context(), customErrorList...),
+		)
 
-			return
-		}
+		return // OK, пользовательская ошибка обработана
 	}
 
-	// сюда могут приходить следующие типы ошибок:
+InternalErrorSection:
+
+	// сюда приходят следующие виды ошибок:
 	// 1. AppError + Internal/System/User;
-	// 1. ProtoAppError + Internal/System/User (нужно найти её и добавить вызов New или Wrap);
-	// 3. error - ошибка, которая не была обёрнута в ProtoAppError (нужно найти её и обернуть);
-	rs.errorHandler.Process(ctx, err)
-
-	appError = mrcore.CastToAppError(err)
-
-	sendResponse(
-		rs.statusGetter.ErrorStatus(appError),
-		rs.getErrorDetailsResponse(r, appError),
+	// 2. ProtoAppError + Internal/System/User (нужно найти место их создания и добавить у для них вызов New()/Wrap());
+	// 3. остальные ошибки: которые не были обёрнуты в ProtoAppError (нужно найти место их создания и обернуть);
+	rs.errorHandler.PerformWithCommit(
+		ctx,
+		err,
+		func(errType mrcore.AnalyzedErrorType, err *mrerr.AppError) {
+			sendResponse(
+				rs.statusGetter.ErrorStatus(errType, err),
+				rs.getErrorDetailsResponse(r, err),
+			)
+		},
 	)
 }
 

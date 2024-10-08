@@ -5,9 +5,21 @@ import (
 )
 
 var (
-	// ErrInternal - internal error.
+	// ErrUnexpectedInternal - unexpected internal error,
+	// особая ошибка, в которую система заворачивает все ошибки отличные от типов AppError, ProtoAppError.
+	ErrUnexpectedInternal = mrerr.NewProto(
+		"errUnexpectedInternal", mrerr.ErrorKindInternal, "unexpected internal error")
+
+	// ErrInternal - internal error,
+	// обобщённая внутренняя ошибка системы которая формирует стек вызовов и посылает событие о своём создании.
 	ErrInternal = mrerr.NewProto(
-		"errInternal", mrerr.ErrorKindInternal, "internal error")
+		mrerr.ErrorCodeInternal, mrerr.ErrorKindInternal, "internal error")
+
+	// ErrSystem - system error,
+	// обобщённая системная ошибка, которая сообщает о сетевых проблемах,
+	// о работоспособности внешних ресурсов (БД, API, FileSystem).
+	ErrSystem = mrerr.NewProto(
+		mrerr.ErrorCodeSystem, mrerr.ErrorKindSystem, "system error")
 
 	// ErrInternalNilPointer - unexpected nil pointer.
 	ErrInternalNilPointer = mrerr.NewProto(

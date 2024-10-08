@@ -16,9 +16,6 @@ type (
 	}
 )
 
-// Make sure the Image conforms with the mrlog.Logger interface.
-var _ Logger = (*BaseLogger)(nil)
-
 // New - создаёт объект BaseLogger.
 func New(level Level) *BaseLogger {
 	return &BaseLogger{

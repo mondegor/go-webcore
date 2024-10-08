@@ -8,14 +8,11 @@ import (
 )
 
 type (
-	// Sender - comment struct.
+	// Sender - формирует и отправляет клиенту успешный ответ.
 	Sender struct {
 		encoder mrserver.ResponseEncoder
 	}
 )
-
-// Make sure the Sender conforms with the mrserver.ResponseSender interface.
-var _ mrserver.ResponseSender = (*Sender)(nil)
 
 // NewSender - создаёт объект Sender.
 func NewSender(encoder mrserver.ResponseEncoder) *Sender {
@@ -24,7 +21,7 @@ func NewSender(encoder mrserver.ResponseEncoder) *Sender {
 	}
 }
 
-// Send - comment method.
+// Send - отправляет клиенту ответ с данными в виде структуры с одним из статусов: 2XX, 3XX.
 func (rs *Sender) Send(w http.ResponseWriter, status int, structure any) error {
 	bytes, err := rs.encoder.Marshal(structure)
 	if err != nil {
@@ -34,12 +31,12 @@ func (rs *Sender) Send(w http.ResponseWriter, status int, structure any) error {
 	return rs.sendResponse(w, status, rs.encoder.ContentType(), bytes)
 }
 
-// SendBytes - comment method.
+// SendBytes - отправляет клиенту ответ у указанным массивом байт с одним из статусов: 2XX, 3XX.
 func (rs *Sender) SendBytes(w http.ResponseWriter, status int, body []byte) error {
 	return rs.sendResponse(w, status, rs.encoder.ContentType(), body)
 }
 
-// SendNoContent - comment method.
+// SendNoContent - отправляет клиенту ответ без данных со статусом 204.
 func (rs *Sender) SendNoContent(w http.ResponseWriter) error {
 	w.WriteHeader(http.StatusNoContent)
 
@@ -50,7 +47,7 @@ func (rs *Sender) sendResponse(w http.ResponseWriter, status int, contentType st
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
 
-	if len(body) < 1 {
+	if len(body) == 0 {
 		return nil
 	}
 

@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	// ImageInfo - comment struct.
+	// ImageInfo - мета-информация об изображении.
 	ImageInfo struct {
 		ContentType  string     `json:"contentType,omitempty"`
 		OriginalName string     `json:"originalName,omitempty"`
@@ -22,40 +22,26 @@ type (
 		UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
 	}
 
-	// Image - comment struct.
+	// Image - мета-информация изображения вместе с источником изображения.
 	Image struct {
 		ImageInfo
 		Body io.ReadCloser
 	}
 
-	// ImageContent - comment struct.
+	// ImageContent - изображение с мета-информацией.
 	ImageContent struct {
 		ImageInfo
 		Body []byte
 	}
 
-	// ImageHeader - comment struct.
+	// ImageHeader - мета-информация изображения вместе с источником изображения (multipart/form-data).
 	ImageHeader struct {
 		ImageInfo
 		Header *multipart.FileHeader
 	}
 )
 
-// ToFile - comment method.
-func (i *ImageInfo) ToFile() FileInfo {
-	return FileInfo{
-		ContentType:  i.ContentType,
-		OriginalName: i.OriginalName,
-		Name:         i.Name,
-		Path:         i.Path,
-		URL:          i.URL,
-		Size:         i.Size,
-		CreatedAt:    TimePointerCopy(i.CreatedAt),
-		UpdatedAt:    TimePointerCopy(i.UpdatedAt),
-	}
-}
-
-// Original - comment method.
+// Original - возвращает оригинальное имя изображение (как оно было названо в первоисточнике).
 func (i *ImageInfo) Original() string {
 	if i.OriginalName != "" {
 		return i.OriginalName
@@ -68,26 +54,44 @@ func (i *ImageInfo) Original() string {
 	return path.Base(i.Path)
 }
 
-// ToFile - comment method.
+// ToFileInfo - возвращает мета-информацию изображения преобразованное в файловую структуру
+// (с потерей дополнительной информации об изображении).
+func (i *ImageInfo) ToFileInfo() FileInfo {
+	return FileInfo{
+		ContentType:  i.ContentType,
+		OriginalName: i.OriginalName,
+		Name:         i.Name,
+		Path:         i.Path,
+		URL:          i.URL,
+		Size:         i.Size,
+		CreatedAt:    CopyTimePointer(i.CreatedAt),
+		UpdatedAt:    CopyTimePointer(i.UpdatedAt),
+	}
+}
+
+// ToFile - возвращает изображение преобразованное в файловую структуру
+// (с потерей дополнительной информации об изображении).
 func (i *Image) ToFile() File {
 	return File{
-		FileInfo: i.ImageInfo.ToFile(),
+		FileInfo: i.ImageInfo.ToFileInfo(),
 		Body:     i.Body,
 	}
 }
 
-// ToFile - comment method.
-func (i *ImageContent) ToFile() FileContent {
+// ToFileContent - возвращает изображение преобразованное в файловую структуру
+// (с потерей дополнительной информации об изображении).
+func (i *ImageContent) ToFileContent() FileContent {
 	return FileContent{
-		FileInfo: i.ImageInfo.ToFile(),
+		FileInfo: i.ImageInfo.ToFileInfo(),
 		Body:     i.Body,
 	}
 }
 
-// ToFile - comment method.
-func (i *ImageHeader) ToFile() FileHeader {
+// ToFileHeader - возвращает изображение преобразованное в файловую структуру
+// (с потерей дополнительной информации об изображении).
+func (i *ImageHeader) ToFileHeader() FileHeader {
 	return FileHeader{
-		FileInfo: i.ImageInfo.ToFile(),
+		FileInfo: i.ImageInfo.ToFileInfo(),
 		Header:   i.Header,
 	}
 }

@@ -17,9 +17,6 @@ type (
 	}
 )
 
-// Make sure the UUID conforms with the mrserver.RequestParserUUID interface.
-var _ mrserver.RequestParserUUID = (*UUID)(nil)
-
 // NewUUID - создаёт объект UUID.
 func NewUUID(pathFunc mrserver.RequestParserParamFunc) *UUID {
 	return &UUID{
@@ -42,7 +39,7 @@ func (p *UUID) PathParamUUID(r *http.Request, name string) uuid.UUID {
 // FilterUUID - возвращает UUID поступивший из внешнего запроса.
 // Если ключ key не найден или возникнет ошибка, то возвращается uuid.Nil.
 func (p *UUID) FilterUUID(r *http.Request, key string) uuid.UUID {
-	value, err := mrreq.ParseUUID(r, key, false)
+	value, err := mrreq.ParseUUID(r.URL.Query(), key, false)
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 

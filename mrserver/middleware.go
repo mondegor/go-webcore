@@ -10,8 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrlang"
 	"github.com/rs/xid"
+
+	"github.com/mondegor/go-sysmess/mrlang"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mridempotency"
@@ -20,49 +21,57 @@ import (
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
 
+// :TODO: вынести в настройки
+
+const (
+	traceRequestBodyMaxLen  = 2048
+	traceResponseBodyMaxLen = 2048
+)
+
 // go get -u github.com/rs/xid
 
 // MiddlewareGeneral - промежуточный обработчик, который устанавливает в контекст
-// correlationID, language, logger. А также другие параметры, которые используются в статистике запросов.
+// requestId, language, logger. А также другие параметры, которые используются в статистике запросов.
 func MiddlewareGeneral(
 	tr *mrlang.Translator,
-	observeRequestFunc func(l mrlog.Logger, start time.Time, sr *StatRequest, sw *StatResponseWriter),
+	observeRequestFunc func(l mrlog.Logger, start time.Time, sr *StatRequestReader, sw *StatResponseWriter),
 ) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			start := time.Now()
-			correlationID, err := mrreq.ParseCorrelationID(r)
 
-			if err != nil || correlationID == "" {
-				correlationID = xid.New().String()
+			requestID := xid.New().String()
+			correlationID, err := mrreq.ParseCorrelationID(r.Header)
+
+			if err == nil && correlationID != "" {
+				requestID += "-" + correlationID
 			}
 
-			logger := mrlog.Ctx(r.Context()).With().Str("correlationID", correlationID).Logger()
-			w.Header().Add(mrreq.HeaderKeyCorrelationID, correlationID)
+			logger := mrlog.Ctx(r.Context()).With().Str("requestId", requestID).Logger()
 
 			if err != nil {
 				logger.Warn().Err(err).Msg("mrreq.ParseCorrelationID()")
 			}
 
-			acceptLanguages := mrreq.ParseLanguage(r)
+			w.Header().Add(mrreq.HeaderKeyRequestID, requestID)
+
+			acceptLanguages := mrreq.ParseLanguage(r.Header)
+			logger.Debug().Msgf("Accept-Language: %s", strings.Join(acceptLanguages, ", "))
+
 			locale := tr.FindFirstLocale(acceptLanguages...)
-			logger.Debug().
+			logger.Info().
+				Str("method", r.Method).
+				Str("uri", r.RequestURI).
 				Str("language", locale.LangCode()).
-				Msgf("Accept-Language: %s", strings.Join(acceptLanguages, ", "))
+				Msg("request")
 
 			r = r.WithContext(locale.WithContext(logger.WithContext(r.Context())))
-
-			sr := NewStatRequest(r)
-			sw := NewStatResponseWriter(
-				w,
-				func(buf []byte) {
-					logger.Trace().Bytes("response", buf).Msg("write response")
-				},
-			)
+			sr := NewStatRequestReader(r, traceRequestBodyMaxLen)
+			sw := NewStatResponseWriter(w, traceResponseBodyMaxLen)
 
 			defer observeRequestFunc(logger, start, sr, sw)
 
-			next.ServeHTTP(sw, r)
+			next.ServeHTTP(sw, sr.Request())
 		})
 	}
 }
@@ -85,7 +94,7 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 						panic(rvr)
 					}
 
-					errorMessage := fmt.Sprintf("HTTP method %s %s %s; panic: %v", r.Proto, r.URL, r.Method, rvr)
+					errorMessage := fmt.Sprintf("%s method %s %s; panic: %v", r.Proto, r.Method, r.URL, rvr)
 
 					if isDebug {
 						os.Stderr.Write([]byte(errorMessage + "\n"))
@@ -166,7 +175,7 @@ func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender Respon
 				return sender.SendBytes(
 					w,
 					cachedResponse.StatusCode(),
-					cachedResponse.Body(),
+					cachedResponse.Content(),
 				)
 			}
 

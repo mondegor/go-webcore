@@ -1,57 +1,66 @@
 package mrserver
 
 import (
-	"io"
 	"net/http"
 )
 
 type (
-	// StatRequest - comment struct.
-	StatRequest struct {
-		request *http.Request
-		body    *requestBody
-	}
-
-	requestBody struct {
-		b     io.ReadCloser // underlying reader
-		bytes int
+	// StatRequestReader - псевдо декоратор http.Request для сбора статистики (кол-во прочитанных байт)
+	// и возможности логирования считанных данных.
+	StatRequestReader struct {
+		request  *http.Request
+		headSize int
+		body     *requestBody
 	}
 )
 
-// NewStatRequest - создаёт объект StatRequest.
-// WARNING: the Body of the original http.Request will be replaced.
-func NewStatRequest(r *http.Request) *StatRequest {
-	body := &requestBody{
-		b:     r.Body,
-		bytes: len(r.URL.RawQuery),
+// NewStatRequestReader - создаёт объект StatRequestReader.
+// WARNING: the Body of the original http.Request can be replaced.
+func NewStatRequestReader(r *http.Request, bufferSize int) *StatRequestReader {
+	var body *requestBody
+
+	if bufferSize > 0 {
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			body = &requestBody{
+				originalBody: r.Body,
+				bufSize:      bufferSize,
+			}
+
+			r.Body = body
+		}
 	}
 
-	r.Body = body
-
-	return &StatRequest{
-		request: r,
-		body:    body,
+	return &StatRequestReader{
+		request:  r,
+		headSize: len(r.URL.RawQuery),
+		body:     body,
 	}
 }
 
-// Request - comment method.
-func (r *StatRequest) Request() *http.Request {
+// Request - возвращает оригинальный запрос.
+func (r *StatRequestReader) Request() *http.Request {
 	return r.request
 }
 
-// Bytes - comment method.
-func (r *StatRequest) Bytes() int {
-	return r.body.bytes
+// Size - возвращает размер считанных данных (bytes).
+func (r *StatRequestReader) Size() int {
+	if r.body == nil {
+		return r.headSize
+	}
+
+	return r.headSize + r.body.size
 }
 
-// Read - comment method.
-func (rb *requestBody) Read(p []byte) (n int, err error) {
-	rb.bytes += len(p)
-
-	return rb.b.Read(p)
+// HasContent - имеется ли у запроса тело.
+func (r *StatRequestReader) HasContent() bool {
+	return r.body != nil
 }
 
-// Close - comment method.
-func (rb *requestBody) Close() error {
-	return rb.b.Close()
+// Content - возвращает копию прочитанных данных.
+func (r *StatRequestReader) Content() []byte {
+	if r.body == nil {
+		return nil
+	}
+
+	return r.body.buf.Bytes()
 }

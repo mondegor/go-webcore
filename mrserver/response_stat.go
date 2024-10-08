@@ -1,58 +1,65 @@
 package mrserver
 
 import (
+	"bytes"
 	"net/http"
 )
 
-const (
-	traceResponseBodyMaxLen = 1024
-)
-
 type (
-	// StatResponseWriter - comment struct.
+	// StatResponseWriter - декоратор http.ResponseWriter для сбора статистики (статуса, кол-во записанных байт)
+	// и возможности логирования записанных данных.
 	StatResponseWriter struct {
 		http.ResponseWriter
 		statusCode int
-		bytes      int
-		onWrite    func(buf []byte)
+		size       int
+		body       bytes.Buffer
+		bufSize    int
 	}
 )
 
 // NewStatResponseWriter - создаёт объект StatResponseWriter.
-func NewStatResponseWriter(w http.ResponseWriter, onWrite func(buf []byte)) *StatResponseWriter {
+func NewStatResponseWriter(w http.ResponseWriter, bufferSize int) *StatResponseWriter {
 	return &StatResponseWriter{
 		ResponseWriter: w,
 		statusCode:     http.StatusOK,
-		onWrite:        onWrite,
+		bufSize:        bufferSize,
 	}
 }
 
-// WriteHeader - comment method.
+// WriteHeader - устанавливает код ответа.
 func (w *StatResponseWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
-// Write - comment method.
+// Write - записывает переданные данные, подсчитывая их размер в байтах.
 func (w *StatResponseWriter) Write(buf []byte) (int, error) {
-	bytes, err := w.ResponseWriter.Write(buf)
-	w.bytes += bytes
+	n, err := w.ResponseWriter.Write(buf)
+	w.size += n
 
-	if len(buf) > traceResponseBodyMaxLen {
-		buf = buf[0:traceResponseBodyMaxLen]
+	if w.bufSize > 0 {
+		if n > w.bufSize {
+			buf = buf[0:w.bufSize]
+		}
+
+		w.bufSize -= n
+		w.body.Write(buf[0:n])
 	}
 
-	w.onWrite(buf)
-
-	return bytes, err
+	return n, err
 }
 
-// Bytes - comment method.
-func (w *StatResponseWriter) Bytes() int {
-	return w.bytes
-}
-
-// StatusCode - comment method.
+// StatusCode - возвращает текущий код ответа.
 func (w *StatResponseWriter) StatusCode() int {
 	return w.statusCode
+}
+
+// Size - возвращает размер переданных данных (bytes).
+func (w *StatResponseWriter) Size() int {
+	return w.size
+}
+
+// Content - возвращает копию переданных данных.
+func (w *StatResponseWriter) Content() []byte {
+	return w.body.Bytes()
 }

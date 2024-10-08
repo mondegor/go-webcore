@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
 
@@ -13,9 +12,6 @@ type (
 	// DateTime - парсер даты и времени.
 	DateTime struct{}
 )
-
-// Make sure the DateTime conforms with the mrserver.RequestParserDateTime interface.
-var _ mrserver.RequestParserDateTime = (*DateTime)(nil)
 
 // NewDateTime - создаёт объект DateTime.
 func NewDateTime() *DateTime {
@@ -25,7 +21,7 @@ func NewDateTime() *DateTime {
 // FilterDateTime - возвращает дата и время поступившие из внешнего запроса.
 // Если ключ key не найден или возникнет ошибка, то возвращается nil значение.
 func (p *DateTime) FilterDateTime(r *http.Request, key string) time.Time {
-	value, err := mrreq.ParseDateTime(r, key, false)
+	value, err := mrreq.ParseDateTime(r.URL.Query(), key, false)
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 

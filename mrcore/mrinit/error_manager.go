@@ -7,11 +7,12 @@ import (
 )
 
 type (
-	// ErrorManager - comment struct.
+	// ErrorManager - менеджер ошибок для централизованного
+	// подключения дополнительных свойств ошибкам ProtoAppError.
 	ErrorManager struct {
 		extra mrerr.ProtoExtra
 		mu    sync.Mutex
-		list  []ManagedError
+		list  []EnrichedError
 	}
 )
 
@@ -23,17 +24,17 @@ func NewErrorManager(extra mrerr.ProtoExtra) *ErrorManager {
 	}
 }
 
-// Register - comment method.
-func (e *ErrorManager) Register(item ManagedError) {
-	e.registerList([]ManagedError{item})
+// Register - регистрирует указанную ошибку с её дополнительными свойствами.
+func (e *ErrorManager) Register(item EnrichedError) {
+	e.registerList([]EnrichedError{item})
 }
 
-// RegisterList - comment method.
-func (e *ErrorManager) RegisterList(items []ManagedError) {
+// RegisterList - регистрирует список указанных ошибок с их дополнительными свойствами.
+func (e *ErrorManager) RegisterList(items []EnrichedError) {
 	e.registerList(items)
 }
 
-func (e *ErrorManager) registerList(items []ManagedError) {
+func (e *ErrorManager) registerList(items []EnrichedError) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
@@ -43,7 +44,7 @@ func (e *ErrorManager) registerList(items []ManagedError) {
 	}
 }
 
-func (e *ErrorManager) apply(item ManagedError) {
+func (e *ErrorManager) apply(item EnrichedError) {
 	extra := e.extra
 
 	if !item.WithCaller {

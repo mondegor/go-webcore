@@ -34,23 +34,22 @@ type (
 
 	// RequestParserInt64 - парсер данных запроса для преобразования их в int64.
 	RequestParserInt64 interface {
-		PathParamInt64(r *http.Request, name string) int64
 		FilterInt64(r *http.Request, key string) int64
 		FilterRangeInt64(r *http.Request, key string) mrtype.RangeInt64
 		FilterInt64List(r *http.Request, key string) []int64
+	}
+
+	// RequestParserUint64 - парсер данных запроса для преобразования их в mrtype.Uint64.
+	RequestParserUint64 interface {
+		PathParamUint64(r *http.Request, name string) uint64
+		FilterUint64(r *http.Request, key string) uint64
+		FilterUint64List(r *http.Request, key string) []uint64
 	}
 
 	// RequestParserFloat64 - парсер данных запроса для преобразования их во float64.
 	RequestParserFloat64 interface {
 		FilterFloat64(r *http.Request, key string) float64
 		FilterRangeFloat64(r *http.Request, key string) mrtype.RangeFloat64
-	}
-
-	// RequestParserKeyInt32 - парсер данных запроса для преобразования их в mrtype.KeyInt32.
-	RequestParserKeyInt32 interface {
-		PathKeyInt32(r *http.Request, name string) mrtype.KeyInt32
-		FilterKeyInt32(r *http.Request, key string) mrtype.KeyInt32
-		FilterKeyInt32List(r *http.Request, key string) []mrtype.KeyInt32
 	}
 
 	// RequestParserBool - парсер данных запроса для преобразования их в *bool.

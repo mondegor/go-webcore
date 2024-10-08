@@ -18,9 +18,6 @@ type (
 	}
 )
 
-// Make sure the Validator conforms with the mrserver.RequestParserValidate interface.
-var _ mrserver.RequestParserValidate = (*Validator)(nil)
-
 // NewValidator - создаёт объект Validator.
 func NewValidator(decoder mrserver.RequestDecoder, validator mrview.Validator) *Validator {
 	return &Validator{

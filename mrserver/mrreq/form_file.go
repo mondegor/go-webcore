@@ -13,7 +13,7 @@ const (
 	defaultMaxMemory = 32 << 20 // 32 MB
 )
 
-// FormFiles - comment func.
+// FormFiles - возвращает список файлов из внешнего источника (multipart/form-data) по указанному ключу.
 func FormFiles(r *http.Request, key string, maxMemory int64) ([]*multipart.FileHeader, error) {
 	if maxMemory < 1 {
 		maxMemory = defaultMaxMemory
@@ -44,7 +44,7 @@ func FormFiles(r *http.Request, key string, maxMemory int64) ([]*multipart.FileH
 	return nil, nil
 }
 
-// FormFile - comment func.
+// FormFile - возвращает файл из внешнего источника (multipart/form-data) по указанному ключу.
 func FormFile(r *http.Request, key string) (*multipart.FileHeader, error) {
 	fhs, err := FormFiles(r, key, 0)
 	if err != nil {

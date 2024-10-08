@@ -6,7 +6,7 @@ type (
 		*Bool
 		*DateTime
 		*Int64
-		*KeyInt32
+		*Uint64
 		*ListSorter
 		*ListPager
 		*String
@@ -22,7 +22,7 @@ func NewParser(
 	p1 *Bool,
 	p2 *DateTime,
 	p3 *Int64,
-	p4 *KeyInt32,
+	p4 *Uint64,
 	p5 *ListSorter,
 	p6 *ListPager,
 	p7 *String,
@@ -35,7 +35,7 @@ func NewParser(
 		Bool:       p1,
 		DateTime:   p2,
 		Int64:      p3,
-		KeyInt32:   p4,
+		Uint64:     p4,
 		ListSorter: p5,
 		ListPager:  p6,
 		String:     p7,

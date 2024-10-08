@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -14,9 +13,10 @@ const (
 
 var regexpEnum = regexp.MustCompile(`^[A-Z]([A-Z0-9_]+)?[A-Z0-9]$`)
 
-// ParseEnum - comment func.
-func ParseEnum(r *http.Request, key string, required bool) (string, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseEnum - возвращает Enum значение из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то в зависимости от required возвращается пустая строка или ошибка.
+func ParseEnum(getter valueGetter, key string, required bool) (string, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		if required {

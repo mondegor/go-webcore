@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"strings"
 	"time"
 
@@ -12,9 +11,11 @@ const (
 	maxLenDateTime = 64
 )
 
-// ParseDateTime - comment func.
-func ParseDateTime(r *http.Request, key string, required bool) (time.Time, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseDateTime - возвращает time.Time значение из внешнего строкового параметра по указанному ключу.
+// Значение строкового параметра должно быть указано в формате RFC3339.
+// Если параметр пустой, то в зависимости от required возвращается нулевое время или ошибка.
+func ParseDateTime(getter valueGetter, key string, required bool) (time.Time, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		if required {

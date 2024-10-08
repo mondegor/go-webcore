@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrcore"
@@ -11,9 +10,10 @@ const (
 	maxLenStringsList = 2048
 )
 
-// ParseStrList - comment func.
-func ParseStrList(r *http.Request, key string) ([]string, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseStrList - возвращает массив строковых значений из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то возвращается пустой массив.
+func ParseStrList(getter valueGetter, key string) ([]string, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		return nil, nil

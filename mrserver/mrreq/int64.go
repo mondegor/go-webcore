@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"strconv"
 	"strings"
 
@@ -12,9 +11,10 @@ const (
 	maxLenInt64 = 32
 )
 
-// ParseInt64 - comment func.
-func ParseInt64(r *http.Request, key string, required bool) (int64, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseInt64 - возвращает Int64 значение из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то в зависимости от required возвращается 0 или ошибка.
+func ParseInt64(getter valueGetter, key string, required bool) (int64, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		if required {

@@ -8,7 +8,6 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
@@ -35,9 +34,6 @@ type (
 		height int32
 	}
 )
-
-// Make sure the Image conforms with the mrserver.RequestParserImage interface.
-var _ mrserver.RequestParserImage = (*Image)(nil)
 
 // NewImage - создаёт объект Image.
 func NewImage(logger mrlog.Logger, opts ImageOptions) *Image {

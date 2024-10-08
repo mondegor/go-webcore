@@ -1,6 +1,7 @@
 package mrserver
 
 import (
+	"bytes"
 	"net/http"
 )
 
@@ -9,7 +10,7 @@ type (
 	CacheableResponseWriter struct {
 		http.ResponseWriter
 		statusCode int
-		body       []byte
+		body       bytes.Buffer
 	}
 )
 
@@ -18,7 +19,6 @@ func NewCacheableResponseWriter(w http.ResponseWriter) *CacheableResponseWriter 
 	return &CacheableResponseWriter{
 		ResponseWriter: w,
 		statusCode:     http.StatusOK,
-		body:           nil,
 	}
 }
 
@@ -28,23 +28,26 @@ func (w *CacheableResponseWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
-// Write - comment method.
+// Write - записывает переданные данные.
 func (w *CacheableResponseWriter) Write(buf []byte) (int, error) {
-	if len(w.body) > 0 {
-		w.body = append(w.body, buf...)
-	} else {
-		w.body = buf
+	n, err := w.ResponseWriter.Write(buf)
+	if err != nil {
+		return n, err
 	}
 
-	return w.ResponseWriter.Write(buf)
+	if n > 0 {
+		w.body.Write(buf[0:n])
+	}
+
+	return n, nil
 }
 
-// StatusCode - comment method.
+// StatusCode - возвращает текущий код ответа.
 func (w *CacheableResponseWriter) StatusCode() int {
 	return w.statusCode
 }
 
-// Body - comment method.
-func (w *CacheableResponseWriter) Body() []byte {
-	return w.body
+// Content - возвращает копию переданных данных.
+func (w *CacheableResponseWriter) Content() []byte {
+	return w.body.Bytes()
 }

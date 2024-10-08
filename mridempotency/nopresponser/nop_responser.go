@@ -1,28 +1,24 @@
 package nopresponser
 
-import (
-	"github.com/mondegor/go-webcore/mridempotency"
-)
+import "net/http"
 
 type (
-	// Responser - comment struct.
+	// Responser - заглушка реализующая интерфейс возвращения
+	// результата провайдером идемпотентности.
 	Responser struct{}
 )
-
-// Make sure the Image conforms with the mridempotency.Responser interface.
-var _ mridempotency.Responser = (*Responser)(nil)
 
 // New - создаёт объект Responser.
 func New() *Responser {
 	return &Responser{}
 }
 
-// StatusCode - comment method.
+// StatusCode - возвращает код ответа 200.
 func (r Responser) StatusCode() int {
-	return 0
+	return http.StatusOK
 }
 
-// Body - comment method.
-func (r Responser) Body() []byte {
+// Content - возвращает пустое содержание.
+func (r Responser) Content() []byte {
 	return nil
 }

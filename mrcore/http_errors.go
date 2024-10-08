@@ -29,9 +29,9 @@ var (
 	ErrHttpResourceNotFound = mrerr.NewProto(
 		"errHttpResourceNotFound", mrerr.ErrorKindUser, "404. resource not found")
 
-	// ErrHttpRequestParseData - request body is not valid.
+	// ErrHttpRequestParseData - 422. request body is not valid.
 	ErrHttpRequestParseData = mrerr.NewProto(
-		"errHttpRequestParseData", mrerr.ErrorKindInternal, "request body is not valid")
+		"errHttpRequestParseData", mrerr.ErrorKindInternal, "request body is not valid: {{ .reason }}'")
 
 	// ErrHttpRequestParseParam - request param with key of type contains incorrect value.
 	ErrHttpRequestParseParam = mrerr.NewProto(

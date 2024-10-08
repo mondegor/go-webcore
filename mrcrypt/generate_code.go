@@ -32,7 +32,7 @@ func (l *Lib) GenDigitCode(length int) string {
 }
 
 func (l *Lib) pow(num int64, exponent int) int64 {
-	if exponent == 0 {
+	if exponent < 1 {
 		return 1
 	}
 

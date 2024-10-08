@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
@@ -26,9 +25,6 @@ type (
 		PageSizeDefault    uint64
 	}
 )
-
-// Make sure the ListPager conforms with the mrserver.RequestParserListPager interface.
-var _ mrserver.RequestParserListPager = (*ListPager)(nil)
 
 // NewListPager - создаёт объект ListPager.
 func NewListPager(opts ListPagerOptions) *ListPager {
@@ -61,12 +57,12 @@ func NewListPager(opts ListPagerOptions) *ListPager {
 // PageParams - возвращает распарсенные параметры выборки части списка элементов.
 func (p *ListPager) PageParams(r *http.Request) mrtype.PageParams {
 	value, err := mrreq.ParsePageParams(
-		r,
+		r.URL.Query(),
 		p.paramNamePageIndex,
 		p.paramNamePageSize,
 	)
 
-	if err != nil || value.Size < 1 || value.Size > p.pageSizeMax {
+	if err != nil || value.Size == 0 || value.Size > p.pageSizeMax {
 		if err != nil {
 			mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 		}

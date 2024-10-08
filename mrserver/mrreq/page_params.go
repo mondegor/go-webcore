@@ -1,8 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
-
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrtype"
 )
@@ -11,14 +9,14 @@ const (
 	maxValuePageSize = 1000000
 )
 
-// ParsePageParams - comment func.
-func ParsePageParams(r *http.Request, keyIndex, keySize string) (mrtype.PageParams, error) {
-	index, err := ParseInt64(r, keyIndex, false)
+// ParsePageParams - возвращает PageParams из строковых параметров по указанным ключам.
+func ParsePageParams(getter valueGetter, keyIndex, keySize string) (mrtype.PageParams, error) {
+	index, err := ParseInt64(getter, keyIndex, false)
 	if err != nil {
 		return mrtype.PageParams{}, err
 	}
 
-	size, err := ParseInt64(r, keySize, false)
+	size, err := ParseInt64(getter, keySize, false)
 	if err != nil {
 		return mrtype.PageParams{}, err
 	}

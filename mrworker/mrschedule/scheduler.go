@@ -67,7 +67,7 @@ func (s *Scheduler) Start(ctx context.Context, ready func()) error {
 						defer cancel()
 
 						if err := task.Do(ctx); err != nil {
-							s.errorHandler.Process(ctx, err)
+							s.errorHandler.Perform(ctx, err)
 						}
 					}(ctx)
 				case <-ctx.Done():

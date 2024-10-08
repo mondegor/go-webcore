@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/mondegor/go-webcore/mrcore"
+
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
@@ -36,6 +38,6 @@ type (
 
 	// ErrorStatusGetter - возвращает http статус на основе указанной ошибки.
 	ErrorStatusGetter interface {
-		ErrorStatus(err error) int
+		ErrorStatus(errorType mrcore.AnalyzedErrorType, err error) int
 	}
 )

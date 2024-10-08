@@ -17,29 +17,29 @@ const (
 )
 
 type (
-	// Locker - comment struct.
+	// Locker - реализует интерфейс блокировщика указанного ключа основанный на mutex.
 	Locker struct {
 		mu   sync.Mutex
 		keys map[string]int64
 	}
 )
 
-// Make sure the Image conforms with the mrlock.Locker interface.
-var _ mrlock.Locker = (*Locker)(nil)
-
 // New - создаёт объект Locker.
-func New() *Locker {
+func New(minBufferSize int) *Locker {
 	return &Locker{
-		keys: make(map[string]int64, 16),
+		keys: make(map[string]int64, minBufferSize),
 	}
 }
 
-// Lock - comment method.
+// Lock - блокирует указанный ключ в рамках приложения с временем блокировки по умолчанию
+// и возвращает функцию разблокировки.
 func (l *Locker) Lock(ctx context.Context, key string) (unlock func(), err error) {
 	return l.LockWithExpiry(ctx, key, 0)
 }
 
-// LockWithExpiry - if expiry = 0 then set expiry by default.
+// LockWithExpiry - блокирует указанный ключ в рамках приложения с указанием
+// времени блокировки и возвращает функцию разблокировки.
+// Если указана expiry равная нулю, то будет установлено время блокировки по умолчанию.
 func (l *Locker) LockWithExpiry(ctx context.Context, key string, expiry time.Duration) (unlock func(), err error) {
 	if expiry == 0 {
 		expiry = mrlock.DefaultExpiry

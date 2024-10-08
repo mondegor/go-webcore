@@ -13,9 +13,6 @@ type (
 	}
 )
 
-// Make sure the Image conforms with the mrlog.LoggerEvent interface.
-var _ LoggerEvent = (*eventAdapter)(nil)
-
 // Err - comment method.
 func (e *eventAdapter) Err(err error) LoggerEvent {
 	if e == nil {

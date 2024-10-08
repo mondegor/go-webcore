@@ -5,7 +5,6 @@ import (
 
 	"github.com/mondegor/go-webcore/mrenum"
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
 
@@ -15,9 +14,6 @@ type (
 		defaultItems []mrenum.ItemStatus
 	}
 )
-
-// Make sure the ItemStatus conforms with the mrserver.RequestParserItemStatus interface.
-var _ mrserver.RequestParserItemStatus = (*ItemStatus)(nil)
 
 // NewItemStatus - создаёт объект ItemStatus.
 func NewItemStatus() *ItemStatus {
@@ -49,7 +45,7 @@ func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []mrenum.Item
 }
 
 func (p *ItemStatus) parseList(r *http.Request, key string) ([]mrenum.ItemStatus, error) {
-	enumList, err := mrreq.ParseEnumList(r, key)
+	enumList, err := mrreq.ParseEnumList(r.URL.Query(), key)
 	if err != nil {
 		return nil, err
 	}

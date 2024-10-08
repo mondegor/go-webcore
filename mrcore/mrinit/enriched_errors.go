@@ -2,9 +2,11 @@ package mrinit
 
 import "github.com/mondegor/go-webcore/mrcore"
 
-// ManagedInternalErrors - comment func.
-func ManagedInternalErrors() []ManagedError {
-	return []ManagedError{
+// EnrichedInternalErrors - возвращает список ошибок наделённых дополнительными
+// параметрами используемые в разных слоях приложения.
+func EnrichedInternalErrors() []EnrichedError {
+	return []EnrichedError{
+		WrapProtoWithoutCaller(mrcore.ErrUnexpectedInternal),
 		WrapProto(mrcore.ErrInternal),
 		WrapProto(mrcore.ErrInternalNilPointer),
 		WrapProto(mrcore.ErrInternalTypeAssertion),
@@ -17,9 +19,10 @@ func ManagedInternalErrors() []ManagedError {
 	}
 }
 
-// ManagedStorageErrors - comment func.
-func ManagedStorageErrors() []ManagedError {
-	return []ManagedError{
+// EnrichedStorageErrors - возвращает список ошибок наделённых дополнительными
+// параметрами используемые при работе с хранилищами данных.
+func EnrichedStorageErrors() []EnrichedError {
+	return []EnrichedError{
 		WrapProto(mrcore.ErrStorageConnectionIsAlreadyCreated),
 		WrapProto(mrcore.ErrStorageConnectionIsNotOpened),
 		WrapProto(mrcore.ErrStorageConnectionFailed),
@@ -30,12 +33,13 @@ func ManagedStorageErrors() []ManagedError {
 	}
 }
 
-// ManagedUseCaseErrors - comment func.
-func ManagedUseCaseErrors() []ManagedError {
-	return []ManagedError{
+// EnrichedUseCaseErrors - возвращает список ошибок наделённых дополнительными
+// параметрами используемые в бизнес-логике приложения.
+func EnrichedUseCaseErrors() []EnrichedError {
+	return []EnrichedError{
 		WrapProto(mrcore.ErrUseCaseOperationFailed),
 		WrapProto(mrcore.ErrUseCaseTemporarilyUnavailable),
-		WrapProtoExtraDisabled(mrcore.ErrUseCaseIncorrectInputData),
+		WrapProtoWithoutOnCreated(mrcore.ErrUseCaseIncorrectInputData),
 		WrapProto(mrcore.ErrUseCaseEntityNotFound),
 		WrapProto(mrcore.ErrUseCaseEntityNotAvailable),
 		WrapProto(mrcore.ErrUseCaseEntityVersionInvalid),
@@ -44,9 +48,10 @@ func ManagedUseCaseErrors() []ManagedError {
 	}
 }
 
-// ManagedHttpErrors - comment func.
-func ManagedHttpErrors() []ManagedError {
-	return []ManagedError{
+// EnrichedHttpErrors - возвращает список ошибок наделённых дополнительными
+// параметрами используемые в http обработчиках.
+func EnrichedHttpErrors() []EnrichedError {
+	return []EnrichedError{
 		WrapProto(mrcore.ErrHttpResponseParseData),
 		WrapProto(mrcore.ErrHttpFileUpload),
 		WrapProto(mrcore.ErrHttpMultipartFormFile),

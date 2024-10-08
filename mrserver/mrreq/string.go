@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrcore"
@@ -11,9 +10,10 @@ const (
 	maxLenString = 256
 )
 
-// ParseStr - comment func.
-func ParseStr(r *http.Request, key string, required bool) (string, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseStr - возвращает строковое значение из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то в зависимости от required возвращается пустая строка или ошибка.
+func ParseStr(getter valueGetter, key string, required bool) (string, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		if required {

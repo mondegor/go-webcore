@@ -6,8 +6,8 @@ import (
 )
 
 // ManagedHttpErrors - comment func.
-func ManagedHttpErrors() []mrinit.ManagedError {
-	return []mrinit.ManagedError{
+func ManagedHttpErrors() []mrinit.EnrichedError {
+	return []mrinit.EnrichedError{
 		mrinit.WrapProto(mrparser.ErrHttpRequestFileSizeMin),
 		mrinit.WrapProto(mrparser.ErrHttpRequestFileSizeMax),
 		mrinit.WrapProto(mrparser.ErrHttpRequestFileExtension),

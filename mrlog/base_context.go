@@ -6,9 +6,6 @@ type (
 	}
 )
 
-// Make sure the Image conforms with the mrlog.LoggerContext interface.
-var _ LoggerContext = (*contextAdapter)(nil)
-
 // Logger - comment method.
 func (c *contextAdapter) Logger() Logger {
 	return &c.logger

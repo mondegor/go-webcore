@@ -15,24 +15,21 @@ const (
 )
 
 type (
-	// Provider - comment struct.
+	// Provider - заглушка реализующая интерфейс идемпотентности запроса.
 	Provider struct{}
 )
-
-// Make sure the Image conforms with the mridempotency.Provider interface.
-var _ mridempotency.Provider = (*Provider)(nil)
 
 // New - создаёт объект Provider.
 func New() *Provider {
 	return &Provider{}
 }
 
-// Validate - comment method.
+// Validate - эмулирует успешную валидацию данных.
 func (l *Provider) Validate(_ string) error {
 	return nil
 }
 
-// Lock - comment method.
+// Lock - эмулирует блокировку указанного ключа идемпотентности и возвращает функцию разблокировки.
 func (l *Provider) Lock(ctx context.Context, key string) (unlock func(), err error) {
 	l.traceCmd(ctx, "Lock:"+defaultExpiry.String(), key)
 
@@ -41,21 +38,21 @@ func (l *Provider) Lock(ctx context.Context, key string) (unlock func(), err err
 	}, nil
 }
 
-// Get - comment method.
+// Get - возвращает пустой ответ.
 func (l *Provider) Get(ctx context.Context, key string) (mridempotency.Responser, error) {
 	l.traceCmd(ctx, "Get:"+key, key)
 
 	return nopresponser.New(), nil
 }
 
-// Store - comment method.
+// Store - эмулирует сохранение результата по указанному ключу.
 func (l *Provider) Store(ctx context.Context, key string, result mridempotency.Responser) error {
 	l.traceCmd(ctx, "Store:"+key, key)
 
 	mrlog.Ctx(ctx).
 		Trace().
 		Int("statusCode", result.StatusCode()).
-		Bytes("body", result.Body()).
+		Bytes("body", result.Content()).
 		Send()
 
 	return nil

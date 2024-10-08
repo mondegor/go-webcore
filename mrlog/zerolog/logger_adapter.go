@@ -30,9 +30,6 @@ type (
 	}
 )
 
-// Make sure the Image conforms with the mrlog.Logger interface.
-var _ mrlog.Logger = (*LoggerAdapter)(nil)
-
 // New - создаёт объект LoggerAdapter.
 func New(opts Options) *LoggerAdapter {
 	if opts.PrepareErrorFunc == nil {

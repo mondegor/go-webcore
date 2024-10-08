@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"regexp"
 	"strings"
 
@@ -15,10 +14,9 @@ const (
 
 var regexpSorterField = regexp.MustCompile(`^[a-z]([a-zA-Z0-9]+)?[a-zA-Z0-9]$`)
 
-// ParseSortParams - comment func.
-func ParseSortParams(r *http.Request, keyField, keyDirection string) (mrtype.SortParams, error) {
-	query := r.URL.Query()
-	value := query.Get(keyField)
+// ParseSortParams - возвращает SortParams из строковых параметров по указанным ключам.
+func ParseSortParams(getter valueGetter, keyField, keyDirection string) (mrtype.SortParams, error) {
+	value := getter.Get(keyField)
 
 	if value == "" {
 		return mrtype.SortParams{}, nil
@@ -34,7 +32,7 @@ func ParseSortParams(r *http.Request, keyField, keyDirection string) (mrtype.Sor
 
 	var params mrtype.SortParams
 
-	if direction := query.Get(keyDirection); direction != "" {
+	if direction := getter.Get(keyDirection); direction != "" {
 		if err := params.Direction.ParseAndSet(strings.ToUpper(direction)); err != nil {
 			return params, err
 		}

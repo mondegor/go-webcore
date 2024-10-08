@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 	"github.com/mondegor/go-webcore/mrview"
@@ -23,9 +22,6 @@ type (
 		ParamNameSortDirection string
 	}
 )
-
-// Make sure the ListSorter conforms with the mrserver.RequestParserListSorter interface.
-var _ mrserver.RequestParserListSorter = (*ListSorter)(nil)
 
 // NewListSorter - создаёт объект ListSorter.
 func NewListSorter(opts ListSorterOptions) *ListSorter {
@@ -48,7 +44,7 @@ func NewListSorter(opts ListSorterOptions) *ListSorter {
 // SortParams - возвращает распарсенные параметры сортировки списка элементов.
 func (p *ListSorter) SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams {
 	value, err := mrreq.ParseSortParams(
-		r,
+		r.URL.Query(),
 		p.paramNameSortField,
 		p.paramNameSortDirection,
 	)

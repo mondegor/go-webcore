@@ -1,4 +1,4 @@
-package mrcoreerr
+package mrapp
 
 import (
 	"errors"
@@ -7,12 +7,10 @@ import (
 )
 
 type (
-	// UseCaseErrorWrapper - помощник для оборачивания ошибок в часто используемые UseCase ошибки.
+	// UseCaseErrorWrapper - помощник оборачивания ошибок
+	// в часто используемые ошибки бизнес-логики приложения.
 	UseCaseErrorWrapper struct{}
 )
-
-// Make sure the Image conforms with the mrcore.UseCaseErrorWrapper interface.
-var _ mrcore.UseCaseErrorWrapper = (*UseCaseErrorWrapper)(nil)
 
 // NewUseCaseErrorWrapper - создаёт объект UseCaseErrorWrapper.
 func NewUseCaseErrorWrapper() *UseCaseErrorWrapper {

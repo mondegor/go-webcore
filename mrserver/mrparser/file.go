@@ -9,7 +9,6 @@ import (
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
@@ -35,9 +34,6 @@ type (
 		CheckRequestContentType bool
 	}
 )
-
-// Make sure the File conforms with the mrserver.RequestParserFile interface.
-var _ mrserver.RequestParserFile = (*File)(nil)
 
 // NewFile - создаёт объект File.
 func NewFile(logger mrlog.Logger, opts FileOptions) *File {

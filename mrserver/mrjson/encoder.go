@@ -2,8 +2,6 @@ package mrjson
 
 import (
 	"encoding/json"
-
-	"github.com/mondegor/go-webcore/mrserver"
 )
 
 const (
@@ -15,9 +13,6 @@ type (
 	// JsonEncoder - comment struct.
 	JsonEncoder struct{}
 )
-
-// Make sure the Image conforms with the mrserver.ResponseEncoder interface.
-var _ mrserver.ResponseEncoder = (*JsonEncoder)(nil)
 
 // NewEncoder - создаёт объект JsonEncoder.
 func NewEncoder() *JsonEncoder {

@@ -15,9 +15,6 @@ type (
 	}
 )
 
-// Make sure the String conforms with the mrserver.RequestParserString interface.
-var _ mrserver.RequestParserString = (*String)(nil)
-
 // NewString - создаёт объект String.
 func NewString(pathFunc mrserver.RequestParserParamFunc) *String {
 	return &String{
@@ -46,7 +43,7 @@ func (p *String) RawParamString(r *http.Request, name string) *string {
 // FilterString - возвращает строка поступившая из внешнего запроса.
 // Если ключ key не найден или возникнет ошибка, то возвращается пустое значение.
 func (p *String) FilterString(r *http.Request, key string) string {
-	value, err := mrreq.ParseStr(r, key, false)
+	value, err := mrreq.ParseStr(r.URL.Query(), key, false)
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 

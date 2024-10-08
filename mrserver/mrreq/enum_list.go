@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrcore"
@@ -11,9 +10,10 @@ const (
 	maxLenEnumList = 256
 )
 
-// ParseEnumList - comment func.
-func ParseEnumList(r *http.Request, key string) ([]string, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseEnumList - возвращает массив Enum значений из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то возвращается пустой массив.
+func ParseEnumList(getter valueGetter, key string) ([]string, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		return nil, nil

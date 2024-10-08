@@ -19,7 +19,7 @@ type (
 )
 
 var (
-	levelName = map[Level]string{
+	levelName = map[Level]string{ //nolint:gochecknoglobals
 		DebugLevel: "DEBUG",
 		InfoLevel:  "INFO",
 		WarnLevel:  "WARN",
@@ -28,7 +28,7 @@ var (
 		TraceLevel: "TRACE",
 	}
 
-	levelValue = map[string]Level{
+	levelValue = map[string]Level{ //nolint:gochecknoglobals
 		"DEBUG": DebugLevel,
 		"INFO":  InfoLevel,
 		"WARN":  WarnLevel,

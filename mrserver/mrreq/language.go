@@ -1,18 +1,13 @@
 package mrreq
 
 import (
-	"net/http"
-
 	"github.com/mondegor/go-sysmess/mrlang"
 )
 
-const (
-	headerKeyAcceptLanguage = "Accept-Language"
-)
-
-// ParseLanguage - comment func.
-func ParseLanguage(r *http.Request) []string {
-	acceptLanguage := r.Header.Get(headerKeyAcceptLanguage)
+// ParseLanguage - возвращает список языков из заголовка Accept-Language.
+// Если заголовка нет или он пустой, то возвращается пустой массив.
+func ParseLanguage(getter valueGetter) []string {
+	acceptLanguage := getter.Get(HeaderKeyAcceptLanguage)
 
 	return mrlang.ParseAcceptLanguage(acceptLanguage)
 }

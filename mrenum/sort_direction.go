@@ -17,12 +17,12 @@ type (
 )
 
 var (
-	sortDirectionName = map[SortDirection]string{
+	sortDirectionName = map[SortDirection]string{ //nolint:gochecknoglobals
 		SortDirectionASC:  "ASC",
 		SortDirectionDESC: "DESC",
 	}
 
-	_sortDirectionValue = map[string]SortDirection{
+	sortDirectionValue = map[string]SortDirection{ //nolint:gochecknoglobals
 		"ASC":  SortDirectionASC,
 		"DESC": SortDirectionDESC,
 	}
@@ -30,7 +30,7 @@ var (
 
 // ParseAndSet - парсит указанное значение и если оно валидно, то устанавливает его числовое значение.
 func (e *SortDirection) ParseAndSet(value string) error {
-	if parsedValue, ok := _sortDirectionValue[value]; ok {
+	if parsedValue, ok := sortDirectionValue[value]; ok {
 		*e = parsedValue
 
 		return nil

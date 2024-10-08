@@ -6,10 +6,24 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr"
 )
 
+const (
+	AnalyzedErrorTypeUndefined     AnalyzedErrorType = iota // AnalyzedErrorTypeUndefined - любая ошибка, которая не является ошибкой из списка ниже
+	AnalyzedErrorTypeInternal                               // AnalyzedErrorTypeInternal - AppError with kind=ErrorKindInternal
+	AnalyzedErrorTypeSystem                                 // AnalyzedErrorTypeSystem - AppError with kind=ErrorKindSystem
+	AnalyzedErrorTypeUser                                   // AnalyzedErrorTypeUser - AppError with kind=ErrorKindUser
+	AnalyzedErrorTypeProtoInternal                          // AnalyzedErrorTypeProtoInternal - ProtoAppError with kind=ErrorKindInternal
+	AnalyzedErrorTypeProtoSystem                            // AnalyzedErrorTypeProtoSystem - ProtoAppError with kind=ErrorKindSystem
+	AnalyzedErrorTypeProtoUser                              // AnalyzedErrorTypeProtoUser - ProtoAppError with kind=ErrorKindUser
+)
+
 type (
+	// AnalyzedErrorType - тип ошибки определённый обработчиком ошибок (ErrorHandler).
+	AnalyzedErrorType int8
+
 	// ErrorHandler - обработчик ошибок.
 	ErrorHandler interface {
-		Process(ctx context.Context, err error)
+		Perform(ctx context.Context, err error)
+		PerformWithCommit(ctx context.Context, err error, commit func(errType AnalyzedErrorType, err *mrerr.AppError))
 	}
 
 	// UseCaseErrorWrapper - помощник для оборачивания UseCase ошибок.
@@ -22,19 +36,9 @@ type (
 	}
 )
 
-// errUnexpectedInternal - особая ошибка, в которую заворачивается системой необработанная ошибка.
-var errUnexpectedInternal = mrerr.NewProto(
-	mrerr.ErrorCodeUnexpectedInternal, mrerr.ErrorKindInternal, "unexpected internal error")
-
-// IsUnexpectedError - проверяется, является ли указанная ошибка необработанной.
-// Такая ошибка может появиться только в результате вызова метода CastToAppError.
-func IsUnexpectedError(err error) bool {
-	return errUnexpectedInternal.Is(err)
-}
-
 // PrepareError - приводит указанную ошибку к AppError или если это
-// невозможно, то оборачивает её в Internal ошибку, затем возвращает результат.
-// (при этом происходит генерация ID и стека вызовов для ошибки, если это необходимо).
+// невозможно, то оборачивает её в ErrInternal ошибку, затем возвращает результат.
+// (при этом происходит генерация ID и стека вызовов для ошибки, если в ошибке это предусмотрено).
 // Вызываться должно как можно ближе к тому месту, где произошла непосредственно ошибка.
 func PrepareError(err error) error {
 	if _, ok := err.(*mrerr.AppError); ok { //nolint:errorlint
@@ -49,8 +53,7 @@ func PrepareError(err error) error {
 }
 
 // CastToAppError - приводит указанную ошибку к AppError или если это
-// невозможно, то оборачивает её в UnexpectedInternal ошибку, затем возвращает результат.
-// (при этом исключается генерация ID и стека вызовов для ошибки).
+// невозможно, то оборачивает её в ErrUnexpectedInternal ошибку, затем возвращает результат.
 // Используется на поздних этапах обработки ошибок.
 func CastToAppError(err error) *mrerr.AppError {
 	if appErr, ok := err.(*mrerr.AppError); ok { //nolint:errorlint
@@ -61,6 +64,5 @@ func CastToAppError(err error) *mrerr.AppError {
 		return mrerr.Cast(proto)
 	}
 
-	// важно, что здесь не происходит генерации ID и стека вызовов
-	return errUnexpectedInternal.Wrap(err)
+	return ErrUnexpectedInternal.Wrap(err)
 }

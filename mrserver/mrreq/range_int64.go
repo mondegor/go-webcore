@@ -1,19 +1,17 @@
 package mrreq
 
 import (
-	"net/http"
-
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
-// ParseRangeInt64 - comment func.
-func ParseRangeInt64(r *http.Request, key string) (mrtype.RangeInt64, error) {
-	minValue, err := ParseInt64(r, key+"-min", false)
+// ParseRangeInt64 - возвращает RangeInt64 из строковых параметров по указанному префиксу ключа.
+func ParseRangeInt64(getter valueGetter, prefixKey string) (mrtype.RangeInt64, error) {
+	minValue, err := ParseInt64(getter, prefixKey+"-min", false)
 	if err != nil {
 		return mrtype.RangeInt64{}, err
 	}
 
-	maxValue, err := ParseInt64(r, key+"-max", false)
+	maxValue, err := ParseInt64(getter, prefixKey+"-max", false)
 	if err != nil {
 		return mrtype.RangeInt64{}, err
 	}

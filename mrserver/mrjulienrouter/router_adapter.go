@@ -27,9 +27,6 @@ type (
 	}
 )
 
-// Make sure the RouterAdapter conforms with the mrserver.HttpRouter interface.
-var _ mrserver.HttpRouter = (*RouterAdapter)(nil)
-
 // New - создаёт объект RouterAdapter.
 func New(
 	logger mrlog.Logger,

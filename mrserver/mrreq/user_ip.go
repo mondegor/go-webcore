@@ -2,20 +2,18 @@ package mrreq
 
 import (
 	"net"
-	"net/http"
 )
 
-// ParseUserIP - comment func.
-func ParseUserIP(r *http.Request) (net.IP, error) {
-	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+// ParseUserIP - возвращает валидный IP адрес из указанной строки или ошибку, если парсинг не удался.
+func ParseUserIP(remoteAddr string) (net.IP, error) {
+	ip, _, err := net.SplitHostPort(remoteAddr)
 	if err != nil {
-		return nil, ErrHttpRequestUserIP.Wrap(err, r.RemoteAddr)
+		return nil, ErrHttpRequestUserIP.Wrap(err, remoteAddr)
 	}
 
-	parsedIP := net.ParseIP(ip)
-	if parsedIP == nil {
-		return nil, ErrHttpRequestParseUserIP.New(ip)
+	if parsedIP := net.ParseIP(ip); parsedIP != nil {
+		return parsedIP, nil
 	}
 
-	return parsedIP, nil
+	return nil, ErrHttpRequestParseUserIP.New(ip)
 }

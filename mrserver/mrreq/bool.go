@@ -1,16 +1,16 @@
 package mrreq
 
 import (
-	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
-// ParseRequiredBool - comment func.
-func ParseRequiredBool(r *http.Request, key string) (bool, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseRequiredBool - возвращает Bool значение из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то возвращается ошибка.
+func ParseRequiredBool(getter valueGetter, key string) (bool, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		return false, mrcore.ErrHttpRequestParamEmpty.New(key)
@@ -24,9 +24,10 @@ func ParseRequiredBool(r *http.Request, key string) (bool, error) {
 	return item, nil
 }
 
-// ParseNullableBool - comment func.
-func ParseNullableBool(r *http.Request, key string) (*bool, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseNullableBool - возвращает Bool значение из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то возвращается nil.
+func ParseNullableBool(getter valueGetter, key string) (*bool, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		return nil, nil //nolint:nilnil

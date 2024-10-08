@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"strconv"
 	"strings"
 
@@ -12,9 +11,10 @@ const (
 	maxLenFloat64 = 64
 )
 
-// ParseFloat64 - comment func.
-func ParseFloat64(r *http.Request, key string, required bool) (float64, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseFloat64 - возвращает Float64 значение из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то в зависимости от required возвращается 0 или ошибка.
+func ParseFloat64(getter valueGetter, key string, required bool) (float64, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		if required {

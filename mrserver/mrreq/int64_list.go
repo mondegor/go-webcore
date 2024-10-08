@@ -1,7 +1,6 @@
 package mrreq
 
 import (
-	"net/http"
 	"strconv"
 	"strings"
 
@@ -12,9 +11,10 @@ const (
 	maxLenInt64List = 256
 )
 
-// ParseInt64List - comment func.
-func ParseInt64List(r *http.Request, key string) ([]int64, error) {
-	value := strings.TrimSpace(r.URL.Query().Get(key))
+// ParseInt64List - возвращает массив Int64 значений из внешнего строкового параметра по указанному ключу.
+// Если параметр пустой, то возвращается пустой массив.
+func ParseInt64List(getter valueGetter, key string) ([]int64, error) {
+	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
 		return nil, nil
@@ -28,12 +28,12 @@ func ParseInt64List(r *http.Request, key string) ([]int64, error) {
 	items := make([]int64, 0, len(itemsTmp))
 
 	for i := range itemsTmp {
-		itemN, err := strconv.ParseInt(strings.TrimSpace(itemsTmp[i]), 10, 64)
+		item, err := strconv.ParseInt(strings.TrimSpace(itemsTmp[i]), 10, 64)
 		if err != nil {
 			return nil, mrcore.ErrHttpRequestParseParam.Wrap(err, key, "Int64", value)
 		}
 
-		items = append(items, itemN)
+		items = append(items, item)
 	}
 
 	return items, nil

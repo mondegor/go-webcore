@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrpath"
 )
 
 const (
@@ -19,9 +18,6 @@ type (
 		postfix  string
 	}
 )
-
-// Make sure the Image conforms with the mrpath.PathBuilder interface.
-var _ mrpath.PathBuilder = (*Builder)(nil)
 
 // New - создаёт объект Builder.
 // sample: /dir/{{path}}/postfix -> /dir/real-value/postfix

@@ -9,7 +9,7 @@ import (
 
 // Write - адаптер для вызова io.Writer указанного объекта с логированием ошибки.
 func Write(ctx context.Context, w io.Writer, bytes []byte) {
-	if len(bytes) < 1 {
+	if len(bytes) == 0 {
 		return
 	}
 

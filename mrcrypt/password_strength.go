@@ -33,7 +33,7 @@ type (
 	passTypeChars uint8
 )
 
-var passStrengthName = map[PassStrength]string{
+var passStrengthName = map[PassStrength]string{ //nolint:gochecknoglobals
 	PassStrengthNotRated: "NOT_RATED",
 	PassStrengthWeak:     "WEAK",
 	PassStrengthMedium:   "MIDDLE",
@@ -45,7 +45,7 @@ var passStrengthName = map[PassStrength]string{
 func (l *Lib) PasswordStrength(value string) PassStrength {
 	length := len(value)
 
-	if length < 1 {
+	if length == 0 {
 		return PassStrengthNotRated
 	}
 

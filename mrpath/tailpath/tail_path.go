@@ -2,8 +2,6 @@ package tailpath
 
 import (
 	"strings"
-
-	"github.com/mondegor/go-webcore/mrpath"
 )
 
 type (
@@ -12,9 +10,6 @@ type (
 		basePath string
 	}
 )
-
-// Make sure the Image conforms with the mrpath.PathBuilder interface.
-var _ mrpath.PathBuilder = (*Builder)(nil)
 
 // New - создаёт объект NewBuilderPath.
 // sample: /base/dir/ -> /base/dir/path

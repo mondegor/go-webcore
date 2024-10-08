@@ -1,6 +1,23 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-10-09
+### Changed
+- Все проверки соответствия структур интерфейсам перенесены в тесты;
+- Проведена профилактика по глобальным переменным, включен линтер `gochecknoglobals`;
+- В пакете `mrserver/mrreq` в большинстве функций заменён входящий параметр `r *http.Request` на интерфейс `valueGetter`;
+- Переименованы некоторые функции:
+  - `BoolToInt64` -> `CastBoolToNumber`;
+  - `BoolToPointer` -> `CastBoolToPointer`;
+  - `Int32ToPointer` -> `CastNumberToPointer`;
+  - `StringToPointer` -> `CastTimeToPointer`;
+  - `TimeToPointer` -> `CastTimeToPointer`;
+  - `TimePointerCopy` -> `CopyTimePointer`;
+  - `ManagedError` -> `EnrichedError`;
+- В ошибку `mrcore.ErrHttpRequestParseData` добавлен параметр для возможности задания подробностей ошибки;
+- Переработан интерфейс для `ErrorHandler`, добавлены ему методы `Perform()` и PerformWithCommit();
+- Доработан `EventEmitter`, добавлены метрики для подсчёта событий поступающих из разных источников;
+
 ## 2024-09-29
 ### Changed
 - Добавлена директория `.cache` в `.gitignore`, скорректирована документация;

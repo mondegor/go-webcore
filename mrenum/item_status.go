@@ -23,13 +23,13 @@ type (
 )
 
 var (
-	itemStatusName = map[ItemStatus]string{
+	itemStatusName = map[ItemStatus]string{ //nolint:gochecknoglobals
 		ItemStatusDraft:    "DRAFT",
 		ItemStatusEnabled:  "ENABLED",
 		ItemStatusDisabled: "DISABLED",
 	}
 
-	itemStatusValue = map[string]ItemStatus{
+	itemStatusValue = map[string]ItemStatus{ //nolint:gochecknoglobals
 		"DRAFT":    ItemStatusDraft,
 		"ENABLED":  ItemStatusEnabled,
 		"DISABLED": ItemStatusDisabled,

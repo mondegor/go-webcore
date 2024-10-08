@@ -8,19 +8,15 @@ import (
 	"strconv"
 
 	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
 type (
-	// FileSender - comment struct.
+	// FileSender - формирует и отправляет клиенту ответ с указанным файлом.
 	FileSender struct {
 		*Sender
 	}
 )
-
-// Make sure the FileSender conforms with the mrserver.FileResponseSender interface.
-var _ mrserver.FileResponseSender = (*FileSender)(nil)
 
 // NewFileSender - создаёт объект FileSender.
 func NewFileSender(base *Sender) *FileSender {
@@ -29,12 +25,12 @@ func NewFileSender(base *Sender) *FileSender {
 	}
 }
 
-// SendFile - comment method.
+// SendFile - отправляет указанный файл, в случае неудачи возвращает ошибку.
 func (rs *FileSender) SendFile(ctx context.Context, w http.ResponseWriter, file mrtype.File) error {
 	return rs.sendFile(ctx, w, file, false)
 }
 
-// SendAttachmentFile - comment method.
+// SendAttachmentFile - отправляет указанный файл в виде вложения для сохранения локально, в случае неудачи возвращает ошибку.
 func (rs *FileSender) SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrtype.File) error {
 	return rs.sendFile(ctx, w, file, true)
 }
