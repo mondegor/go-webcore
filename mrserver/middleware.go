@@ -10,9 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/xid"
-
 	"github.com/mondegor/go-sysmess/mrlang"
+	"github.com/rs/xid"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mridempotency"

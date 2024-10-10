@@ -39,7 +39,7 @@ func (rs *FileSender) sendFile(ctx context.Context, w http.ResponseWriter, file 
 	w.Header().Set("Content-Type", file.FileInfo.ContentType)
 
 	if file.FileInfo.Size > 0 {
-		w.Header().Set("Content-Length", strconv.FormatInt(file.FileInfo.Size, 10))
+		w.Header().Set("Content-Length", strconv.FormatUint(file.FileInfo.Size, 10))
 	}
 
 	if isAttachment {

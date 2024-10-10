@@ -3,10 +3,10 @@ package mrapp_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrcore/mrapp"
-
-	"github.com/stretchr/testify/assert"
 )
 
 // Make sure the mrapp.UseCaseErrorWrapper conforms with the mrcore.UseCaseErrorWrapper interface.

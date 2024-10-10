@@ -1,6 +1,6 @@
 module github.com/mondegor/go-webcore
 
-go 1.22.0
+go 1.22.6
 
 require (
 	github.com/getsentry/sentry-go v0.29.0
@@ -9,13 +9,13 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-sysmess v0.11.5
+	github.com/mondegor/go-sysmess v0.11.6
 	github.com/prometheus/client_golang v1.20.4
 	github.com/rs/cors v1.11.1
 	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/exp v0.0.0-20241004190924-225e2abe05e6
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	gopkg.in/yaml.v3 v3.0.1
 )
 

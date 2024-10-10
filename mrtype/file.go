@@ -15,7 +15,7 @@ type (
 		Name         string     `json:"name,omitempty"`
 		Path         string     `json:"-"`
 		URL          string     `json:"url,omitempty"`
-		Size         int64      `json:"size,omitempty"`
+		Size         uint64     `json:"size,omitempty"`
 		CreatedAt    *time.Time `json:"createdAt,omitempty"`
 		UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
 	}

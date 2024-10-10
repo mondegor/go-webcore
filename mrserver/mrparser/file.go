@@ -88,7 +88,7 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 		FileInfo: mrtype.FileInfo{
 			ContentType:  p.detectedContentType(hdr),
 			OriginalName: hdr.Filename,
-			Size:         hdr.Size,
+			Size:         uint64(hdr.Size),
 		},
 		Body: file,
 	}, nil
@@ -146,7 +146,7 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 				FileInfo: mrtype.FileInfo{
 					ContentType:  p.detectedContentType(fds[i]),
 					OriginalName: fds[i].Filename,
-					Size:         fds[i].Size,
+					Size:         uint64(fds[i].Size),
 				},
 				Header: fds[i],
 			},

@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/mondegor/go-webcore/mrcore"
-
 	"github.com/mondegor/go-webcore/mrtype"
 )
 

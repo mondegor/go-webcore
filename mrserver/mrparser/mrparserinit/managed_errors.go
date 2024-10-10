@@ -5,8 +5,8 @@ import (
 	"github.com/mondegor/go-webcore/mrserver/mrparser"
 )
 
-// ManagedHttpErrors - comment func.
-func ManagedHttpErrors() []mrinit.EnrichedError {
+// EnrichedHttpErrors - comment func.
+func EnrichedHttpErrors() []mrinit.EnrichedError {
 	return []mrinit.EnrichedError{
 		mrinit.WrapProto(mrparser.ErrHttpRequestFileSizeMin),
 		mrinit.WrapProto(mrparser.ErrHttpRequestFileSizeMax),

@@ -3,9 +3,9 @@ package mrapp
 import (
 	"context"
 
-	"github.com/mondegor/go-webcore/mrcore"
-
 	"github.com/mondegor/go-sysmess/mrerr"
+
+	"github.com/mondegor/go-webcore/mrcore"
 )
 
 type (

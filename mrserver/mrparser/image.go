@@ -16,22 +16,22 @@ type (
 	// Image - парсер изображений.
 	Image struct {
 		file      *File
-		maxWidth  int32
-		maxHeight int32
+		maxWidth  uint64
+		maxHeight uint64
 		checkBody bool
 	}
 
 	// ImageOptions - опции для создания Image.
 	ImageOptions struct {
 		File      FileOptions
-		MaxWidth  int32
-		MaxHeight int32
+		MaxWidth  uint64
+		MaxHeight uint64
 		CheckBody bool
 	}
 
 	imageMeta struct {
-		width  int32
-		height int32
+		width  uint64
+		height uint64
 	}
 )
 
@@ -99,7 +99,7 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 			OriginalName: hdr.Filename,
 			Width:        meta.width,
 			Height:       meta.height,
-			Size:         hdr.Size,
+			Size:         uint64(hdr.Size),
 		},
 		Body: file,
 	}, nil
@@ -174,7 +174,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 						OriginalName: fds[i].Filename,
 						Width:        meta.width,
 						Height:       meta.height,
-						Size:         fds[i].Size,
+						Size:         uint64(fds[i].Size),
 					},
 					Header: fds[i],
 				},
@@ -196,11 +196,11 @@ func (p *Image) decode(file multipart.File, contentType string) (imageMeta, erro
 		return imageMeta{}, err
 	}
 
-	if p.maxWidth > 0 && int32(cfg.Width) > p.maxWidth {
+	if p.maxWidth > 0 && uint64(cfg.Width) > p.maxWidth {
 		return imageMeta{}, ErrHttpRequestImageWidthMax.New(p.maxWidth)
 	}
 
-	if p.maxHeight > 0 && int32(cfg.Height) > p.maxHeight {
+	if p.maxHeight > 0 && uint64(cfg.Height) > p.maxHeight {
 		return imageMeta{}, ErrHttpRequestImageHeightMax.New(p.maxHeight)
 	}
 
@@ -211,7 +211,7 @@ func (p *Image) decode(file multipart.File, contentType string) (imageMeta, erro
 	}
 
 	return imageMeta{
-		width:  int32(cfg.Width),
-		height: int32(cfg.Height),
+		width:  uint64(cfg.Width),
+		height: uint64(cfg.Height),
 	}, nil
 }
