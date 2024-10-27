@@ -1,6 +1,25 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-10-27
+### Added
+- Добавлен многопоточный сервис обработки сообщений `MessageProcessor` на основе консьюмера и обработчика;
+- Добавлены функции `mrapp.WithProcessContext` и `ProcessCtx` для сохранения ID процесса в контексте;
+- Добавлен `StorageErrorWrapper` для оборачивания ошибок инфраструктурного слоя приложения;
+- Добавлены следующие типы ошибок:
+    - `mrcore.ErrInternalCaughtPanic`;
+    - `mrcore.ErrInternalProcessIsStoppedByTimeout`;
+    - `mrcore.ErrInternalUnexpectedEOF`;
+- Добавлены `FileOption` и `ImageOption` для более удобного задания опций у `mrparser.File` и `mrparser.Image`;
+- Добавлена функция `mrcore.CastSliceToAnySlice`;
+
+### Changed
+- В функцию `CastToAppError` добавлен параметр `defFunc` для возможности возвращения ошибки по умолчанию;
+- Переименованы:
+    - `MimeTypeList.NewListByExts` -> `MimeTypesByExts`;
+    - `Scheduler` -> `TaskScheduler`;
+    - `TaskShell` -> `JobWrapper`;
+
 ## 2024-10-11
 ### Added
 - Подключён и настроен линтер `gci`;
@@ -14,13 +33,13 @@
 - Проведена профилактика по глобальным переменным, включен линтер `gochecknoglobals`;
 - В пакете `mrserver/mrreq` в большинстве функций заменён входящий параметр `r *http.Request` на интерфейс `valueGetter`;
 - Переименованы некоторые функции:
-  - `BoolToInt64` -> `CastBoolToNumber`;
-  - `BoolToPointer` -> `CastBoolToPointer`;
-  - `Int32ToPointer` -> `CastNumberToPointer`;
-  - `StringToPointer` -> `CastTimeToPointer`;
-  - `TimeToPointer` -> `CastTimeToPointer`;
-  - `TimePointerCopy` -> `CopyTimePointer`;
-  - `ManagedError` -> `EnrichedError`;
+    - `BoolToInt64` -> `CastBoolToNumber`;
+    - `BoolToPointer` -> `CastBoolToPointer`;
+    - `Int32ToPointer` -> `CastNumberToPointer`;
+    - `StringToPointer` -> `CastTimeToPointer`;
+    - `TimeToPointer` -> `CastTimeToPointer`;
+    - `TimePointerCopy` -> `CopyTimePointer`;
+    - `ManagedError` -> `EnrichedError`;
 - В ошибку `mrcore.ErrHttpRequestParseData` добавлен параметр для возможности задания подробностей ошибки;
 - Переработан интерфейс для `ErrorHandler`, добавлены ему методы `Perform()` и PerformWithCommit();
 - Доработан `EventEmitter`, добавлены метрики для подсчёта событий поступающих из разных источников;

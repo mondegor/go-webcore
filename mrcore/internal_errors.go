@@ -25,6 +25,10 @@ var (
 	ErrInternalNilPointer = mrerr.NewProto(
 		"errInternalNilPointer", mrerr.ErrorKindInternal, "unexpected nil pointer")
 
+	// ErrInternalCaughtPanic - caught panic.
+	ErrInternalCaughtPanic = mrerr.NewProto(
+		"errInternalCaughtPanic", mrerr.ErrorKindInternal, "{{ .source }}; panic: {{ .recover }}; callstack: {{ .callstack }}")
+
 	// ErrInternalTypeAssertion - invalid type assertion.
 	ErrInternalTypeAssertion = mrerr.NewProto(
 		"errInternalTypeAssertion", mrerr.ErrorKindInternal, "invalid type '{{ .type }}' assertion (value: {{ .value }})")
@@ -33,9 +37,17 @@ var (
 	ErrInternalInvalidType = mrerr.NewProto(
 		"errInternalInvalidType", mrerr.ErrorKindInternal, "invalid type '{{ .currentType }}', expected: '{{ .expectedType }}'")
 
+	// ErrInternalUnhandledDefaultCase - unhandled default case.
+	ErrInternalUnhandledDefaultCase = mrerr.NewProto(
+		"errInternalUnhandledDefaultCase", mrerr.ErrorKindInternal, "unhandled default case")
+
 	// ErrInternalKeyNotFoundInSource - key is not found in source.
 	ErrInternalKeyNotFoundInSource = mrerr.NewProto(
 		"errInternalKeyNotFoundInSource", mrerr.ErrorKindInternal, "key '{{ .key }}' is not found in source {{ .source }}")
+
+	// ErrInternalProcessIsStoppedByTimeout - the process is stopped by timeout.
+	ErrInternalProcessIsStoppedByTimeout = mrerr.NewProto(
+		"errInternalProcessIsStoppedByTimeout", mrerr.ErrorKindSystem, "the process '{{ .name }}' is stopped by timeout")
 
 	// ErrInternalFailedToOpen - failed to open object.
 	ErrInternalFailedToOpen = mrerr.NewProto(
@@ -44,6 +56,10 @@ var (
 	// ErrInternalFailedToClose - failed to close object.
 	ErrInternalFailedToClose = mrerr.NewProto(
 		"errInternalFailedToClose", mrerr.ErrorKindInternal, "failed to close object")
+
+	// ErrInternalUnexpectedEOF - unexpected EOF.
+	ErrInternalUnexpectedEOF = mrerr.NewProto(
+		"errInternalUnexpectedEOF", mrerr.ErrorKindInternal, "unexpected EOF")
 
 	// ErrInternalValueLenMax - value has length greater than max characters.
 	ErrInternalValueLenMax = mrerr.NewProto(

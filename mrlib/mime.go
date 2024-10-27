@@ -5,29 +5,27 @@ import (
 	"fmt"
 	"path"
 	"strings"
-
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 type (
 	// MimeTypeList - хранит соответствие расширений их типам файлов (в обе стороны).
 	MimeTypeList struct {
-		extMap         map[string]string
 		contentTypeMap map[string]string
-		logger         mrlog.Logger
+		extensionMap   map[string]string
+		logger         logger
 	}
 
 	// MimeType - хранит расширение и соответствующий ему тип файла.
 	MimeType struct {
-		Extension   string `yaml:"ext"`
 		ContentType string `yaml:"type"`
+		Extension   string `yaml:"ext"`
 	}
 )
 
 // NewMimeTypeList - создаёт объект MimeTypeList на основе списка соответствий расширений и файлов.
-func NewMimeTypeList(logger mrlog.Logger, items []MimeType) *MimeTypeList {
-	extMap := make(map[string]string, len(items))
+func NewMimeTypeList(logger logger, items []MimeType) *MimeTypeList {
 	mimeMap := make(map[string]string, len(items))
+	extMap := make(map[string]string, len(items))
 
 	for _, item := range items {
 		item.Extension = strings.TrimPrefix(item.Extension, ".")
@@ -41,33 +39,30 @@ func NewMimeTypeList(logger mrlog.Logger, items []MimeType) *MimeTypeList {
 	}
 
 	return &MimeTypeList{
-		extMap:         extMap,
 		contentTypeMap: mimeMap,
+		extensionMap:   extMap,
 		logger:         logger,
 	}
 }
 
-// NewListByExts - создаёт новый объект MimeTypeList, в который войдут указанные расширения,
-// если хотя бы одно расширение не зарегистрировано в текущем списке, то будет выдана ошибка.
-func (mt *MimeTypeList) NewListByExts(logger mrlog.Logger, exts ...string) (*MimeTypeList, error) {
-	mimeList := make([]MimeType, 0, len(exts))
+// MimeTypesByExts - возвращает MimeType массив, в который войдут указанные расширения,
+// если хотя бы одно расширение не зарегистрировано в списке, то будет выдана ошибка.
+func (mt *MimeTypeList) MimeTypesByExts(values []string) ([]MimeType, error) {
+	mime := make([]MimeType, len(values))
 
-	for _, ext := range exts {
+	for i, ext := range values {
 		contentType, err := mt.getContentType(ext)
 		if err != nil {
 			return nil, err
 		}
 
-		mimeList = append(
-			mimeList,
-			MimeType{
-				Extension:   ext,
-				ContentType: contentType,
-			},
-		)
+		mime[i] = MimeType{
+			ContentType: contentType,
+			Extension:   ext,
+		}
 	}
 
-	return NewMimeTypeList(logger, mimeList), nil
+	return mime, nil
 }
 
 // CheckExt - возвращает ошибку, если указанное расширение не зарегистрировано в списке.
@@ -102,7 +97,7 @@ func (mt *MimeTypeList) CheckContentType(contentType string) error {
 func (mt *MimeTypeList) ContentType(ext string) string {
 	value, err := mt.getContentType(ext)
 	if err != nil {
-		mt.logger.Warn().Err(err).Send()
+		mt.logger.Printf(fmt.Errorf("ContentType: %w", err).Error())
 
 		return ""
 	}
@@ -115,7 +110,7 @@ func (mt *MimeTypeList) ContentType(ext string) string {
 func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
 	value, err := mt.getContentType(path.Ext(name))
 	if err != nil {
-		mt.logger.Warn().Err(err).Send()
+		mt.logger.Printf(fmt.Errorf("ContentTypeByFileName: %w", err).Error())
 
 		return ""
 	}
@@ -128,7 +123,7 @@ func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
 func (mt *MimeTypeList) Ext(contentType string) string {
 	value, err := mt.getExt(contentType)
 	if err != nil {
-		mt.logger.Warn().Err(err).Send()
+		mt.logger.Printf(fmt.Errorf("Ext: %w", err).Error())
 
 		return ""
 	}
@@ -145,7 +140,7 @@ func (mt *MimeTypeList) getContentType(ext string) (string, error) {
 		ext = ext[1:]
 	}
 
-	if value, ok := mt.extMap[ext]; ok {
+	if value, ok := mt.extensionMap[ext]; ok {
 		return value, nil
 	}
 

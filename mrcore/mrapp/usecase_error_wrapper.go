@@ -3,11 +3,13 @@ package mrapp
 import (
 	"errors"
 
+	"github.com/mondegor/go-sysmess/mrerr"
+
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
 type (
-	// UseCaseErrorWrapper - помощник оборачивания ошибок
+	// UseCaseErrorWrapper - помощник оборачивания перехваченных ошибок
 	// в часто используемые ошибки бизнес-логики приложения.
 	UseCaseErrorWrapper struct{}
 )
@@ -57,11 +59,18 @@ func (h *UseCaseErrorWrapper) WrapErrorEntityNotFoundOrFailed(err error, entityN
 }
 
 func (h *UseCaseErrorWrapper) wrapErrorFailed(err error, name string, data any) error {
-	wrapper := mrcore.ErrUseCaseTemporarilyUnavailable
+	appErr := mrcore.CastToAppError(
+		err,
+		func(err error) *mrerr.AppError {
+			return mrcore.ErrUseCaseOperationFailed.Wrap(err)
+		},
+	)
 
-	if errors.Is(err, mrcore.ErrStorageQueryFailed) {
-		wrapper = mrcore.ErrUseCaseOperationFailed
+	if appErr.Kind() == mrerr.ErrorKindSystem {
+		if appErr.Code() != mrcore.ErrUseCaseTemporarilyUnavailable.Code() {
+			appErr = mrcore.ErrUseCaseTemporarilyUnavailable.Wrap(err)
+		}
 	}
 
-	return wrapper.Wrap(err).WithAttr(name, data)
+	return appErr.WithAttr(name, data)
 }

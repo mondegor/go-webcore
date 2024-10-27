@@ -2,7 +2,6 @@ package mrserver
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -14,6 +13,7 @@ import (
 	"github.com/rs/xid"
 
 	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrcore/mrapp"
 	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrperms"
@@ -64,7 +64,7 @@ func MiddlewareGeneral(
 				Str("language", locale.LangCode()).
 				Msg("request")
 
-			r = r.WithContext(locale.WithContext(logger.WithContext(r.Context())))
+			r = r.WithContext(logger.WithContext(locale.WithContext(mrapp.WithProcessContext(r.Context(), requestID))))
 			sr := NewStatRequestReader(r, traceRequestBodyMaxLen)
 			sw := NewStatResponseWriter(w, traceResponseBodyMaxLen)
 
@@ -93,17 +93,22 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 						panic(rvr)
 					}
 
-					errorMessage := fmt.Sprintf("%s method %s %s; panic: %v", r.Proto, r.Method, r.URL, rvr)
+					errorMessage := fmt.Sprintf("%s method %s %s", r.Proto, r.Method, r.URL)
 
 					if isDebug {
-						os.Stderr.Write([]byte(errorMessage + "\n"))
+						os.Stderr.Write([]byte(errorMessage))
+						os.Stderr.Write([]byte(fmt.Sprintf("; panic: %v\n", rvr)))
 						os.Stderr.Write(debug.Stack())
 					} else {
 						mrlog.Ctx(ctx).
 							Error().
-							Err(errors.New(errorMessage)).
-							Bytes("CallStack", debug.Stack()).
-							Send()
+							Err(
+								mrcore.ErrInternalCaughtPanic.New(
+									errorMessage,
+									rvr,
+									debug.Stack(),
+								),
+							).Send()
 					}
 
 					fatalFunc(w, r)

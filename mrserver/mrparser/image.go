@@ -12,21 +12,19 @@ import (
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
+const (
+	defaultMaxWidth  = 3840 // pixels
+	defaultMaxHeight = 2160 // pixels
+	defaultCheckBody = false
+)
+
 type (
 	// Image - парсер изображений.
 	Image struct {
-		file      *File
-		maxWidth  uint64
-		maxHeight uint64
+		maxWidth  uint64 // pixels
+		maxHeight uint64 // pixels
 		checkBody bool
-	}
-
-	// ImageOptions - опции для создания Image.
-	ImageOptions struct {
-		File      FileOptions
-		MaxWidth  uint64
-		MaxHeight uint64
-		CheckBody bool
+		file      *File
 	}
 
 	imageMeta struct {
@@ -36,33 +34,37 @@ type (
 )
 
 // NewImage - создаёт объект Image.
-func NewImage(logger mrlog.Logger, opts ImageOptions) *Image {
-	if opts.File.AllowedMimeTypes == nil {
-		opts.File.AllowedMimeTypes = mrlib.NewMimeTypeList(
+func NewImage(logger mrlog.Logger, opts ...ImageOption) *Image {
+	im := &Image{
+		maxWidth:  defaultMaxWidth,
+		maxHeight: defaultMaxHeight,
+		checkBody: defaultCheckBody,
+		file: NewFile( // by default
 			logger,
-			[]mrlib.MimeType{
-				{
-					Extension:   ".gif",
-					ContentType: "image/gif",
+			WithFileAllowedMimeTypes(
+				[]mrlib.MimeType{
+					{
+						ContentType: "image/gif",
+						Extension:   ".gif",
+					},
+					{
+						ContentType: "image/jpeg",
+						Extension:   ".jpg",
+					},
+					{
+						ContentType: "image/png",
+						Extension:   ".png",
+					},
 				},
-				{
-					Extension:   ".jpg",
-					ContentType: "image/jpeg",
-				},
-				{
-					Extension:   ".png",
-					ContentType: "image/png",
-				},
-			},
-		)
+			),
+		),
 	}
 
-	return &Image{
-		file:      NewFile(logger, opts.File),
-		maxWidth:  opts.MaxWidth,
-		maxHeight: opts.MaxHeight,
-		checkBody: opts.CheckBody,
+	for _, opt := range opts {
+		opt(im)
 	}
+
+	return im
 }
 
 // FormImage - возвращает информацию об изображении со ссылкой для чтения файла изображения из MultipartForm.
@@ -138,7 +140,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 		return nil, nil
 	}
 
-	countFiles := p.file.allowedFiles(len(fds))
+	countFiles := p.file.allowedFiles(uint32(len(fds)))
 
 	if err = p.file.checkTotalSize(fds, countFiles); err != nil {
 		return nil, err
@@ -146,7 +148,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 
 	images := make([]mrtype.ImageHeader, 0, countFiles)
 
-	for i := 0; i < countFiles; i++ {
+	for i := uint32(0); i < countFiles; i++ {
 		err = func() error { // for defer file.Close()
 			if err := p.file.checkFile(fds[i]); err != nil {
 				return err

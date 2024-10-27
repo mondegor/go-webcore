@@ -6,6 +6,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlog"
 )
 
@@ -49,9 +50,13 @@ func (p *HealthProbe) Check(ctx context.Context) (err error) {
 		if rvr := recover(); rvr != nil {
 			mrlog.Ctx(ctx).
 				Error().
-				Err(fmt.Errorf("probe %s; panic: %v", p.caption, rvr)).
-				Bytes("CallStack", debug.Stack()).
-				Send()
+				Err(
+					mrcore.ErrInternalCaughtPanic.New(
+						"probe: "+p.caption,
+						rvr,
+						debug.Stack(),
+					),
+				).Send()
 
 			err = fmt.Errorf("probe '%s' has panic", p.caption)
 		}

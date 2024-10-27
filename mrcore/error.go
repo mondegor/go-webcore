@@ -34,6 +34,12 @@ type (
 		WrapErrorEntityFailed(err error, entityName string, entityData any) error
 		WrapErrorEntityNotFoundOrFailed(err error, entityName string, entityData any) error
 	}
+
+	// StorageErrorWrapper - помощник для оборачивания Storage ошибок.
+	StorageErrorWrapper interface {
+		WrapError(err error, source string) error
+		WrapErrorEntity(err error, entityName string, entityData any) error
+	}
 )
 
 // PrepareError - приводит указанную ошибку к AppError или если это
@@ -52,10 +58,9 @@ func PrepareError(err error) error {
 	return ErrInternal.Wrap(err)
 }
 
-// CastToAppError - приводит указанную ошибку к AppError или если это
-// невозможно, то оборачивает её в ErrUnexpectedInternal ошибку, затем возвращает результат.
-// Используется на поздних этапах обработки ошибок.
-func CastToAppError(err error) *mrerr.AppError {
+// CastToAppError - приводит указанную ошибку к AppError или если это невозможно,
+// то вызывает функцию по умолчанию, указанную в defFunc параметре, затем возвращает результат.
+func CastToAppError(err error, defFunc func(err error) *mrerr.AppError) *mrerr.AppError {
 	if appErr, ok := err.(*mrerr.AppError); ok { //nolint:errorlint
 		return appErr
 	}
@@ -64,5 +69,5 @@ func CastToAppError(err error) *mrerr.AppError {
 		return mrerr.Cast(proto)
 	}
 
-	return ErrUnexpectedInternal.Wrap(err)
+	return defFunc(err)
 }

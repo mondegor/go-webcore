@@ -8,63 +8,67 @@ import (
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
-	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
+)
+
+const (
+	headerContentType = "Content-Type"
+
+	defaultMinSize                 = 0           // bytes
+	defaultMaxSize                 = 1024 * 1024 // 1Mb
+	defaultMaxFiles                = 4
+	defaultCheckRequestContentType = false
 )
 
 type (
 	// File - парсер файлов.
 	File struct {
-		allowedMimeTypes        *mrlib.MimeTypeList
-		minSize                 int64
-		maxSize                 int64
-		maxTotalSize            int64
-		maxFiles                int
+		minSize                 uint64 // bytes
+		maxSize                 uint64 // bytes
+		maxTotalSize            uint64 // bytes
+		maxFiles                uint32
 		checkRequestContentType bool
-	}
-
-	// FileOptions - опции для создания объекта File.
-	FileOptions struct {
-		AllowedMimeTypes        *mrlib.MimeTypeList
-		MinSize                 int64
-		MaxSize                 int64
-		MaxTotalSize            int64
-		MaxFiles                int
-		CheckRequestContentType bool
+		allowedMimeTypes        *mrlib.MimeTypeList
+		logger                  logger
 	}
 )
 
 // NewFile - создаёт объект File.
-func NewFile(logger mrlog.Logger, opts FileOptions) *File {
-	if opts.AllowedMimeTypes == nil {
-		opts.AllowedMimeTypes = mrlib.NewMimeTypeList(
+func NewFile(logger logger, opts ...FileOption) *File {
+	f := &File{
+		minSize:                 defaultMinSize,
+		maxSize:                 defaultMaxSize,
+		maxFiles:                defaultMaxFiles,
+		checkRequestContentType: defaultCheckRequestContentType,
+		allowedMimeTypes: mrlib.NewMimeTypeList( // by default
 			logger,
 			[]mrlib.MimeType{
 				{
-					Extension:   ".pdf",
 					ContentType: "application/pdf",
+					Extension:   ".pdf",
 				},
 				{
-					Extension:   ".zip",
 					ContentType: "application/zip",
+					Extension:   ".zip",
 				},
 			},
-		)
+		),
+		logger: logger,
 	}
 
-	if opts.MaxTotalSize == 0 && opts.MaxSize > 0 && opts.MaxFiles > 0 {
-		opts.MaxTotalSize = opts.MaxSize * int64(opts.MaxFiles)
+	f.applyOptions(opts)
+
+	// вычисление и установка maxTotalSize
+	if f.maxSize > 0 {
+		f.maxTotalSize = f.maxSize
+
+		if f.maxFiles > 0 {
+			f.maxTotalSize *= uint64(f.maxFiles)
+		}
 	}
 
-	return &File{
-		allowedMimeTypes:        opts.AllowedMimeTypes,
-		minSize:                 opts.MinSize,
-		maxSize:                 opts.MaxSize,
-		maxFiles:                opts.MaxFiles,
-		maxTotalSize:            opts.MaxTotalSize,
-		checkRequestContentType: opts.CheckRequestContentType,
-	}
+	return f
 }
 
 // FormFile - возвращает информацию о файле со ссылкой для чтения файла из MultipartForm.
@@ -127,7 +131,7 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 		return nil, nil
 	}
 
-	countFiles := p.allowedFiles(len(fds))
+	countFiles := p.allowedFiles(uint32(len(fds)))
 
 	if err = p.checkTotalSize(fds, countFiles); err != nil {
 		return nil, err
@@ -135,7 +139,7 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 
 	files := make([]mrtype.FileHeader, 0, countFiles)
 
-	for i := 0; i < countFiles; i++ {
+	for i := uint32(0); i < countFiles; i++ {
 		if err = p.checkFile(fds[i]); err != nil {
 			return nil, err
 		}
@@ -156,12 +160,18 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 	return files, nil
 }
 
+func (p *File) applyOptions(opts []FileOption) {
+	for _, opt := range opts {
+		opt(p)
+	}
+}
+
 func (p *File) checkFile(hdr *multipart.FileHeader) error {
-	if hdr.Size < p.minSize {
+	if hdr.Size < int64(p.minSize) {
 		return ErrHttpRequestFileSizeMin.New(p.minSize)
 	}
 
-	if p.maxSize > 0 && hdr.Size > p.maxSize {
+	if p.maxSize > 0 && hdr.Size > int64(p.maxSize) {
 		return ErrHttpRequestFileSizeMax.New(p.maxSize)
 	}
 
@@ -174,12 +184,12 @@ func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	detectedContentType := p.allowedMimeTypes.ContentType(ext)
 
 	if p.checkRequestContentType {
-		if detectedContentType != hdr.Header.Get("Content-Type") {
-			return ErrHttpRequestFileContentType.New(hdr.Header.Get("Content-Type"))
+		if detectedContentType != hdr.Header.Get(headerContentType) {
+			return ErrHttpRequestFileContentType.New(hdr.Header.Get(headerContentType))
 		}
 	} else {
 		if detectedContentType == "" {
-			detectedContentType = hdr.Header.Get("Content-Type")
+			detectedContentType = hdr.Header.Get(headerContentType)
 		}
 	}
 
@@ -190,7 +200,7 @@ func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	return nil
 }
 
-func (p *File) allowedFiles(count int) int {
+func (p *File) allowedFiles(count uint32) uint32 {
 	if p.maxFiles > 0 && count > p.maxFiles {
 		return p.maxFiles
 	}
@@ -198,15 +208,15 @@ func (p *File) allowedFiles(count int) int {
 	return count
 }
 
-func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles int) error {
+func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles uint32) error {
 	if p.maxTotalSize > 0 {
 		var currentSize int64
 
-		for i := 0; i < countFiles; i++ {
+		for i := uint32(0); i < countFiles; i++ {
 			currentSize += fds[i].Size
 		}
 
-		if currentSize > p.maxTotalSize {
+		if currentSize > int64(p.maxTotalSize) {
 			return ErrHttpRequestFileTotalSizeMax.New(p.maxTotalSize)
 		}
 	}
@@ -219,5 +229,5 @@ func (p *File) detectedContentType(hdr *multipart.FileHeader) string {
 		return contentType
 	}
 
-	return hdr.Header.Get("Content-Type")
+	return hdr.Header.Get(headerContentType)
 }

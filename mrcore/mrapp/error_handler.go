@@ -39,8 +39,13 @@ func (h *ErrorHandler) Perform(ctx context.Context, err error) {
 func (h *ErrorHandler) PerformWithCommit(ctx context.Context, err error, commit func(errType mrcore.AnalyzedErrorType, err *mrerr.AppError)) {
 	errType := h.analyzeError(err)
 
-	// ошибки с типом AnalyzedErrorTypeUndefined будут обёрнуты в ErrUnexpectedInternal
-	appErr := mrcore.CastToAppError(err)
+	// ошибки с типом AnalyzedErrorTypeUndefined оборачиваются в ErrUnexpectedInternal
+	appErr := mrcore.CastToAppError(
+		err,
+		func(err error) *mrerr.AppError {
+			return mrcore.ErrUnexpectedInternal.Wrap(err)
+		},
+	)
 
 	if h.hook != nil {
 		h.hook(ctx, errType, appErr)
