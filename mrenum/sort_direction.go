@@ -39,7 +39,7 @@ func (e *SortDirection) ParseAndSet(value string) error {
 	return mrcore.ErrInternalKeyNotFoundInSource.New(value, enumNameSortDirection)
 }
 
-// String - comment method.
+// String - возвращает значение в виде строки.
 func (e SortDirection) String() string {
 	return sortDirectionName[e]
 }

@@ -28,14 +28,14 @@ func WithFileMaxFiles(value uint32) FileOption {
 	}
 }
 
-// WithFileCheckRequestContentType - устанавливает опцию проверки заголовка ContentType в запросе для File.
+// WithFileCheckRequestContentType - устанавливает опцию проверки заголовка ContentType в запросе.
 func WithFileCheckRequestContentType(value bool) FileOption {
 	return func(f *File) {
 		f.checkRequestContentType = value
 	}
 }
 
-// WithFileAllowedMimeTypes - устанавливает опцию с разрешенными типами файлов для File.
+// WithFileAllowedMimeTypes - устанавливает опцию с разрешенными типами файлов.
 func WithFileAllowedMimeTypes(values []mrlib.MimeType) FileOption {
 	return func(f *File) {
 		if len(values) > 0 {

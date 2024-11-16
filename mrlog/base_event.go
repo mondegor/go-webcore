@@ -61,6 +61,18 @@ func (e *eventAdapter) Int(key string, value int) LoggerEvent {
 	return &c
 }
 
+// Int64 - comment method.
+func (e *eventAdapter) Int64(key string, value int64) LoggerEvent {
+	if e == nil {
+		return e
+	}
+
+	c := *e
+	c.buf = appendValue(appendKey(e.buf, key), value)
+
+	return &c
+}
+
 // Any - comment method.
 func (e *eventAdapter) Any(key string, value any) LoggerEvent {
 	if e == nil {

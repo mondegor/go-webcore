@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	minLenCorrelationID = 16
+	minLenCorrelationID = 4
 	maxLenCorrelationID = 64
 )
 
-var regexpCorrelationID = regexp.MustCompile(`^[0-9a-fA-F][0-9a-fA-F-]+[0-9a-fA-F]$`)
+var regexpCorrelationID = regexp.MustCompile(`^[0-9a-zA-Z][0-9a-zA-Z-]+[0-9a-zA-Z]$`)
 
 // ParseCorrelationID - возвращает значение заголовка CorrelationID.
 // Если заголовка нет или он пустой, то вернётся пустое значение.

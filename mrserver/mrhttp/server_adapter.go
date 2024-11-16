@@ -23,6 +23,7 @@ const (
 	defaultReadTimeout     = 3 * time.Second
 	defaultWriteTimeout    = 5 * time.Second
 	defaultShutdownTimeout = 10 * time.Second
+	serverReadyTimeout     = 60 * time.Second
 )
 
 type (
@@ -52,7 +53,9 @@ func NewAdapter(ctx context.Context, handler http.Handler, opts ...Option) *Adap
 		shutdownTimeout: defaultShutdownTimeout,
 	}
 
-	a.applyOptions(opts)
+	for _, opt := range opts {
+		opt(a)
+	}
 
 	return a
 }
@@ -60,6 +63,11 @@ func NewAdapter(ctx context.Context, handler http.Handler, opts ...Option) *Adap
 // Caption - возвращает название http сервера.
 func (a *Adapter) Caption() string {
 	return a.caption
+}
+
+// ReadyTimeout - возвращает максимальное время, за которое должен быть запущен сервис.
+func (a *Adapter) ReadyTimeout() time.Duration {
+	return serverReadyTimeout
 }
 
 // Start - запуск http сервера.
@@ -95,10 +103,4 @@ func (a *Adapter) Shutdown(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func (a *Adapter) applyOptions(opts []Option) {
-	for _, opt := range opts {
-		opt(a)
-	}
 }

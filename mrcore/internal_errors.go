@@ -45,9 +45,9 @@ var (
 	ErrInternalKeyNotFoundInSource = mrerr.NewProto(
 		"errInternalKeyNotFoundInSource", mrerr.ErrorKindInternal, "key '{{ .key }}' is not found in source {{ .source }}")
 
-	// ErrInternalProcessIsStoppedByTimeout - the process is stopped by timeout.
-	ErrInternalProcessIsStoppedByTimeout = mrerr.NewProto(
-		"errInternalProcessIsStoppedByTimeout", mrerr.ErrorKindSystem, "the process '{{ .name }}' is stopped by timeout")
+	// ErrInternalTimeoutPeriodHasExpired - the timeout period has expired.
+	ErrInternalTimeoutPeriodHasExpired = mrerr.NewProto(
+		"errInternalTimeoutPeriodHasExpired", mrerr.ErrorKindSystem, "the timeout period has expired")
 
 	// ErrInternalFailedToOpen - failed to open object.
 	ErrInternalFailedToOpen = mrerr.NewProto(

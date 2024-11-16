@@ -11,12 +11,12 @@ type (
 		EmitWithSource(ctx context.Context, eventName, source string, object any)
 	}
 
-	// EventReceiver - получатель.
+	// EventReceiver - получатель событий.
 	EventReceiver interface {
 		Receive(ctx context.Context, eventName, source string, object any)
 	}
 
-	// EventReceiveFunc - получатель в виде функции.
+	// EventReceiveFunc - получатель событий в виде функции.
 	EventReceiveFunc func(ctx context.Context, eventName, source string, object any)
 )
 

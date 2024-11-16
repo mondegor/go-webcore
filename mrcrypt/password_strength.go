@@ -97,7 +97,7 @@ func (l *Lib) PasswordStrength(value string) PassStrength {
 	return PassStrengthNotRated
 }
 
-// String - comment method.
+// String - возвращает значение в виде строки.
 func (e PassStrength) String() string {
 	return passStrengthName[e]
 }

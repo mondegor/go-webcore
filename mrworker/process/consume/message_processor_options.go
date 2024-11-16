@@ -18,33 +18,62 @@ func WithCaption(value string) Option {
 	}
 }
 
-// WithPeriod - устанавливает опцию периода обращения к консьюмеру для MessageProcessor.
-func WithPeriod(value time.Duration) Option {
+// WithReadyTimeout - устанавливает опцию readyTimeout для MessageProcessor.
+func WithReadyTimeout(value time.Duration) Option {
 	return func(p *MessageProcessor) {
-		if value > 0 {
-			p.period = value
+		if value != 0 {
+			p.readyTimeout = value
 		}
 	}
 }
 
-// WithTimeout - устанавливает опцию timeout выполнения
-// обработчика сообщения для MessageProcessor.
-func WithTimeout(value time.Duration) Option {
+// WithReadPeriod - устанавливает опцию периода чтения данных консьюмером, когда он в состоянии простоя.
+func WithReadPeriod(value time.Duration) Option {
 	return func(p *MessageProcessor) {
 		if value > 0 {
-			p.timeout = value
+			p.readPeriod = value
 		}
 	}
 }
 
-// WithQueueSize - устанавливает опцию размера очереди обработки сообщений для MessageProcessor.
+// WithBusyReadPeriod - устанавливает опцию периода чтения данных консьюмером, когда он в нагруженном состоянии.
+func WithBusyReadPeriod(value time.Duration) Option {
+	return func(p *MessageProcessor) {
+		if value > 0 {
+			p.busyReadPeriod = value
+		}
+	}
+}
+
+// WithCancelReadTimeout - устанавливает опцию таймаута на время отмены чтения данных
+// консьюмером при неожиданном завершении работы воркеров.
+func WithCancelReadTimeout(value time.Duration) Option {
+	return func(p *MessageProcessor) {
+		if value > 0 {
+			p.cancelReadTimeout = value
+		}
+	}
+}
+
+// WithHandlerTimeout - устанавливает опцию handlerTimeout выполнения обработчика сообщения.
+func WithHandlerTimeout(value time.Duration) Option {
+	return func(p *MessageProcessor) {
+		if value > 0 {
+			p.handlerTimeout = value
+		}
+	}
+}
+
+// WithQueueSize - устанавливает опцию размера очереди обработки сообщений.
 func WithQueueSize(value uint32) Option {
 	return func(p *MessageProcessor) {
-		p.queueSize = value
+		if p.queueSize > 0 {
+			p.queueSize = value
+		}
 	}
 }
 
-// WithWorkersCount - устанавливает опцию количества воркеров обрабатывающих сообщения для MessageProcessor.
+// WithWorkersCount - устанавливает опцию количества воркеров обрабатывающих сообщения.
 func WithWorkersCount(value uint16) Option {
 	return func(p *MessageProcessor) {
 		if value > 0 {

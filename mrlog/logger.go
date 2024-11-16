@@ -32,6 +32,7 @@ type (
 		Str(key, value string) LoggerContext
 		Bytes(key string, value []byte) LoggerContext
 		Int(key string, value int) LoggerContext
+		Int64(key string, value int64) LoggerContext
 		Any(key string, value any) LoggerContext
 	}
 
@@ -41,6 +42,7 @@ type (
 		Str(key, value string) LoggerEvent
 		Bytes(key string, value []byte) LoggerEvent
 		Int(key string, value int) LoggerEvent
+		Int64(key string, value int64) LoggerEvent
 		Any(key string, value any) LoggerEvent
 
 		Msg(message string)

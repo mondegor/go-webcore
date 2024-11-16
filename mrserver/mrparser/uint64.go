@@ -25,7 +25,7 @@ func NewUint64(pathFunc mrserver.RequestParserParamFunc) *Uint64 {
 
 // PathParamUint64 - возвращает именованное uint64 число содержащееся в URL пути.
 func (p *Uint64) PathParamUint64(r *http.Request, name string) uint64 {
-	value, err := strconv.ParseUint(p.pathFunc(r, name), 10, 32)
+	value, err := strconv.ParseUint(p.pathFunc(r, name), 10, 64)
 	if err != nil {
 		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
 

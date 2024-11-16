@@ -30,6 +30,11 @@ func (e *eventAdapter) Int(_ string, _ int) mrlog.LoggerEvent {
 	return e
 }
 
+// Int64 - comment method.
+func (e *eventAdapter) Int64(_ string, _ int64) mrlog.LoggerEvent {
+	return e
+}
+
 // Any - comment method.
 func (e *eventAdapter) Any(_ string, _ any) mrlog.LoggerEvent {
 	return e

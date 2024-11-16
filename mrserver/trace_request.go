@@ -19,7 +19,7 @@ func TraceRequest(l mrlog.Logger, start time.Time, sr *StatRequestReader, sw *St
 			Int("status", sw.StatusCode()).
 			Int("requestSize", sr.Size()).
 			Int("size", sw.Size()).
-			Int("elapsed_μs", int(time.Since(start).Microseconds())).
+			Int64("elapsed_µs", time.Since(start).Microseconds()).
 			Msg("response")
 
 		if sr.HasContent() {
@@ -35,6 +35,6 @@ func TraceRequest(l mrlog.Logger, start time.Time, sr *StatRequestReader, sw *St
 		Int("status", sw.StatusCode()).
 		Int("requestSize", sr.Size()).
 		Int("size", sw.Size()).
-		Int("elapsed_μs", int(time.Since(start).Microseconds())).
+		Int64("elapsed_µs", time.Since(start).Microseconds()).
 		Msg("response")
 }

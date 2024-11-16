@@ -17,7 +17,7 @@ import (
 // go get -u github.com/go-playground/validator/v10
 
 const (
-	validatorErrorPrefix = "validator_err"
+	validatorErrorPrefix = "validator.err"
 )
 
 type (

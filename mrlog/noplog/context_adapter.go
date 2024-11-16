@@ -30,6 +30,11 @@ func (c *contextAdapter) Int(_ string, _ int) mrlog.LoggerContext {
 	return c
 }
 
+// Int64 - comment method.
+func (c *contextAdapter) Int64(_ string, _ int64) mrlog.LoggerContext {
+	return c
+}
+
 // Any - comment method.
 func (c *contextAdapter) Any(_ string, _ any) mrlog.LoggerContext {
 	return c

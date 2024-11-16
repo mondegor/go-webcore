@@ -25,7 +25,7 @@ type (
 		ReadMessages(ctx context.Context, limit uint32) (messages []any, err error)
 		CancelMessages(ctx context.Context, messages []any) error
 		CommitMessage(ctx context.Context, message any, preCommit func(ctx context.Context) error) error
-		RejectMessage(ctx context.Context, message any, err error) error
+		RejectMessage(ctx context.Context, message any, causeErr error) error
 	}
 
 	// MessageHandler - обработчик сообщений с закреплением результата.

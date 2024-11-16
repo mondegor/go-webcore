@@ -52,6 +52,15 @@ func (e *eventAdapter) Int(key string, value int) mrlog.LoggerEvent {
 	return e.newEventAdapter(e.ze.Int(key, value))
 }
 
+// Int64 - comment method.
+func (e *eventAdapter) Int64(key string, value int64) mrlog.LoggerEvent {
+	if e == nil {
+		return e
+	}
+
+	return e.newEventAdapter(e.ze.Int64(key, value))
+}
+
 // Any - comment method.
 func (e *eventAdapter) Any(key string, value any) mrlog.LoggerEvent {
 	if e == nil {

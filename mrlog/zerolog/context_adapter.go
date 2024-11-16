@@ -46,6 +46,14 @@ func (c *contextAdapter) Int(key string, value int) mrlog.LoggerContext {
 	}
 }
 
+// Int64 - comment method.
+func (c *contextAdapter) Int64(key string, value int64) mrlog.LoggerContext {
+	return &contextAdapter{
+		zc:   c.zc.Int64(key, value),
+		opts: c.opts,
+	}
+}
+
 // Any - comment method.
 func (c *contextAdapter) Any(key string, value any) mrlog.LoggerContext {
 	return &contextAdapter{

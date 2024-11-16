@@ -108,7 +108,7 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent,
 
 	defer file.Body.Close()
 
-	buf := bytes.Buffer{}
+	var buf bytes.Buffer
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
 		return mrtype.FileContent{}, mrcore.ErrInternal.Wrap(err)

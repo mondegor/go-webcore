@@ -2,6 +2,7 @@ package mrrun
 
 import (
 	"context"
+	"time"
 )
 
 type (
@@ -9,6 +10,7 @@ type (
 	// останавливать параллельно с другими процессами.
 	Process interface {
 		Caption() string
+		ReadyTimeout() time.Duration
 		Start(ctx context.Context, ready func()) error
 		Shutdown(ctx context.Context) error
 	}
@@ -19,8 +21,10 @@ type (
 		Run() error
 	}
 
-	// ProcessWaiter - ожидатель процессов.
-	ProcessWaiter interface {
-		WaitingForStartup(chProcesses ...chan struct{})
+	// StartingProcess - содержит информацию о процессе находящемся в момент запуска.
+	StartingProcess struct {
+		Caption      string
+		ReadyTimeout time.Duration
+		Ready        chan struct{}
 	}
 )

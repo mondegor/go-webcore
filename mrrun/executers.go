@@ -2,17 +2,16 @@ package mrrun
 
 import (
 	"context"
-	"os"
-	"os/signal"
+	"fmt"
 	"sync"
 	"sync/atomic"
-	"syscall"
+	"time"
 
+	"github.com/rs/xid"
+
+	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-webcore/mrcore/mrapp"
 	"github.com/mondegor/go-webcore/mrlog"
-)
-
-const (
-	signalChanLen = 10
 )
 
 type (
@@ -21,77 +20,25 @@ type (
 	Executer struct {
 		Execute   func() error
 		Interrupt func(error)
-		StartedOk chan struct{} // OPTIONAL
+		Starting  StartingProcess // OPTIONAL
 	}
 )
-
-// MakeSignalHandler - возвращает контекст, в котором установлена его отмена при перехвате системного события.
-// Это необходимо для корректной (graceful) остановки приложения. Также возвращаются функция для отслеживания
-// сигналов системы, а также функция корректного прекращения отслеживания сигналов системы.
-func MakeSignalHandler(ctx context.Context) (context.Context, Executer) {
-	ctx, cancel := context.WithCancel(ctx)
-
-	once := sync.Once{}
-	chFirst := make(chan struct{})
-	chFirstCloser := func() {
-		once.Do(func() {
-			close(chFirst)
-		})
-	}
-
-	signalStop := make(chan os.Signal, signalChanLen)
-
-	signal.Notify(
-		signalStop,
-		syscall.SIGABRT,
-		syscall.SIGQUIT,
-		syscall.SIGHUP,
-		os.Interrupt,
-		syscall.SIGTERM,
-	)
-
-	logger := mrlog.Ctx(ctx).With().Str("process", "SignalHandler").Logger()
-
-	return ctx, Executer{
-		Execute: func() error {
-			chFirstCloser()
-
-			select {
-			case signalApp := <-signalStop:
-				logger.Info().Msgf("Shutting down the application by signal: " + signalApp.String())
-
-				return nil
-			case <-ctx.Done():
-				logger.Info().Msgf("Shutting down the application by a neighboring process")
-
-				return ctx.Err()
-			}
-		},
-		Interrupt: func(_ error) {
-			logger.Info().Msg("Cancel the main context of the application")
-
-			signal.Stop(signalStop)
-			chFirstCloser()
-			cancel()
-			close(signalStop)
-		},
-		StartedOk: chFirst,
-	}
-}
 
 // MakeExecuter - возвращает функции запуска и остановки процесса.
 // Запуск этого процесса не зависит от других процессов.
 func MakeExecuter(ctx context.Context, process Process) Executer {
+	ctx = contextWithProcessID(ctx, process)
+
 	return Executer{
 		Execute: func() error {
 			return process.Start(ctx, nil)
 		},
 		Interrupt: func(_ error) {
-			logger := mrlog.Ctx(ctx)
-
-			shutdownCtx := logger.WithContext(context.Background())
+			// передаётся чистый контекст для исключения внешнего воздействия
+			// при этом внутри Shutdown следует организовать персональный таймаут
+			shutdownCtx := mrlog.Ctx(ctx).WithContext(context.Background())
 			if err := process.Shutdown(shutdownCtx); err != nil {
-				logger.Error().Err(err).Send()
+				mrlog.Ctx(ctx).Error().Err(err).Send()
 			}
 		},
 	}
@@ -100,7 +47,9 @@ func MakeExecuter(ctx context.Context, process Process) Executer {
 // MakeNextExecuter - возвращает канал, по которому будет передано событие, что процесс запущен.
 // Также возвращает функции запуска и остановки этого процесса.
 // Запуск процесса будет осуществлён только при получении события по каналу chPrev (если канал указан).
-func MakeNextExecuter(ctx context.Context, process Process, chPrev chan struct{}) Executer {
+func MakeNextExecuter(ctx context.Context, process Process, prev StartingProcess) Executer {
+	ctx = contextWithProcessID(ctx, process)
+
 	isStarted := atomic.Bool{}
 
 	once := sync.Once{}
@@ -113,8 +62,16 @@ func MakeNextExecuter(ctx context.Context, process Process, chPrev chan struct{}
 
 	return Executer{
 		Execute: func() error {
-			if chPrev != nil {
-				<-chPrev
+			timeout := time.NewTimer(prev.ReadyTimeout)
+
+			if prev.Ready != nil {
+				select {
+				case <-timeout.C:
+					return mrcore.ErrInternalTimeoutPeriodHasExpired.Wrap(
+						fmt.Errorf("the waiting time for the previous process '%s' has expired", prev.Caption),
+					).WithAttr("process", process.Caption())
+				case <-prev.Ready:
+				}
 			}
 
 			isStarted.Store(true)
@@ -133,11 +90,24 @@ func MakeNextExecuter(ctx context.Context, process Process, chPrev chan struct{}
 				return
 			}
 
+			// передаётся чистый контекст для исключения внешнего воздействия
+			// при этом внутри Shutdown следует организовать персональный таймаут
 			shutdownCtx := mrlog.Ctx(ctx).WithContext(context.Background())
 			if err := process.Shutdown(shutdownCtx); err != nil {
-				mrlog.Ctx(ctx).Error().Err(err).Str("process", process.Caption()).Send()
+				mrlog.Ctx(ctx).Error().Err(err).Send()
 			}
 		},
-		StartedOk: chNext,
+		Starting: StartingProcess{
+			Caption:      process.Caption(),
+			ReadyTimeout: process.ReadyTimeout(),
+			Ready:        chNext,
+		},
 	}
+}
+
+func contextWithProcessID(ctx context.Context, process Process) context.Context {
+	processID := xid.New().String()
+	logger := mrlog.Ctx(ctx).With().Str("process", process.Caption()).Str(mrapp.KeyProcessID, processID).Logger()
+
+	return mrlog.WithContext(mrapp.WithProcessContext(ctx, processID), logger)
 }

@@ -258,6 +258,20 @@ func (mr *MockLoggerContextMockRecorder) Int(key, value interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Int", reflect.TypeOf((*MockLoggerContext)(nil).Int), key, value)
 }
 
+// Int64 mocks base method.
+func (m *MockLoggerContext) Int64(key string, value int64) mrlog.LoggerContext {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Int64", key, value)
+	ret0, _ := ret[0].(mrlog.LoggerContext)
+	return ret0
+}
+
+// Int64 indicates an expected call of Int64.
+func (mr *MockLoggerContextMockRecorder) Int64(key, value interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Int64", reflect.TypeOf((*MockLoggerContext)(nil).Int64), key, value)
+}
+
 // Logger mocks base method.
 func (m *MockLoggerContext) Logger() mrlog.Logger {
 	m.ctrl.T.Helper()
@@ -363,6 +377,20 @@ func (m *MockLoggerEvent) Int(key string, value int) mrlog.LoggerEvent {
 func (mr *MockLoggerEventMockRecorder) Int(key, value interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Int", reflect.TypeOf((*MockLoggerEvent)(nil).Int), key, value)
+}
+
+// Int64 mocks base method.
+func (m *MockLoggerEvent) Int64(key string, value int64) mrlog.LoggerEvent {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Int64", key, value)
+	ret0, _ := ret[0].(mrlog.LoggerEvent)
+	return ret0
+}
+
+// Int64 indicates an expected call of Int64.
+func (mr *MockLoggerEventMockRecorder) Int64(key, value interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Int64", reflect.TypeOf((*MockLoggerEvent)(nil).Int64), key, value)
 }
 
 // Msg mocks base method.

@@ -47,7 +47,7 @@ func ParseLevel(str string) (Level, error) {
 	return InfoLevel, mrcore.ErrInternalKeyNotFoundInSource.New(str, "mrlog.Level")
 }
 
-// String - comment method.
+// String - возвращает значение в виде строки.
 func (e Level) String() string {
 	return levelName[e]
 }

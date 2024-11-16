@@ -35,6 +35,14 @@ func (c *contextAdapter) Int(key string, value int) LoggerContext {
 	return &cp
 }
 
+// Int64 - comment method.
+func (c *contextAdapter) Int64(key string, value int64) LoggerContext {
+	cp := *c
+	cp.logger.context = appendValue(appendKey(cp.logger.context, key), value)
+
+	return &cp
+}
+
 // Any - comment method.
 func (c *contextAdapter) Any(key string, value any) LoggerContext {
 	cp := *c

@@ -40,19 +40,17 @@ func MiddlewareGeneral(
 			start := time.Now()
 
 			requestID := xid.New().String()
-			correlationID, err := mrreq.ParseCorrelationID(r.Header)
-
-			if err == nil && correlationID != "" {
-				requestID += "-" + correlationID
-			}
-
-			logger := mrlog.Ctx(r.Context()).With().Str("requestId", requestID).Logger()
-
-			if err != nil {
-				logger.Warn().Err(err).Msg("mrreq.ParseCorrelationID()")
-			}
-
+			logger := mrlog.Ctx(r.Context()).With().Str(mrapp.KeyRequestID, requestID).Logger()
 			w.Header().Add(mrreq.HeaderKeyRequestID, requestID)
+
+			if correlationID, err := mrreq.ParseCorrelationID(r.Header); err != nil || correlationID != "" {
+				if err != nil {
+					logger.Warn().Err(err).Msg("mrreq.ParseCorrelationID()")
+				} else {
+					logger = logger.With().Str(mrapp.KeyCorrelationID, correlationID).Logger()
+					requestID += mrapp.KeySeparator + correlationID
+				}
+			}
 
 			acceptLanguages := mrreq.ParseLanguage(r.Header)
 			logger.Debug().Msgf("Accept-Language: %s", strings.Join(acceptLanguages, ", "))

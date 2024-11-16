@@ -19,7 +19,7 @@ func WithImageMaxHeight(value uint64) ImageOption {
 	}
 }
 
-// WithImageCheckBody - устанавливает опцию maxHeight для Image.
+// WithImageCheckBody - устанавливает опцию checkBody для Image.
 func WithImageCheckBody(value bool) ImageOption {
 	return func(im *Image) {
 		im.checkBody = value

@@ -1,6 +1,25 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-11-16
+### Added
+- Добавлен процесс `signal.Interception` предназначенный для перехвата системных событий.
+  При удалён `mrrun.AddSignalHandler`, выполнявший ранее эту функцию;
+- Добавлен процесс `onstartup.Process` для выполнения работы в момент старта приложения;
+- В интерфейс логгера добавлен метод `Int64()`;
+- Добавлена структура `mrrun.StartingProcess` - для передачи информации о процессе находящемся в момент запуска;
+- В `mrrun.Process` добавлен метод ReadyTimeout(), чтобы контролировать подвисший в момент запуска процесс;
+- Добавлены константы для атрибутов: `mrapp.KeyProcessID`, `mrapp.KeyRequestID` и др.;
+
+### Changed
+- Изменена логика управления ошибками с учётом обновлений библиотеки `go-sysmess`.
+  При этом был удалён `mrinit.ErrorManager` и добавлена вспомогательная структура `mrinit.ErrorSettings`
+  и функции `AllEnabled()` `WithCaller()` `WithOnCreated()` `AllDisabled()` `CreateErrorOptionsMap()`
+  которые помогают переопределять опции у конкретных Proto ошибок;
+- Переименовано `ErrInternalProcessIsStoppedByTimeout` на `ErrInternalTimeoutPeriodHasExpired`;
+- Теперь в реквестах внешний параметр `CorrelationID` выводится в логгере отдельным атрибутом;
+- Доработан `MessageProcessor`, добавлены таймауты и отслеживание непредвиденного завершения работы воркеров;
+
 ## 2024-11-05
 ### Fixed
 - Поправлен `README.md`;
