@@ -17,7 +17,3 @@ func New() *Emitter {
 // Emit - эмулирует отправку указанного события.
 func (e *Emitter) Emit(_ context.Context, _ string, _ any) {
 }
-
-// EmitWithSource - эмулирует отправку указанного события включающего источник.
-func (e *Emitter) EmitWithSource(_ context.Context, _, _ string, _ any) {
-}

@@ -4,11 +4,15 @@ import (
 	"context"
 )
 
+const (
+	SourceEventSeparator = ":"           // SourceEventSeparator - разделитель между источником и названием события
+	DefaultSource        = "EmptySource" // DefaultSource - название источника по умолчанию
+)
+
 type (
 	// EventEmitter - отправитель событий.
 	EventEmitter interface {
 		Emit(ctx context.Context, eventName string, object any)
-		EmitWithSource(ctx context.Context, eventName, source string, object any)
 	}
 
 	// EventReceiver - получатель событий.

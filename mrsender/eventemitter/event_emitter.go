@@ -2,6 +2,7 @@ package eventemitter
 
 import (
 	"context"
+	"strings"
 
 	"github.com/mondegor/go-webcore/mrsender"
 )
@@ -21,15 +22,15 @@ func New(receivers ...mrsender.EventReceiver) *Emitter {
 }
 
 // Emit - отправляет указанное событие.
-func (l *Emitter) Emit(ctx context.Context, eventName string, object any) {
-	for _, r := range l.receivers {
-		r.Receive(ctx, eventName, "none", object)
-	}
-}
+func (e *Emitter) Emit(ctx context.Context, eventName string, object any) {
+	source := mrsender.DefaultSource
 
-// EmitWithSource - отправляет указанное событие включающее источник.
-func (l *Emitter) EmitWithSource(ctx context.Context, eventName, source string, object any) {
-	for _, r := range l.receivers {
+	if s, n, ok := strings.Cut(eventName, mrsender.SourceEventSeparator); ok {
+		source = s
+		eventName = n
+	}
+
+	for _, r := range e.receivers {
 		r.Receive(ctx, eventName, source, object)
 	}
 }

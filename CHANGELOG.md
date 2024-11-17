@@ -1,6 +1,13 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-11-17
+### Added
+- Добавлен `decorator.SourceEmitter` для добавления источника данных к уже имеющемуся `mrsender.EventEmitter`;
+
+### Removed
+- Удалён метод `mrsender.EmitWithSource`, вместо него нужно использовать `decorator.SourceEmitter`;
+
 ## 2024-11-16
 ### Added
 - Добавлен процесс `signal.Interception` предназначенный для перехвата системных событий.
@@ -14,7 +21,7 @@
 ### Changed
 - Изменена логика управления ошибками с учётом обновлений библиотеки `go-sysmess`.
   При этом был удалён `mrinit.ErrorManager` и добавлена вспомогательная структура `mrinit.ErrorSettings`
-  и функции `AllEnabled()` `WithCaller()` `WithOnCreated()` `AllDisabled()` `CreateErrorOptionsMap()`
+  и функции `AllEnabled()`, `WithCaller()`, `WithOnCreated()`, `AllDisabled()`, `CreateErrorOptionsMap()`
   которые помогают переопределять опции у конкретных Proto ошибок;
 - Переименовано `ErrInternalProcessIsStoppedByTimeout` на `ErrInternalTimeoutPeriodHasExpired`;
 - Теперь в реквестах внешний параметр `CorrelationID` выводится в логгере отдельным атрибутом;
