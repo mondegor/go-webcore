@@ -7,7 +7,10 @@
   - Интерфейсы `mrsender.MailProvider`, `mrsender.MessageProvider`; 
   - `mail.Message`, `smtp.MailClient` для формирования и отправки электронных писем;
   - `telegrambot.MessageClient` для отправки сообщений в `telegram`;
-- Добавлена ошибка `mrcore.ErrUseCaseRequiredDataIsEmpty`;
+- Добавлены ошибки `mrcore.ErrInternalWithDetails`, `mrcore.ErrUseCaseRequiredDataIsEmpty`;
+
+### Removed
+- Удалена ошибка `mrcore.ErrSystem`;
 
 ## 2024-11-17
 ### Added

@@ -29,7 +29,7 @@ func New(basePath, placeholder string) (*Builder, error) {
 		}, nil
 	}
 
-	return nil, mrcore.ErrInternal.Wrap(fmt.Errorf("placeholder '%s' is not found in path '%s'", placeholder, basePath))
+	return nil, mrcore.ErrInternalWithDetails.New(fmt.Sprintf("placeholder '%s' is not found in path '%s'", placeholder, basePath))
 }
 
 // BuildPath - comment method.

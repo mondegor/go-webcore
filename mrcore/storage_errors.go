@@ -15,7 +15,7 @@ var (
 
 	// ErrStorageConnectionIsBusy - connection is busy.
 	ErrStorageConnectionIsBusy = mrerr.NewProto(
-		"errStorageConnectionIsBusy", mrerr.ErrorKindInternal, "connection '{{ .name }}' is busy")
+		"errStorageConnectionIsBusy", mrerr.ErrorKindSystem, "connection '{{ .name }}' is busy")
 
 	// ErrStorageConnectionFailed - connection is failed.
 	ErrStorageConnectionFailed = mrerr.NewProto(
@@ -30,10 +30,12 @@ var (
 		"errStorageFetchDataFailed", mrerr.ErrorKindInternal, "fetching data is failed")
 
 	// ErrStorageNoRowFound - no row found.
+	// Это вспомогательная ошибка, для неё необязательно формировать стек вызовов и отправлять событие о её создании.
 	ErrStorageNoRowFound = mrerr.NewProto(
 		"errStorageNoRowFound", mrerr.ErrorKindInternal, "no row found")
 
 	// ErrStorageRowsNotAffected - rows not affected.
+	// Это вспомогательная ошибка, для неё необязательно формировать стек вызовов и отправлять событие о её создании.
 	ErrStorageRowsNotAffected = mrerr.NewProto(
 		"errStorageRowsNotAffected", mrerr.ErrorKindInternal, "rows not affected")
 )

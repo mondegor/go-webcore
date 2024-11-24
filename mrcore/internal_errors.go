@@ -5,21 +5,23 @@ import (
 )
 
 var (
-	// ErrUnexpectedInternal - unexpected internal error,
-	// особая ошибка, в которую система заворачивает все ошибки отличные от типов AppError, ProtoAppError.
-	ErrUnexpectedInternal = mrerr.NewProto(
-		"errUnexpectedInternal", mrerr.ErrorKindInternal, "unexpected internal error")
-
 	// ErrInternal - internal error,
-	// обобщённая внутренняя ошибка системы которая формирует стек вызовов и посылает событие о своём создании.
+	// обобщённая внутренняя ошибка системы которая может быть решена только силами разработки.
+	// Для неё всегда должен формироваться стек вызовов и посылаться событие о её создании.
 	ErrInternal = mrerr.NewProto(
 		mrerr.ErrorCodeInternal, mrerr.ErrorKindInternal, "internal error")
 
-	// ErrSystem - system error,
-	// обобщённая системная ошибка, которая сообщает о сетевых проблемах,
-	// о работоспособности внешних ресурсов (БД, API, FileSystem).
-	ErrSystem = mrerr.NewProto(
-		mrerr.ErrorCodeSystem, mrerr.ErrorKindSystem, "system error")
+	// ErrInternalWithDetails - internal error с дополнительными подробностями.
+	// Для неё всегда должен формироваться стек вызовов и посылаться событие о её создании.
+	ErrInternalWithDetails = mrerr.NewProto(
+		mrerr.ErrorCodeInternal, mrerr.ErrorKindInternal, "internal error: {{ .details }}")
+
+	// ErrUnexpectedInternal - unexpected internal error,
+	// особая ошибка, в которую система заворачивает все ошибки отличные от типов AppError, ProtoAppError.
+	// Для неё не имеет смысла формировать стек вызовов, но всегда должно посылаться событие о её создании.
+	// При возникновении этой ошибки нужно найти место причины её возникновения и написать для него обработку с указанием конкретной ошибки.
+	ErrUnexpectedInternal = mrerr.NewProto(
+		"errUnexpectedInternal", mrerr.ErrorKindInternal, "unexpected internal error")
 
 	// ErrInternalNilPointer - unexpected nil pointer.
 	ErrInternalNilPointer = mrerr.NewProto(

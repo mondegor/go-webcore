@@ -20,5 +20,5 @@ func ParseDateTimeFormat(str string) (string, error) {
 		return time.TimeOnly, nil
 	}
 
-	return time.RFC3339, mrcore.ErrInternal.Wrap(fmt.Errorf("value '%s' is not found in mrlog.ParseDateTimeFormat()", str))
+	return time.RFC3339, mrcore.ErrInternalWithDetails.New(fmt.Sprintf("value '%s' is not found in mrlog.ParseDateTimeFormat()", str))
 }

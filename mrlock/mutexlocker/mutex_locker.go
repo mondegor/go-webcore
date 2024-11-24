@@ -51,7 +51,7 @@ func (l *Locker) LockWithExpiry(ctx context.Context, key string, expiry time.Dur
 	defer l.mu.Unlock()
 
 	if exp, ok := l.keys[key]; ok && exp > time.Now().UnixNano() {
-		return nil, mrcore.ErrInternal.Wrap(fmt.Errorf("%s: key %s is blocked", mutexLockerName, key))
+		return nil, mrcore.ErrInternalWithDetails.New(fmt.Sprintf("%s: key %s is blocked", mutexLockerName, key))
 	}
 
 	l.keys[key] = time.Now().UnixNano() + expiry.Nanoseconds()

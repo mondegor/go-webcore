@@ -30,6 +30,7 @@ var (
 		"errHttpResourceNotFound", mrerr.ErrorKindUser, "404. resource not found")
 
 	// ErrHttpRequestParseData - 422. request body is not valid.
+	// Это вспомогательная ошибка, для неё необязательно формировать стек вызовов и отправлять событие о её создании.
 	ErrHttpRequestParseData = mrerr.NewProto(
 		"errHttpRequestParseData", mrerr.ErrorKindInternal, "request body is not valid: {{ .reason }}'")
 
