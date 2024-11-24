@@ -13,7 +13,11 @@ var (
 	ErrUseCaseTemporarilyUnavailable = mrerr.NewProto(
 		"errUseCaseTemporarilyUnavailable", mrerr.ErrorKindSystem, "system is temporarily unavailable")
 
-	// ErrUseCaseIncorrectInputData - data is incorrect.
+	// ErrUseCaseRequiredDataIsEmpty - data is required.
+	ErrUseCaseRequiredDataIsEmpty = mrerr.NewProto(
+		"errUseCaseRequiredDataIsEmpty", mrerr.ErrorKindInternal, "{{ .data }} is required")
+
+	// ErrUseCaseIncorrectInputData - input data is incorrect.
 	ErrUseCaseIncorrectInputData = mrerr.NewProto(
 		"errUseCaseIncorrectInputData", mrerr.ErrorKindInternal, "{{ .key }}={{ .data }} is incorrect")
 

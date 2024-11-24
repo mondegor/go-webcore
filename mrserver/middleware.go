@@ -104,7 +104,7 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 								mrcore.ErrInternalCaughtPanic.New(
 									errorMessage,
 									rvr,
-									debug.Stack(),
+									string(debug.Stack()),
 								),
 							).Send()
 					}

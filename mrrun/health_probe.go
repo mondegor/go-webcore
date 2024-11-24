@@ -54,7 +54,7 @@ func (p *HealthProbe) Check(ctx context.Context) (err error) {
 					mrcore.ErrInternalCaughtPanic.New(
 						"probe: "+p.caption,
 						rvr,
-						debug.Stack(),
+						string(debug.Stack()),
 					),
 				).Send()
 

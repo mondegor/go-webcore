@@ -85,7 +85,7 @@ func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
 						mrcore.ErrInternalCaughtPanic.New(
 							"task: "+taskID,
 							rvr,
-							debug.Stack(),
+							string(debug.Stack()),
 						),
 					)
 				}

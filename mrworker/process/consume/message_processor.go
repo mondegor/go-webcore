@@ -180,7 +180,7 @@ func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 						mrcore.ErrInternalCaughtPanic.New(
 							"message processor: "+p.caption,
 							rvr,
-							debug.Stack(),
+							string(debug.Stack()),
 						),
 					)
 				}
@@ -237,6 +237,10 @@ func (p *MessageProcessor) workerFunc(message any) func(ctx context.Context) {
 		// то коммит обработчика с коммитом консьюмера могут проходить в единой транзакции
 		if err = p.consumer.CommitMessage(ctx, message, commit); err != nil {
 			p.errorHandler.Perform(ctx, err)
+
+			if err = p.consumer.RejectMessage(ctx, message, err); err != nil {
+				p.errorHandler.Perform(ctx, err)
+			}
 
 			return
 		}

@@ -1,6 +1,14 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-11-24
+### Added
+- Добавлены:
+  - Интерфейсы `mrsender.MailProvider`, `mrsender.MessageProvider`; 
+  - `mail.Message`, `smtp.MailClient` для формирования и отправки электронных писем;
+  - `telegrambot.MessageClient` для отправки сообщений в `telegram`;
+- Добавлена ошибка `mrcore.ErrUseCaseRequiredDataIsEmpty`;
+
 ## 2024-11-17
 ### Added
 - Добавлен `decorator.SourceEmitter` для добавления источника данных к уже имеющемуся `mrsender.EventEmitter`;
