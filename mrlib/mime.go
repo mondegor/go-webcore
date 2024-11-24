@@ -123,7 +123,7 @@ func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
 func (mt *MimeTypeList) Ext(contentType string) string {
 	value, err := mt.getExt(contentType)
 	if err != nil {
-		mt.logger.Printf(fmt.Errorf("Ext: %w", err).Error())
+		mt.logger.Printf(fmt.Errorf("ext: %w", err).Error())
 
 		return ""
 	}

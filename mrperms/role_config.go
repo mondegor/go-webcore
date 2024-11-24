@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/mondegor/go-webcore/mrcore"
 )
 
 const (
@@ -23,7 +25,7 @@ func loadRoleConfig(filePath string) (*roleConfig, error) {
 	cfg := roleConfig{}
 
 	if err := parseFile(filePath, &cfg); err != nil {
-		return nil, fmt.Errorf("error parsing role file '%s': %w", filePath, err)
+		return nil, mrcore.ErrInternalWithDetails.Wrap(err, fmt.Sprintf("error parsing role file '%s'", filePath))
 	}
 
 	return &cfg, nil
