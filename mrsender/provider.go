@@ -5,6 +5,10 @@ import (
 	"net/textproto"
 )
 
+const (
+	ContentTypePlain = "text/plain" // ContentTypePlain - простой текст
+)
+
 type (
 	// MailProvider - провайдер для отправки электронных писем.
 	MailProvider interface {

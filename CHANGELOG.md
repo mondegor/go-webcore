@@ -1,6 +1,10 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2024-11-30
+### Added
+- Добавлена константа `mrsender.ContentTypePlain`;
+
 ## 2024-11-24
 ### Added
 - Добавлены:
