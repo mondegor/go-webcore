@@ -25,7 +25,7 @@ func loadRoleConfig(filePath string) (*roleConfig, error) {
 	cfg := roleConfig{}
 
 	if err := parseFile(filePath, &cfg); err != nil {
-		return nil, mrcore.ErrInternalWithDetails.Wrap(err, fmt.Sprintf("error parsing role file '%s'", filePath))
+		return nil, mrcore.ErrInternalWithDetails.Wrap(err, fmt.Sprintf("parsing role file '%s' failed", filePath))
 	}
 
 	return &cfg, nil

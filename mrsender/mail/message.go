@@ -4,6 +4,8 @@ import (
 	"net/mail"
 	"net/textproto"
 	"strings"
+
+	"github.com/mondegor/go-webcore/mrcore"
 )
 
 const (
@@ -34,17 +36,18 @@ type (
 )
 
 // NewMessage - создаёт объект Message.
+// Где from - электронный адрес отправителя, to - электронный адрес получателя.
 func NewMessage(from, to string, opts ...MessageOption) (*Message, error) {
 	emailParser := mail.AddressParser{}
 
 	fromEmail, err := emailParser.Parse(from)
 	if err != nil {
-		return nil, err
+		return nil, mrcore.ErrInternalWithDetails.Wrap(err, "parsing from address failed")
 	}
 
 	toEmail, err := emailParser.Parse(to)
 	if err != nil {
-		return nil, err
+		return nil, mrcore.ErrInternalWithDetails.Wrap(err, "parsing to address failed")
 	}
 
 	wm := message{

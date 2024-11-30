@@ -3,14 +3,15 @@
 
 ## 2024-11-30
 ### Added
+- Добавлена опция отложенного старта чтения данных в `consume.MessageProcessor`;
 - Добавлена константа `mrsender.ContentTypePlain`;
 
 ## 2024-11-24
 ### Added
 - Добавлены:
-  - Интерфейсы `mrsender.MailProvider`, `mrsender.MessageProvider`; 
-  - `mail.Message`, `smtp.MailClient` для формирования и отправки электронных писем;
-  - `telegrambot.MessageClient` для отправки сообщений в `telegram`;
+    - Интерфейсы `mrsender.MailProvider`, `mrsender.MessageProvider`; 
+    - `mail.Message`, `smtp.MailClient` для формирования и отправки электронных писем;
+    - `telegrambot.MessageClient` для отправки сообщений в `telegram`;
 - Добавлены ошибки `mrcore.ErrInternalWithDetails`, `mrcore.ErrUseCaseRequiredDataIsEmpty`;
 
 ### Removed
@@ -255,8 +256,8 @@
   такого вида параметры совместимы с `chi` роутером, а также их легче привести
   к виду URL используемым в `julienschmidt`;
 - Переименовано:
-  - `mrresponse` -> `mrresp`;
-  - `mrjulienrouter.PathParam -> mrjulienrouter.URLPathParam`;
+    - `mrresponse` -> `mrresp`;
+    - `mrjulienrouter.PathParam -> mrjulienrouter.URLPathParam`;
 
 ### Removed
 - Удалён статус `ItemStatusRemoved`, теперь удаление контролируется через отдельное поле `deleted_at`;

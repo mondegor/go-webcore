@@ -18,7 +18,7 @@ func MultipartForm(ctx context.Context, form *multipart.Form) {
 		return
 	}
 
-	if len(form.Value) != 0 {
+	if len(form.Value) > 0 {
 		for key, values := range form.Value {
 			logger.Debug().Msgf("key=%s; value=%s", key, strings.Join(values, ", "))
 		}
@@ -26,7 +26,7 @@ func MultipartForm(ctx context.Context, form *multipart.Form) {
 		logger.Debug().Msg("value is EMPTY")
 	}
 
-	if len(form.File) != 0 {
+	if len(form.File) > 0 {
 		for key, fhs := range form.File {
 			logger.Debug().Msgf("key=%s; fhs.len=%d", key, len(fhs))
 		}

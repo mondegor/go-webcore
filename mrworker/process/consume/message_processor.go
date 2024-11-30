@@ -17,8 +17,8 @@ import (
 const (
 	defaultCaption           = "MessageProcessor"
 	defaultReadyTimeout      = 60 * time.Second
+	defaultStartReadDelay    = 0 * time.Second
 	defaultReadPeriod        = 60 * time.Second
-	defaultBusyReadPeriod    = 30 * time.Second
 	defaultCancelReadTimeout = 5 * time.Second
 	defaultHandlerTimeout    = 30 * time.Second
 	defaultQueueSize         = 100
@@ -30,8 +30,8 @@ type (
 	MessageProcessor struct {
 		caption           string
 		readyTimeout      time.Duration
+		startReadDelay    time.Duration
 		readPeriod        time.Duration
-		busyReadPeriod    time.Duration
 		cancelReadTimeout time.Duration
 		handlerTimeout    time.Duration
 		queueSize         uint32
@@ -54,8 +54,8 @@ func NewMessageProcessor(
 	p := &MessageProcessor{
 		caption:           defaultCaption,
 		readyTimeout:      defaultReadyTimeout,
+		startReadDelay:    defaultStartReadDelay,
 		readPeriod:        defaultReadPeriod,
-		busyReadPeriod:    defaultBusyReadPeriod,
 		cancelReadTimeout: defaultCancelReadTimeout,
 		handlerTimeout:    defaultHandlerTimeout,
 		queueSize:         defaultQueueSize,
@@ -99,8 +99,18 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 		close(workersStopped)
 	}()
 
-	readPeriod := p.readPeriod
-	ticker := time.NewTicker(readPeriod)
+	if ready != nil {
+		ready()
+	}
+
+	// если начало обработки данных необходимо отложить
+	if p.startReadDelay > 0 {
+		logger.Debug().Msg("The message processor is waiting for the start to read...")
+		time.Sleep(p.startReadDelay)
+		logger.Debug().Msg("The message processor starts to read...")
+	}
+
+	ticker := time.NewTicker(p.readPeriod)
 
 	defer func() {
 		ticker.Stop()
@@ -109,10 +119,6 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 
 		logger.Info().Msg("The message processor has been stopped")
 	}()
-
-	if ready != nil {
-		ready()
-	}
 
 	for {
 		select {
@@ -128,11 +134,6 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 				}
 
 				return err
-			}
-
-			if newPeriod, changed := p.analyzeReadMessages(len(messages), readPeriod); changed {
-				readPeriod = newPeriod
-				ticker.Reset(readPeriod)
 			}
 
 			logger.Info().Msgf("Got messages %d in message processor...", len(messages))
@@ -197,24 +198,6 @@ func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 			logger.Debug().Msg("The worker has been stopped")
 		}(ctx, i+1)
 	}
-}
-
-func (p *MessageProcessor) analyzeReadMessages(queueSize int, period time.Duration) (newPeriod time.Duration, change bool) {
-	if p.busyReadPeriod == p.readPeriod {
-		return 0, false
-	}
-
-	if uint32(queueSize) < p.queueSize {
-		if period == p.busyReadPeriod {
-			return p.readPeriod, true
-		}
-	} else {
-		if period == p.readPeriod {
-			return p.busyReadPeriod, true
-		}
-	}
-
-	return 0, false
 }
 
 func (p *MessageProcessor) workerFunc(message any) func(ctx context.Context) {

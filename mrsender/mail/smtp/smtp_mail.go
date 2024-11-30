@@ -33,6 +33,7 @@ func NewMailClient(host, port, username, password string) *MailClient {
 }
 
 // SendMail - отправляет электронное письмо указанному адресату.
+// Где from - электронный адрес отправителя, to - электронные адреса получателей.
 func (c *MailClient) SendMail(ctx context.Context, from string, to []string, header textproto.MIMEHeader, body string) error {
 	if from == "" {
 		return mrcore.ErrUseCaseRequiredDataIsEmpty.New("From address")
@@ -44,18 +45,21 @@ func (c *MailClient) SendMail(ctx context.Context, from string, to []string, hea
 
 	var buf bytes.Buffer
 
+	// если в заголовке отсутствует адрес отправителя
 	if len(header) == 0 || header.Get("From") == "" {
 		buf.WriteString("From: ")
 		buf.WriteString(from)
 		buf.WriteString("\r\n")
 	}
 
+	// если в заголовке отсутствует адрес получателя
 	if len(header) == 0 || header.Get("To") == "" {
 		buf.WriteString("To: ")
 		buf.WriteString(to[0])
 		buf.WriteString("\r\n")
 	}
 
+	// если в заголовке отсутствует тема письма
 	if len(header) == 0 || header.Get("Subject") == "" {
 		buf.WriteString("Subject: ")
 		buf.WriteString(defaultMailSubject)
@@ -87,9 +91,9 @@ func (c *MailClient) SendMail(ctx context.Context, from string, to []string, hea
 		Str("cmd", "SendMail").
 		MsgFunc(
 			func() string {
-				return "Header: " + buf.String() + "\n" +
-					"From: " + from + "\n" +
-					"To: " + strings.Join(to, ", ")
+				return "SMTP-Header: \n" + buf.String() + "\n" +
+					"SMTP-From: " + from + "\n" +
+					"SMTP-To: " + strings.Join(to, ", ")
 			},
 		)
 

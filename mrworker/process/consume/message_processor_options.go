@@ -21,9 +21,16 @@ func WithCaption(value string) Option {
 // WithReadyTimeout - устанавливает опцию readyTimeout для MessageProcessor.
 func WithReadyTimeout(value time.Duration) Option {
 	return func(p *MessageProcessor) {
-		if value != 0 {
+		if value > 0 {
 			p.readyTimeout = value
 		}
+	}
+}
+
+// WithStartReadDelay - устанавливает опцию отложенного старта чтения данных.
+func WithStartReadDelay(value time.Duration) Option {
+	return func(p *MessageProcessor) {
+		p.startReadDelay = value
 	}
 }
 
@@ -32,15 +39,6 @@ func WithReadPeriod(value time.Duration) Option {
 	return func(p *MessageProcessor) {
 		if value > 0 {
 			p.readPeriod = value
-		}
-	}
-}
-
-// WithBusyReadPeriod - устанавливает опцию периода чтения данных консьюмером, когда он в нагруженном состоянии.
-func WithBusyReadPeriod(value time.Duration) Option {
-	return func(p *MessageProcessor) {
-		if value > 0 {
-			p.busyReadPeriod = value
 		}
 	}
 }

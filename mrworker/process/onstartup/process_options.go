@@ -19,7 +19,7 @@ func WithCaption(value string) Option {
 // WithReadyTimeout - устанавливает опцию readyTimeout для Process.
 func WithReadyTimeout(value time.Duration) Option {
 	return func(p *Process) {
-		if value != 0 {
+		if value > 0 {
 			p.readyTimeout = value
 		}
 	}
