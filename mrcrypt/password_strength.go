@@ -4,16 +4,17 @@ import (
 	"math"
 )
 
+// Сложность пароля.
 const (
-	PassStrengthNotRated PassStrength = iota // PassStrengthNotRated - пароль без оценки
-	PassStrengthWeak                         // PassStrengthWeak - слабый пароль
-	PassStrengthMedium                       // PassStrengthMedium - средний пароль
-	PassStrengthStrong                       // PassStrengthStrong - надёжный пароль
-	PassStrengthBest                         // PassStrengthBest - самый надёжный пароль
+	PassStrengthNotRated PassStrength = iota // пароль без оценки
+	PassStrengthWeak                         // слабый пароль
+	PassStrengthMedium                       // средний пароль
+	PassStrengthStrong                       // надёжный пароль
+	PassStrengthBest                         // максимально надёжный пароль
 )
 
 const (
-	passTypeSmallABC passTypeChars = iota
+	passTypeSmallABC = iota
 	passTypeBigABC
 	passTypeNumeral
 	passTypeSign
@@ -29,10 +30,9 @@ const (
 type (
 	// PassStrength - надёжность пароля.
 	PassStrength uint8
-
-	passTypeChars uint8
 )
 
+// TODO: заменить map на строку.
 var passStrengthName = map[PassStrength]string{ //nolint:gochecknoglobals
 	PassStrengthNotRated: "NOT_RATED",
 	PassStrengthWeak:     "WEAK",
@@ -42,7 +42,7 @@ var passStrengthName = map[PassStrength]string{ //nolint:gochecknoglobals
 }
 
 // PasswordStrength - comment func.
-func (l *Lib) PasswordStrength(value string) PassStrength {
+func PasswordStrength(value string) PassStrength {
 	length := len(value)
 
 	if length == 0 {
@@ -50,7 +50,7 @@ func (l *Lib) PasswordStrength(value string) PassStrength {
 	}
 
 	uniqChars := make(map[byte]bool, length)
-	uniqTypeChars := make(map[passTypeChars]int)
+	uniqTypeChars := [4]int{}
 
 	for i := 0; i < length; i++ {
 		uniqChars[value[i]] = true
@@ -67,29 +67,37 @@ func (l *Lib) PasswordStrength(value string) PassStrength {
 		}
 	}
 
-	var totalLen int
+	var (
+		totalLen  int
+		totalSets int
+	)
 
 	for i := range uniqTypeChars {
+		if uniqTypeChars[i] == 0 {
+			continue
+		}
+
 		totalLen += uniqTypeChars[i]
+		totalSets++
 	}
 
-	if len(uniqTypeChars) > 1 { // минимально два набора символов должно использоваться
+	if totalSets > 1 { // минимально два набора символов должно использоваться
 		// вычисление информационной энтропии
-		bits := int(float64(len(uniqChars)) * math.Log(float64(totalLen)) / math.Ln2)
+		bits := uint64(float64(len(uniqChars)) * math.Log2(float64(totalLen)))
 
-		if bits >= 67 { // min(11 uniq chars and 4 sets[69] OR 12 uniq chars and 3 sets[69] OR 13 uniq chars and 2 sets[67])
+		if bits >= 76 && totalSets > 3 { // min(12 uniq chars and 4 sets[76])
 			return PassStrengthBest
 		}
 
-		if bits >= 56 { // min(9 uniq chars and 4 sets[57] OR 10 uniq chars and 3 sets[58] OR 11 uniq chars and 2 sets[56])
+		if bits >= 63 && totalSets > 2 { // min(10 uniq chars and 4 sets[63] OR 11 uniq chars and 3 sets[65])
 			return PassStrengthStrong
 		}
 
-		if bits >= 44 { // min(7 uniq chars and 4 sets[44] OR 8 uniq chars and 3 sets[46] OR 9 uniq chars and 2 sets[46])
+		if bits >= 56 { // min(9 uniq chars and 4 sets[57] OR 10 uniq chars and 3 sets[58] OR 11 uniq chars and 2 sets[56])
 			return PassStrengthMedium
 		}
 
-		if bits >= 31 { // min(5 uniq chars and 4 sets[31] OR 6 uniq chars and 3 sets[34] OR 7 uniq chars and 2 sets[36])
+		if bits >= 44 { // min(7 uniq chars and 4 sets[44] OR 8 uniq chars and 3 sets[46] OR 9 uniq chars and 2 sets[46])
 			return PassStrengthWeak
 		}
 	}

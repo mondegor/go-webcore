@@ -15,4 +15,11 @@ const (
 	// HeaderKeyRequestID - название заголовка содержащего ID текущего запроса.
 	// sample: 3c0b88e8-ba21-4d49-afda-d92e7ac08918, cs0n2utf3kkujsmnq9og.
 	HeaderKeyRequestID = "X-Request-Id"
+
+	// HeaderKeyTraceID - название заголовка содержащего ID текущего запроса.
+	// sample: 3c0b88e8-ba21-4d49-afda-d92e7ac08918, cs0n2utf3kkujsmnq9og.
+	HeaderKeyTraceID = "X-Trace-Id"
+
+	// HeaderKeyUserIDSlashGroup - название заголовка содержащий предпочитаемые клиентом языки общения.
+	HeaderKeyUserIDSlashGroup = "X-Internal-UserId-Group"
 )

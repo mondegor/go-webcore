@@ -2,14 +2,15 @@ package mutexlocker
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"sync"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrlock"
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-webcore/mrsender"
 )
 
 const (
@@ -19,15 +20,19 @@ const (
 type (
 	// Locker - реализует интерфейс блокировщика указанного ключа основанный на mutex.
 	Locker struct {
-		mu   sync.Mutex
-		keys map[string]int64
+		logger mrlog.Logger
+		tracer mrsender.Tracer
+		mu     sync.Mutex
+		keys   map[string]int64
 	}
 )
 
 // New - создаёт объект Locker.
-func New(minBufferSize int) *Locker {
+func New(logger mrlog.Logger, tracer mrsender.Tracer, minBufferSize int) *Locker {
 	return &Locker{
-		keys: make(map[string]int64, minBufferSize),
+		tracer: tracer,
+		logger: logger,
+		keys:   make(map[string]int64, minBufferSize),
 	}
 }
 
@@ -51,7 +56,7 @@ func (l *Locker) LockWithExpiry(ctx context.Context, key string, expiry time.Dur
 	defer l.mu.Unlock()
 
 	if exp, ok := l.keys[key]; ok && exp > time.Now().UnixNano() {
-		return nil, mrcore.ErrInternalWithDetails.New(fmt.Sprintf("%s: key %s is blocked", mutexLockerName, key))
+		return nil, mr.ErrStorageLockNotObtained.New("source", mutexLockerName, "key", key)
 	}
 
 	l.keys[key] = time.Now().UnixNano() + expiry.Nanoseconds()
@@ -60,16 +65,21 @@ func (l *Locker) LockWithExpiry(ctx context.Context, key string, expiry time.Dur
 		l.traceCmd(ctx, "Unlock", key)
 
 		l.mu.Lock()
-		delete(l.keys, key)
-		l.mu.Unlock()
+		defer l.mu.Unlock()
+
+		if _, ok := l.keys[key]; ok {
+			delete(l.keys, key)
+		} else {
+			l.logger.Warn(ctx, "unlock", "error", mr.ErrStorageLockNotHeld.New("source", mutexLockerName, "key", key))
+		}
 	}, nil
 }
 
 func (l *Locker) traceCmd(ctx context.Context, command, key string) {
-	mrlog.Ctx(ctx).
-		Trace().
-		Str("source", mutexLockerName).
-		Str("cmd", command).
-		Str("key", key).
-		Send()
+	l.tracer.Trace(
+		ctx,
+		"source", mutexLockerName,
+		"cmd", command,
+		"key", key,
+	)
 }

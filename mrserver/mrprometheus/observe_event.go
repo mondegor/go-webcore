@@ -35,5 +35,5 @@ func (o *ObserveEvent) Collectors() []prometheus.Collector {
 
 // IncrementEvent - увеличивает счётчик указанного события для указанного источника данных.
 func (o *ObserveEvent) IncrementEvent(event, source string) {
-	o.eventCount.With(prometheus.Labels{"event": event, "source": source}).Add(1)
+	o.eventCount.With(prometheus.Labels{"event": event, "source": source}).Inc()
 }

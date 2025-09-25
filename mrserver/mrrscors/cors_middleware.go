@@ -1,11 +1,11 @@
 package mrrscors
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/mondegor/go-sysmess/mrlog"
 	"github.com/rs/cors"
-
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 // go get -u github.com/rs/cors
@@ -32,10 +32,11 @@ func Middleware(opts Options) func(next http.Handler) http.Handler {
 		AllowCredentials: opts.AllowCredentials,
 	}
 
-	if opts.Logger != nil && opts.Logger.Level() <= mrlog.DebugLevel {
+	if opts.Logger != nil && opts.Logger.Enabled(mrlog.LevelDebug) {
 		options.Debug = true
 
-		opts.Logger.Debug().MsgFunc(
+		opts.Logger.DebugFunc(
+			context.Background(),
 			func() string {
 				var buf []byte
 

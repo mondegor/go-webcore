@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
@@ -19,7 +18,8 @@ func URLPathParam(r *http.Request, name string) string {
 		return ctx.URLParam(name)
 	}
 
-	mrlog.Ctx(r.Context()).Warn().Msg("chi.RouteCtxKey is not found in context")
+	// :TODO: переделать в объект
+	// mrlog.Ctx(r.Context()).Warn().Msg("chi.RouteCtxKey is not found in context")
 
 	return ""
 }

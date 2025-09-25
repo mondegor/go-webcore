@@ -2,47 +2,80 @@ package schedule
 
 import (
 	"context"
-	"fmt"
 	"runtime/debug"
 	"sync"
 	"time"
 
+	"github.com/mondegor/go-sysmess/mrerr"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrcore/mrapp"
-	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrworker"
 )
 
+//go:generate mockgen -source=task_scheduler.go -destination=./mock/task_scheduler.go
+
 const (
 	defaultCaption      = "TaskScheduler"
-	defaultReadyTimeout = 60 * time.Second
+	defaultReadyTimeout = 30 * time.Second
 )
 
 type (
 	// TaskScheduler - многопоточный сервис запуска задач по расписанию (планировщик задач).
 	TaskScheduler struct {
-		caption      string
-		readyTimeout time.Duration
-		tasks        []mrworker.Task
-		errorHandler mrcore.ErrorHandler
-		done         chan struct{}
+		caption         string
+		readyTimeout    time.Duration
+		tasks           []mrworker.Task
+		errorHandler    mrcore.ErrorHandler
+		logger          mrlog.Logger
+		contextEmbedder contextEmbedder
+		wgMain          sync.WaitGroup
+		done            chan struct{}
+	}
+
+	contextEmbedder interface {
+		WithWorkerIDContext(ctx context.Context) context.Context
+		WithTaskIDContext(ctx context.Context) context.Context
+	}
+
+	options struct {
+		caption       string
+		captionPrefix string
+		readyTimeout  time.Duration
+		tasks         []mrworker.Task
 	}
 )
 
+var (
+	// ErrInternalNoTasks - comment var.
+	ErrInternalNoTasks = mrerr.NewKindInternal("no tasks to start for the task scheduler")
+
+	// ErrInternalZeroParam - comment var.
+	ErrInternalZeroParam = mrerr.NewKindInternal("task has zero param for the task scheduler: {ParamName}")
+)
+
 // NewTaskScheduler - создаёт объект TaskScheduler.
-func NewTaskScheduler(errorHandler mrcore.ErrorHandler, opts ...Option) *TaskScheduler {
-	s := &TaskScheduler{
+func NewTaskScheduler(errorHandler mrcore.ErrorHandler, logger mrlog.Logger, contextEmbedder contextEmbedder, opts ...Option) *TaskScheduler {
+	o := options{
 		caption:      defaultCaption,
 		readyTimeout: defaultReadyTimeout,
-		errorHandler: errorHandler,
-		done:         make(chan struct{}),
 	}
 
 	for _, opt := range opts {
-		opt(s)
+		opt(&o)
 	}
 
-	return s
+	return &TaskScheduler{
+		caption:         o.captionPrefix + o.caption,
+		readyTimeout:    o.readyTimeout,
+		tasks:           o.tasks,
+		errorHandler:    errorHandler,
+		logger:          logger,
+		contextEmbedder: contextEmbedder,
+		wgMain:          sync.WaitGroup{},
+		done:            make(chan struct{}),
+	}
 }
 
 // Caption - возвращает название планировщика задач.
@@ -56,8 +89,13 @@ func (s *TaskScheduler) ReadyTimeout() time.Duration {
 }
 
 // Start - запуск планировщика задач.
+// Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
 func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
-	mrlog.Ctx(ctx).Info().Msg("Starting the task scheduler...")
+	s.wgMain.Add(1)
+	defer s.wgMain.Done()
+
+	s.logger.Debug(ctx, "Starting the task scheduler...")
+	defer s.logger.Debug(ctx, "The task scheduler has been stopped")
 
 	if err := s.startup(ctx); err != nil {
 		return err
@@ -71,19 +109,19 @@ func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
 		go func(ctx context.Context, task mrworker.Task) {
 			defer wg.Done()
 
-			logger := mrlog.Ctx(ctx).With().Str("task", task.Caption()).Logger()
-			taskID := mrapp.ProcessCtx(ctx) + mrapp.KeySeparator + "task-" + task.Caption()
-			ctx = mrlog.WithContext(mrapp.WithProcessContext(ctx, taskID), logger)
+			ctx = s.contextEmbedder.WithWorkerIDContext(ctx)
+			s.logger.Info(ctx, "Starting worker", "task_name", task.Caption())
+
 			ticker := time.NewTicker(task.Period())
 
 			defer func() {
 				ticker.Stop()
 
 				if rvr := recover(); rvr != nil {
-					s.errorHandler.Perform(
+					s.errorHandler.Handle(
 						ctx,
-						mrcore.ErrInternalCaughtPanic.New(
-							"task: "+taskID,
+						mr.ErrInternalCaughtPanic.New(
+							"task worker: "+task.Caption(),
 							rvr,
 							string(debug.Stack()),
 						),
@@ -94,19 +132,27 @@ func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
 			for {
 				select {
 				case <-s.done:
-					logger.Debug().Msg("The task worker has been stopped")
+					s.logger.Debug(ctx, "The task worker has been stopped")
 
 					return
+				case <-task.SignalDo():
+					s.logger.Debug(ctx, "signalDo event", "task_name", task.Caption())
+					ticker.Reset(task.Period())
 				case <-ticker.C:
-					func(ctx context.Context) {
-						ctx, cancel := context.WithTimeout(ctx, task.Timeout())
-						defer cancel()
-
-						if err := task.Do(ctx); err != nil {
-							s.errorHandler.Perform(ctx, err)
-						}
-					}(ctx)
+					s.logger.Debug(ctx, "ticker event", "task_name", task.Caption())
 				}
+
+				func(ctx context.Context) {
+					ctx = s.contextEmbedder.WithTaskIDContext(ctx)
+					s.logger.Info(ctx, "Execute task", "task_name", task.Caption())
+
+					ctx, cancel := context.WithTimeout(ctx, task.Timeout())
+					defer cancel()
+
+					if err := task.Do(ctx); err != nil {
+						s.errorHandler.Handle(ctx, err)
+					}
+				}(ctx)
 			}
 		}(ctx, s.tasks[i])
 	}
@@ -116,46 +162,48 @@ func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
 	}
 
 	wg.Wait()
-	mrlog.Ctx(ctx).Info().Msg("The task scheduler has been stopped")
 
 	return nil
 }
 
 // Shutdown - корректная остановка планировщика задач.
 func (s *TaskScheduler) Shutdown(ctx context.Context) error {
-	mrlog.Ctx(ctx).Info().Msg("Shutting down the task scheduler...")
+	s.logger.Info(ctx, "Shutting down the task scheduler...")
 	close(s.done)
+
+	s.wgMain.Wait()
+	s.logger.Info(ctx, "The task scheduler has been shut down")
 
 	return nil
 }
 
 func (s *TaskScheduler) startup(ctx context.Context) error {
 	if len(s.tasks) == 0 {
-		return fmt.Errorf("no tasks to start for the task scheduler %s", s.caption)
+		return ErrInternalNoTasks.New("scheduler_name", s.caption)
 	}
 
 	for _, task := range s.tasks {
 		if task.Period() == 0 {
-			return fmt.Errorf("task %s has zero period for the task scheduler %s", task.Caption(), s.caption)
+			return ErrInternalZeroParam.New("period", "task_name", task.Caption())
 		}
 
 		if task.Timeout() == 0 {
-			return fmt.Errorf("task %s has zero timeout for the task scheduler %s", task.Caption(), s.caption)
+			return ErrInternalZeroParam.New("timeout", "task_name", task.Caption())
 		}
 
-		// последовательный первый запуск задач, если они этого требуют
-		// запуск происходит без таймаута, т.к. требуется, чтобы задачи полностью завершились перед запуском системы
+		// запуск задач на этапе старта планировщика выполняется последовательно
+		// и без использования таймаута, чтобы гарантировать полную их инициализацию
 		if !task.Startup() {
 			continue
 		}
 
-		mrlog.Ctx(ctx).Debug().Msgf("Startup the task %s...", task.Caption())
+		s.logger.Debug(ctx, "Startup the task...", "task_name", task.Caption())
 
 		if err := task.Do(ctx); err != nil {
 			return err
 		}
 
-		mrlog.Ctx(ctx).Debug().Msgf("The task %s is completed", task.Caption())
+		s.logger.Debug(ctx, "The task is completed", "task_name", task.Caption())
 	}
 
 	return nil

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
 )
 
 const (
@@ -19,19 +19,19 @@ func ParseDateTime(getter valueGetter, key string, required bool) (time.Time, er
 
 	if value == "" {
 		if required {
-			return time.Time{}, mrcore.ErrHttpRequestParamEmpty.New(key)
+			return time.Time{}, mr.ErrHttpRequestParamEmpty.New(key)
 		}
 
 		return time.Time{}, nil
 	}
 
 	if len(value) > maxLenDateTime {
-		return time.Time{}, mrcore.ErrHttpRequestParamLenMax.New(key, maxLenDateTime)
+		return time.Time{}, mr.ErrHttpRequestParamLenMax.New(key, maxLenDateTime)
 	}
 
 	item, err := time.Parse(time.RFC3339, value)
 	if err != nil {
-		return time.Time{}, mrcore.ErrHttpRequestParseParam.Wrap(err, key, "DateTime", value)
+		return time.Time{}, mr.ErrHttpRequestParseParam.Wrap(err, key, "DateTime", value)
 	}
 
 	return item, nil

@@ -4,15 +4,17 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrlib"
 )
 
 // HandlerGetStatusOkAsJSON - возвращает обработчик, который формирует ответ OK в JSON формате.
-func HandlerGetStatusOkAsJSON() http.HandlerFunc {
+func HandlerGetStatusOkAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		mrlib.Write(r.Context(), w, []byte("{\"status\": \"OK\"}"))
+		mrlib.Write(r.Context(), logger, w, []byte("{\"status\": \"OK\"}"))
 	}
 }
 

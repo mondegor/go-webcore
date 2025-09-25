@@ -3,16 +3,19 @@ package mrenum
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"math"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+)
+
+// Статусы элемента.
+const (
+	ItemStatusDraft    ItemStatus = iota + 1 // черновик
+	ItemStatusEnabled                        // действующий
+	ItemStatusDisabled                       // отключённый
 )
 
 const (
-	_                  ItemStatus = iota
-	ItemStatusDraft               // ItemStatusDraft - черновик
-	ItemStatusEnabled             // ItemStatusEnabled - действующий
-	ItemStatusDisabled            // ItemStatusDisabled - отключённый
-
 	itemStatusLast     = uint8(ItemStatusDisabled)
 	enumNameItemStatus = "ItemStatus"
 )
@@ -44,7 +47,7 @@ func (e *ItemStatus) ParseAndSet(value string) error {
 		return nil
 	}
 
-	return mrcore.ErrInternalKeyNotFoundInSource.New(value, enumNameItemStatus)
+	return mr.ErrInternalKeyNotFoundInSource.New(value, enumNameItemStatus)
 }
 
 // Set - устанавливает указанное значение, если оно является enum значением.
@@ -55,7 +58,7 @@ func (e *ItemStatus) Set(value uint8) error {
 		return nil
 	}
 
-	return mrcore.ErrInternalKeyNotFoundInSource.New(value, enumNameItemStatus)
+	return mr.ErrInternalKeyNotFoundInSource.New(value, enumNameItemStatus)
 }
 
 // String - возвращает значение в виде строки.
@@ -63,10 +66,10 @@ func (e ItemStatus) String() string {
 	return itemStatusName[e]
 }
 
-// Empty - проверяет, что enum значение не установлено.
-func (e ItemStatus) Empty() bool {
-	return e == 0
-}
+// // Empty - сообщает, установлено ли enum значение.
+// func (e ItemStatus) Empty() bool {
+// 	return e == 0
+// }
 
 // MarshalJSON - переводит enum значение в строковое представление.
 func (e ItemStatus) MarshalJSON() ([]byte, error) {
@@ -86,11 +89,11 @@ func (e *ItemStatus) UnmarshalJSON(data []byte) error {
 
 // Scan implements the Scanner interface.
 func (e *ItemStatus) Scan(value any) error {
-	if val, ok := value.(int64); ok {
-		return e.Set(uint8(val))
+	if val, ok := value.(int64); ok && val >= 0 && val <= math.MaxUint8 {
+		return e.Set(uint8(val)) //nolint:gosec
 	}
 
-	return mrcore.ErrInternalTypeAssertion.New(enumNameItemStatus, value)
+	return mr.ErrInternalTypeAssertion.New(enumNameItemStatus, value)
 }
 
 // Value implements the driver.Valuer interface.

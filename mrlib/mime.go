@@ -3,7 +3,6 @@ package mrlib
 import (
 	"errors"
 	"fmt"
-	"path"
 	"strings"
 )
 
@@ -12,7 +11,6 @@ type (
 	MimeTypeList struct {
 		contentTypeMap map[string]string
 		extensionMap   map[string]string
-		logger         logger
 	}
 
 	// MimeType - хранит расширение и соответствующий ему тип файла.
@@ -23,7 +21,7 @@ type (
 )
 
 // NewMimeTypeList - создаёт объект MimeTypeList на основе списка соответствий расширений и файлов.
-func NewMimeTypeList(logger logger, items []MimeType) *MimeTypeList {
+func NewMimeTypeList(items []MimeType) *MimeTypeList {
 	mimeMap := make(map[string]string, len(items))
 	extMap := make(map[string]string, len(items))
 
@@ -41,7 +39,6 @@ func NewMimeTypeList(logger logger, items []MimeType) *MimeTypeList {
 	return &MimeTypeList{
 		contentTypeMap: mimeMap,
 		extensionMap:   extMap,
-		logger:         logger,
 	}
 }
 
@@ -51,7 +48,7 @@ func (mt *MimeTypeList) MimeTypesByExts(values []string) ([]MimeType, error) {
 	mime := make([]MimeType, len(values))
 
 	for i, ext := range values {
-		contentType, err := mt.getContentType(ext)
+		contentType, err := mt.ContentTypeByExt(ext)
 		if err != nil {
 			return nil, err
 		}
@@ -65,96 +62,34 @@ func (mt *MimeTypeList) MimeTypesByExts(values []string) ([]MimeType, error) {
 	return mime, nil
 }
 
-// CheckExt - возвращает ошибку, если указанное расширение не зарегистрировано в списке.
-func (mt *MimeTypeList) CheckExt(ext string) error {
-	if _, err := mt.getContentType(ext); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// CheckExtByFileName - возвращает ошибку, если расширение указанного файла не зарегистрировано в списке.
-func (mt *MimeTypeList) CheckExtByFileName(name string) error {
-	if _, err := mt.getContentType(path.Ext(name)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// CheckContentType - возвращает ошибку, если указанный тип файла не зарегистрирован в списке.
-func (mt *MimeTypeList) CheckContentType(contentType string) error {
-	if _, err := mt.getExt(contentType); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ContentType - возвращает тип файла по указанному расширению,
+// ContentTypeByExt - возвращает тип файла по указанному расширению,
 // если тип не найден, то возвращается пустая строка.
-func (mt *MimeTypeList) ContentType(ext string) string {
-	value, err := mt.getContentType(ext)
-	if err != nil {
-		mt.logger.Printf(fmt.Errorf("ContentType: %w", err).Error())
-
-		return ""
+func (mt *MimeTypeList) ContentTypeByExt(value string) (string, error) {
+	if value == "" || len(value) == 1 && value[0] == '.' {
+		return "", errors.New("arg 'value' is empty")
 	}
 
-	return value
-}
-
-// ContentTypeByFileName - возвращает тип файла по расширению указанного файла,
-// если тип не найден, то возвращается пустая строка.
-func (mt *MimeTypeList) ContentTypeByFileName(name string) string {
-	value, err := mt.getContentType(path.Ext(name))
-	if err != nil {
-		mt.logger.Printf(fmt.Errorf("ContentTypeByFileName: %w", err).Error())
-
-		return ""
+	if value[0] == '.' { // если указано расширение с точкой в начале
+		value = value[1:]
 	}
 
-	return value
+	if ext, ok := mt.extensionMap[value]; ok {
+		return ext, nil
+	}
+
+	return "", fmt.Errorf("mime not found for arg '%s'", value)
 }
 
-// Ext - возвращает расширение по указанному типу файла,
+// ExtByContentType - возвращает расширение по указанному типу файла,
 // если расширение не найдено, то возвращается пустая строка.
-func (mt *MimeTypeList) Ext(contentType string) string {
-	value, err := mt.getExt(contentType)
-	if err != nil {
-		mt.logger.Printf(fmt.Errorf("ext: %w", err).Error())
-
-		return ""
+func (mt *MimeTypeList) ExtByContentType(value string) (string, error) {
+	if value == "" {
+		return "", errors.New("arg 'value' is empty")
 	}
 
-	return value
-}
-
-func (mt *MimeTypeList) getContentType(ext string) (string, error) {
-	if ext == "" || len(ext) == 1 && ext[0] == '.' {
-		return "", errors.New("arg 'ext' is empty")
+	if contentType, ok := mt.contentTypeMap[value]; ok {
+		return contentType, nil
 	}
 
-	if ext[0] == '.' { // если указано расширение с точкой в начале
-		ext = ext[1:]
-	}
-
-	if value, ok := mt.extensionMap[ext]; ok {
-		return value, nil
-	}
-
-	return "", fmt.Errorf("mime not found for arg '%s'", ext)
-}
-
-func (mt *MimeTypeList) getExt(contentType string) (string, error) {
-	if contentType == "" {
-		return "", errors.New("arg 'contentType' is empty")
-	}
-
-	if value, ok := mt.contentTypeMap[contentType]; ok {
-		return value, nil
-	}
-
-	return "", fmt.Errorf("ext not found for arg '%s'", contentType)
+	return "", fmt.Errorf("ext not found for arg '%s'", value)
 }

@@ -1,60 +1,60 @@
 package mrparser
 
-import "github.com/mondegor/go-sysmess/mrerr"
+import (
+	"github.com/mondegor/go-sysmess/mrerr"
+)
 
 var (
+	// ErrHttpRequestFileSize - invalid file size.
+	ErrHttpRequestFileSize = mrerr.NewKindUser("RequestFileSize", "invalid file size")
+
 	// ErrHttpRequestFileSizeMin - invalid file size - min.
-	ErrHttpRequestFileSizeMin = mrerr.NewProto(
-		"errHttpRequestFileSizeMin", mrerr.ErrorKindUser, "invalid file size, min size = {{ .value }}b")
+	ErrHttpRequestFileSizeMin = mrerr.NewKindUser("RequestFileSizeMin", "invalid file size, min size = {Value}b")
 
 	// ErrHttpRequestFileSizeMax - invalid file size - max.
-	ErrHttpRequestFileSizeMax = mrerr.NewProto(
-		"errHttpRequestFileSizeMax", mrerr.ErrorKindUser, "invalid file size, max size = {{ .value }}b")
+	ErrHttpRequestFileSizeMax = mrerr.NewKindUser("RequestFileSizeMax", "invalid file size, max size = {Value}b")
 
 	// ErrHttpRequestFileExtension - invalid file extension.
-	ErrHttpRequestFileExtension = mrerr.NewProto(
-		"errHttpRequestFileExtension", mrerr.ErrorKindUser, "invalid file extension: {{ .value }}")
+	ErrHttpRequestFileExtension = mrerr.NewKindUser("RequestFileExtension", "invalid file extension: {Value}")
 
 	// ErrHttpRequestFileTotalSizeMax - invalid file total size - max.
-	ErrHttpRequestFileTotalSizeMax = mrerr.NewProto(
-		"errHttpRequestFileTotalSizeMax", mrerr.ErrorKindUser, "invalid file total size, max total size = {{ .value }}b")
+	ErrHttpRequestFileTotalSizeMax = mrerr.NewKindUser("RequestFileTotalSizeMax", "invalid file total size, max total size = {Value}b")
 
 	// ErrHttpRequestFileContentType - the content type does not match the detected type.
-	ErrHttpRequestFileContentType = mrerr.NewProto(
-		"errHttpRequestFileContentType", mrerr.ErrorKindUser, "the content type '{{ .value }}' does not match the detected type")
+	ErrHttpRequestFileContentType = mrerr.NewKindUser("RequestFileContentType", "the content type '{Value}' does not match the detected type")
 
 	// ErrHttpRequestFileUnsupportedType - unsupported file type.
-	ErrHttpRequestFileUnsupportedType = mrerr.NewProto(
-		"errHttpRequestFileUnsupportedType", mrerr.ErrorKindUser, "unsupported file type '{{ .value }}'")
+	ErrHttpRequestFileUnsupportedType = mrerr.NewKindUser("RequestFileUnsupportedType", "unsupported file type '{Value}'")
+
+	// ErrHttpRequestImageSize - invalid image size (width, height).
+	ErrHttpRequestImageSize = mrerr.NewKindUser("ErrHttpRequestImageSize", "invalid image size (width, height)")
 
 	// ErrHttpRequestImageWidthMax - invalid image width - max.
-	ErrHttpRequestImageWidthMax = mrerr.NewProto(
-		"errHttpRequestImageWidthMax", mrerr.ErrorKindUser, "invalid image width, max size = {{ .value }}px")
+	ErrHttpRequestImageWidthMax = mrerr.NewKindUser("RequestImageWidthMax", "invalid image width, max size = {Value}px")
 
 	// ErrHttpRequestImageHeightMax - invalid image height - max.
-	ErrHttpRequestImageHeightMax = mrerr.NewProto(
-		"errHttpRequestImageHeightMax", mrerr.ErrorKindUser, "invalid image height, max size = {{ .value }}px")
+	ErrHttpRequestImageHeightMax = mrerr.NewKindUser("RequestImageHeightMax", "invalid image height, max size = {Value}px")
 )
 
 // WrapFileError - оборачивает ошибки связанные с парсингом файла.
 func WrapFileError(err error, name string) error {
-	if ErrHttpRequestFileSizeMin.Is(err) {
+	if ErrHttpRequestFileSizeMin.Is(err) { // вложенные ошибки не учитываются
 		return mrerr.NewCustomError(name, err)
 	}
 
-	if ErrHttpRequestFileSizeMax.Is(err) {
+	if ErrHttpRequestFileSizeMax.Is(err) { // вложенные ошибки не учитываются
 		return mrerr.NewCustomError(name, err)
 	}
 
-	if ErrHttpRequestFileExtension.Is(err) {
+	if ErrHttpRequestFileExtension.Is(err) { // вложенные ошибки не учитываются
 		return mrerr.NewCustomError(name, err)
 	}
 
-	if ErrHttpRequestFileContentType.Is(err) {
+	if ErrHttpRequestFileContentType.Is(err) { // вложенные ошибки не учитываются
 		return mrerr.NewCustomError(name, err)
 	}
 
-	if ErrHttpRequestFileUnsupportedType.Is(err) {
+	if ErrHttpRequestFileUnsupportedType.Is(err) { // вложенные ошибки не учитываются
 		return mrerr.NewCustomError(name, err)
 	}
 
@@ -63,11 +63,11 @@ func WrapFileError(err error, name string) error {
 
 // WrapImageError - оборачивает ошибки связанные с парсингом изображения.
 func WrapImageError(err error, name string) error {
-	if ErrHttpRequestImageWidthMax.Is(err) {
+	if ErrHttpRequestImageWidthMax.Is(err) { // вложенные ошибки не учитываются
 		return mrerr.NewCustomError(name, err)
 	}
 
-	if ErrHttpRequestImageHeightMax.Is(err) {
+	if ErrHttpRequestImageHeightMax.Is(err) { // вложенные ошибки не учитываются
 		return mrerr.NewCustomError(name, err)
 	}
 

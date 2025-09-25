@@ -3,17 +3,18 @@ package mrresp
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-sysmess/mrlang"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlocale/model"
+	"github.com/mondegor/go-sysmess/mrlog"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
-	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
+	"github.com/mondegor/go-webcore/mrtrace/distribute"
 )
 
 type (
@@ -21,8 +22,14 @@ type (
 	ErrorSender struct {
 		encoder      mrserver.ResponseEncoder
 		errorHandler mrcore.ErrorHandler
+		logger       mrlog.Logger
+		parserLocale parserLocale
 		statusGetter mrserver.ErrorStatusGetter
 		isDebug      bool
+	}
+
+	parserLocale interface {
+		Localizer(r *http.Request) mrcore.Localizer
 	}
 )
 
@@ -30,12 +37,16 @@ type (
 func NewErrorSender(
 	encoder mrserver.ResponseEncoder,
 	errorHandler mrcore.ErrorHandler,
+	logger mrlog.Logger,
+	parserLocale parserLocale,
 	statusGetter mrserver.ErrorStatusGetter,
 	isDebug bool,
 ) *ErrorSender {
 	return &ErrorSender{
 		encoder:      encoder,
 		errorHandler: errorHandler,
+		logger:       logger,
+		parserLocale: parserLocale,
 		statusGetter: statusGetter,
 		isDebug:      isDebug,
 	}
@@ -61,43 +72,67 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 			goto InternalErrorSection
 		}
 
+		rs.errorHandler.Handle(ctx, customError.Err()) // логируется пользовательская ошибка
+
 		sendResponse(
 			http.StatusBadRequest,
-			rs.getErrorListResponse(r.Context(), customError),
+			rs.getErrorListResponse(r, customError),
 		)
 
 		return // OK, пользовательская ошибка обработана
 	}
 
 	if customErrorList, ok := err.(mrerr.CustomErrors); ok { //nolint:errorlint
-		for _, customError := range customErrorList {
-			if !customError.IsValid() {
-				err = customError.Err() // берётся первая попавшаяся необработанная ошибка
+		hasInvalidError := false
 
-				goto InternalErrorSection
+		for _, customError := range customErrorList {
+			if hasInvalidError || customError.IsValid() {
+				rs.errorHandler.Handle(ctx, customError.Err()) // логируются все ошибки кроме первой невалидной
+
+				continue
 			}
+
+			hasInvalidError = true
+			err = customError.Err() // здесь возвращается внутренняя или системная ошибка
+		}
+
+		if hasInvalidError {
+			goto InternalErrorSection
 		}
 
 		sendResponse(
 			http.StatusBadRequest,
-			rs.getErrorListResponse(r.Context(), customErrorList...),
+			rs.getErrorListResponse(r, customErrorList...),
 		)
 
-		return // OK, пользовательская ошибка обработана
+		return // OK, список пользовательских ошибок обработан
 	}
 
 InternalErrorSection:
 
-	// сюда приходят следующие виды ошибок:
-	// 1. AppError + Internal/System/User;
-	// 2. ProtoAppError + Internal/System/User (нужно найти место их создания и добавить у для них вызов New()/Wrap());
-	// 3. остальные ошибки: которые не были обёрнуты в ProtoAppError (нужно найти место их создания и обернуть);
-	rs.errorHandler.PerformWithCommit(
+	// в эту секцию поступают следующие виды ошибок:
+	// 1. ошибки: InstantError kind=User/Internal/System;
+	// 2. ProtoError kind=User/Internal/System (требуется найти место их создания и добавить для них вызов одного из методов New/Wrap);
+	// 3. остальные ошибки: которые не были обёрнуты в InstantError (требуется найти место их создания и вложить их в InstantError);
+	rs.errorHandler.HandleWith(
 		ctx,
 		err,
-		func(errType mrcore.AnalyzedErrorType, err *mrerr.AppError) {
+		func(analyzedKind mrerr.ErrorKind, err error) {
+			status := rs.statusGetter.ErrorStatus(analyzedKind, err)
+
+			if status == http.StatusBadRequest {
+				sendResponse(
+					status,
+					[]ErrorAttribute{
+						NewErrorAttribute(rs.parserLocale.Localizer(r), err, rs.isDebug),
+					},
+				)
+
+				return
+			}
+
 			sendResponse(
-				rs.statusGetter.ErrorStatus(errType, err),
+				status,
 				rs.getErrorDetailsResponse(r, err),
 			)
 		},
@@ -116,37 +151,39 @@ func (rs *ErrorSender) sendStructResponse(
 		status = http.StatusUnprocessableEntity
 		bytes = nil
 
-		mrlog.Ctx(ctx).Error().Err(mrcore.ErrHttpResponseParseData.Wrap(err)).Msg("marshal failed")
+		rs.logger.Error(ctx, "marshal failed", "error", mr.ErrHttpResponseParseData.Wrap(err))
 	}
 
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
-	mrlib.Write(ctx, w, bytes)
+	mrlib.Write(ctx, rs.logger, w, bytes)
 }
 
-func (rs *ErrorSender) getErrorListResponse(ctx context.Context, errors ...*mrerr.CustomError) ErrorListResponse {
+func (rs *ErrorSender) getErrorListResponse(r *http.Request, errors ...*mrerr.CustomError) ErrorListResponse {
+	lz := rs.parserLocale.Localizer(r)
 	attrs := make([]ErrorAttribute, len(errors))
 
 	for i, customError := range errors {
-		attrs[i].ID = customError.CustomCode()
-		attrs[i].Value = customError.Err().Translate(mrlang.Ctx(ctx)).Reason
-
-		if rs.isDebug {
-			attrs[i].DebugInfo = rs.debugInfo(customError.Err())
-		}
+		attrs[i] = NewErrorAttribute(lz, customError, rs.isDebug)
 	}
 
 	return attrs
 }
 
-func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.AppError) ErrorDetailsResponse {
-	errMessage := appError.Translate(mrlang.Ctx(r.Context()))
+func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, err error) ErrorDetailsResponse {
+	errorMessage := model.ParseErrorMessage(rs.parserLocale.Localizer(r).TranslateError(err))
+	errorTraceID := distribute.RequestID(r.Context())
+
+	if e, ok := err.(interface{ ID() string }); ok && e.ID() != "" {
+		errorTraceID = e.ID()
+	}
+
 	response := ErrorDetailsResponse{
-		Title:        errMessage.Reason,
-		Details:      errMessage.DetailsToString(),
+		Title:        errorMessage.Reason,
+		Details:      errorMessage.Details,
 		Request:      r.Method + " " + r.URL.Path,
 		Time:         time.Now().UTC().Format(time.RFC3339),
-		ErrorTraceID: appError.InstanceID(),
+		ErrorTraceID: errorTraceID,
 	}
 
 	if rs.isDebug {
@@ -154,17 +191,8 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, appError *mrerr.
 			response.Details += "\n"
 		}
 
-		response.Details += "DebugInfo: " + rs.debugInfo(appError)
+		response.Details += "DebugInfo: " + err.Error()
 	}
 
 	return response
-}
-
-func (rs *ErrorSender) debugInfo(err *mrerr.AppError) string {
-	return fmt.Sprintf(
-		"errCode=%s; errKind=%s; err={%s}",
-		err.Code(),
-		err.Kind(),
-		err.Error(),
-	)
 }

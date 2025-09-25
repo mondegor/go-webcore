@@ -22,7 +22,7 @@ func WithFileMaxSize(value uint64) FileOption {
 }
 
 // WithFileMaxFiles - устанавливает опцию maxFiles для File.
-func WithFileMaxFiles(value uint32) FileOption {
+func WithFileMaxFiles(value uint64) FileOption {
 	return func(f *File) {
 		f.maxFiles = value
 	}
@@ -39,7 +39,7 @@ func WithFileCheckRequestContentType(value bool) FileOption {
 func WithFileAllowedMimeTypes(values []mrlib.MimeType) FileOption {
 	return func(f *File) {
 		if len(values) > 0 {
-			f.allowedMimeTypes = mrlib.NewMimeTypeList(f.logger, values)
+			f.allowedMimeTypes = mrlib.NewMimeTypeList(values)
 		}
 	}
 }

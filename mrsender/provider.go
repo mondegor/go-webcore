@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	ContentTypePlain = "text/plain" // ContentTypePlain - простой текст
+	// ContentTypePlain - простой текст.
+	ContentTypePlain = "text/plain"
 )
 
 type (

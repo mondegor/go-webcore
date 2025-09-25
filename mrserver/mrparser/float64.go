@@ -3,19 +3,24 @@ package mrparser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
 type (
 	// Float64 - парсер числа с плавающей запятой.
-	Float64 struct{}
+	Float64 struct {
+		logger mrlog.Logger
+	}
 )
 
 // NewFloat64 - создаёт объект Float64.
-func NewFloat64() *Float64 {
-	return &Float64{}
+func NewFloat64(logger mrlog.Logger) *Float64 {
+	return &Float64{
+		logger: logger,
+	}
 }
 
 // FilterFloat64 - возвращает число с плавающей запятой поступившее из внешнего запроса.
@@ -23,7 +28,7 @@ func NewFloat64() *Float64 {
 func (p *Float64) FilterFloat64(r *http.Request, key string) float64 {
 	value, err := mrreq.ParseFloat64(r.URL.Query(), key, false)
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+		p.logger.Warn(r.Context(), "FilterFloat64", "error", err)
 
 		return 0
 	}
@@ -36,7 +41,7 @@ func (p *Float64) FilterFloat64(r *http.Request, key string) float64 {
 func (p *Float64) FilterRangeFloat64(r *http.Request, key string) mrtype.RangeFloat64 {
 	value, err := mrreq.ParseRangeFloat64(r.URL.Query(), key)
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+		p.logger.Warn(r.Context(), "FilterRangeFloat64", "error", err)
 
 		return mrtype.RangeFloat64{}
 	}

@@ -21,10 +21,10 @@ type (
 		Run() error
 	}
 
-	// StartingProcess - содержит информацию о процессе находящемся в момент запуска.
-	StartingProcess struct {
+	// ProcessSync - содержит информацию о процессе находящемся в момент запуска.
+	ProcessSync struct {
 		Caption      string
-		ReadyTimeout time.Duration
-		Ready        chan struct{}
+		readyTimeout time.Duration
+		ready        chan struct{}
 	}
 )

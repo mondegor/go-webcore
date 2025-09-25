@@ -5,9 +5,10 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrlib"
-	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
@@ -70,7 +71,7 @@ func NewImage(logger mrlog.Logger, opts ...ImageOption) *Image {
 // FormImage - возвращает информацию об изображении со ссылкой для чтения файла изображения из MultipartForm.
 // WARNING: you don't forget to call result.Body.Close().
 func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
-	hdr, err := mrreq.FormFile(r, key)
+	hdr, err := mrreq.FormFile(r, p.file.logger, key)
 	if err != nil {
 		return mrtype.Image{}, err
 	}
@@ -81,7 +82,7 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 
 	file, err := hdr.Open()
 	if err != nil {
-		return mrtype.Image{}, mrcore.ErrHttpMultipartFormFile.Wrap(err, key)
+		return mrtype.Image{}, mr.ErrHttpMultipartFormFile.Wrap(err, key)
 	}
 
 	contentType := p.file.detectedContentType(hdr)
@@ -89,7 +90,7 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	meta, err := p.decode(file, contentType)
 	if err != nil {
 		if err := file.Close(); err != nil {
-			mrlog.Ctx(r.Context()).Error().Err(err).Msg("mrparser.FormImage: error when closing file image")
+			p.file.logger.Error(r.Context(), "mrparser.FormImage: error when closing file image", "error", err)
 		}
 
 		return mrtype.Image{}, err
@@ -101,7 +102,7 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 			OriginalName: hdr.Filename,
 			Width:        meta.width,
 			Height:       meta.height,
-			Size:         uint64(hdr.Size),
+			Size:         uint64(hdr.Size), //nolint:gosec
 		},
 		Body: file,
 	}, nil
@@ -120,7 +121,7 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageConte
 	var buf bytes.Buffer
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
-		return mrtype.ImageContent{}, mrcore.ErrInternal.Wrap(err)
+		return mrtype.ImageContent{}, mr.ErrInternal.Wrap(err)
 	}
 
 	return mrtype.ImageContent{
@@ -131,7 +132,7 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageConte
 
 // FormImages - возвращает массив заголовков на файлы изображений из MultipartForm.
 func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, error) {
-	fds, err := mrreq.FormFiles(r, key, 0)
+	fds, err := mrreq.FormFiles(r, p.file.logger, key, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +141,11 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 		return nil, nil
 	}
 
-	countFiles := p.file.allowedFiles(uint32(len(fds)))
+	countFiles := uint64(len(fds))
+
+	if p.file.maxFiles > 0 && countFiles > p.file.maxFiles {
+		countFiles = p.file.maxFiles
+	}
 
 	if err = p.file.checkTotalSize(fds, countFiles); err != nil {
 		return nil, err
@@ -148,7 +153,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 
 	images := make([]mrtype.ImageHeader, 0, countFiles)
 
-	for i := uint32(0); i < countFiles; i++ {
+	for i := uint64(0); i < countFiles; i++ {
 		err = func() error { // for defer file.Close()
 			if err := p.file.checkFile(fds[i]); err != nil {
 				return err
@@ -156,7 +161,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 
 			file, err := fds[i].Open()
 			if err != nil {
-				return mrcore.ErrHttpMultipartFormFile.Wrap(err, key)
+				return mr.ErrHttpMultipartFormFile.Wrap(err, key)
 			}
 
 			defer file.Close()
@@ -176,7 +181,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 						OriginalName: fds[i].Filename,
 						Width:        meta.width,
 						Height:       meta.height,
-						Size:         uint64(fds[i].Size),
+						Size:         uint64(fds[i].Size), //nolint:gosec
 					},
 					Header: fds[i],
 				},
@@ -196,6 +201,10 @@ func (p *Image) decode(file multipart.File, contentType string) (imageMeta, erro
 	cfg, err := mrlib.DecodeImageConfig(file, contentType)
 	if err != nil {
 		return imageMeta{}, err
+	}
+
+	if cfg.Width < 0 || cfg.Height < 0 {
+		return imageMeta{}, ErrHttpRequestImageSize.New()
 	}
 
 	if p.maxWidth > 0 && uint64(cfg.Width) > p.maxWidth {

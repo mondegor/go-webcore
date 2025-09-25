@@ -3,7 +3,8 @@ package mrparser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 )
@@ -12,13 +13,15 @@ type (
 	// String - парсер строки.
 	String struct {
 		pathFunc mrserver.RequestParserParamFunc
+		logger   mrlog.Logger
 	}
 )
 
 // NewString - создаёт объект String.
-func NewString(pathFunc mrserver.RequestParserParamFunc) *String {
+func NewString(pathFunc mrserver.RequestParserParamFunc, logger mrlog.Logger) *String {
 	return &String{
 		pathFunc: pathFunc,
+		logger:   logger,
 	}
 }
 
@@ -45,7 +48,7 @@ func (p *String) RawParamString(r *http.Request, name string) *string {
 func (p *String) FilterString(r *http.Request, key string) string {
 	value, err := mrreq.ParseStr(r.URL.Query(), key, false)
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+		p.logger.Warn(r.Context(), "FilterString", "error", err)
 
 		return ""
 	}

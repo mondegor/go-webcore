@@ -1,28 +1,53 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/mondegor/go-sysmess/mrlog/litelog"
+	"github.com/mondegor/go-sysmess/mrlog/slog"
+
 	"github.com/mondegor/go-webcore/mrcrypt"
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 func main() {
-	logger := mrlog.Default().With().Str("example", "mrcrypt").Logger()
+	l, _ := slog.NewLoggerAdapter(slog.WithWriter(os.Stdout))
+	logger := litelog.NewLogger(l)
 
-	lib := mrcrypt.New(logger)
+	value, _ := mrcrypt.GenerateDigits(16)
+	logger.Debug("GenerateDigits", "value", value)
 
-	logger.Info().Msgf("GenDigitCode: %s", lib.GenDigitCode(16))
-	logger.Info().Msgf("GenTokenBase64: %s", lib.GenTokenBase64(16))
-	logger.Info().Msgf("GenTokenHex: %s", lib.GenTokenHex(16))
-	logger.Info().Msgf("GenDigitCode-with-error: %s", lib.GenDigitCode(20))
+	value, _ = mrcrypt.GenerateHex(16)
+	logger.Info("GenTokenHex", "value", value)
 
-	logger.Info().Msgf("GenPassword: %s", lib.GenPassword(64, mrcrypt.PassAll))
+	value, _ = mrcrypt.GenerateToken(64)
+	logger.Info("GenerateToken", "value", value)
 
-	pw := lib.GenPassword(12, mrcrypt.PassAbc)
-	logger.Info().Msgf("PasswordStrength 12 abc: %s - %s", pw, lib.PasswordStrength(pw))
+	valueBytes, _ := mrcrypt.GenerateBytes([]byte("abc123.,:"), 16)
+	logger.Info("GenerateBytes", "value", string(valueBytes))
 
-	pw = lib.GenPassword(8, mrcrypt.PassAbcNumerals)
-	logger.Info().Msgf("PasswordStrength 8 abc+num: %s - %s", pw, lib.PasswordStrength(pw))
+	pwgen := mrcrypt.NewPasswordGenerator()
 
-	pw = lib.GenPassword(12, mrcrypt.PassAll)
-	logger.Info().Msgf("PasswordStrength 12 all: %s - %s", pw, lib.PasswordStrength(pw))
+	logger.Info("GenPassword", "password", pwgen.Generate(16, mrcrypt.PassAll))
+
+	pw := pwgen.Generate(12, mrcrypt.PassAbc)
+	logger.Info("PasswordStrength 12 abc", "password", pw, "strength", mrcrypt.PasswordStrength(pw))
+
+	pw = pwgen.Generate(9, mrcrypt.PassAbcNumerals)
+	logger.Info("PasswordStrength 9 abc+num", "password", pw, "strength", mrcrypt.PasswordStrength(pw))
+
+	pw = pwgen.Generate(12, mrcrypt.PassAll)
+	logger.Info("PasswordStrength 12 all", "password", pw, "strength", mrcrypt.PasswordStrength(pw))
+
+	fmt.Println(mrcrypt.PasswordStrength("<rin>24zD*~"))
+	fmt.Println(mrcrypt.PasswordStrength("<rin>24xX.vD"))
+	fmt.Println(mrcrypt.PasswordStrength("12345aAlowD"))
+	fmt.Println(mrcrypt.PasswordStrength("12345aAl.D"))
+	fmt.Println(mrcrypt.PasswordStrength("123eeeeddggDDll"))
+	fmt.Println(mrcrypt.PasswordStrength("1234567890a"))
+	fmt.Println(mrcrypt.PasswordStrength("12345678.a"))
+	fmt.Println(mrcrypt.PasswordStrength("123456D.a"))
+	fmt.Println(mrcrypt.PasswordStrength("12345678D"))
+	fmt.Println(mrcrypt.PasswordStrength("123456.D"))
+	fmt.Println(mrcrypt.PasswordStrength("1234s.D"))
 }

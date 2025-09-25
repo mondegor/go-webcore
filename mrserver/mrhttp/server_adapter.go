@@ -3,12 +3,11 @@ package mrhttp
 import (
 	"context"
 	"errors"
-	"net"
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlog"
 )
 
 // Диаграмма действия таймаутов http сервера.
@@ -32,19 +31,17 @@ type (
 		caption         string
 		srv             *http.Server
 		shutdownTimeout time.Duration
+		logger          mrlog.Logger
 	}
 )
 
-// NewAdapter - создаёт объект ServerAdapter.
-func NewAdapter(ctx context.Context, handler http.Handler, opts ...Option) *Adapter {
+// NewAdapter - создаёт объект Adapter.
+func NewAdapter(handler http.Handler, opts ...Option) *Adapter {
 	httpServer := &http.Server{
 		Handler: handler,
 		// MaxHeaderBytes: 16 * 1024,
 		ReadTimeout:  defaultReadTimeout,
 		WriteTimeout: defaultWriteTimeout,
-		BaseContext: func(_ net.Listener) context.Context {
-			return ctx
-		},
 	}
 
 	a := &Adapter{
@@ -55,6 +52,10 @@ func NewAdapter(ctx context.Context, handler http.Handler, opts ...Option) *Adap
 
 	for _, opt := range opts {
 		opt(a)
+	}
+
+	if a.logger != nil && a.caption != "" {
+		a.logger = a.logger.WithAttrs("server_name", a.caption)
 	}
 
 	return a
@@ -72,35 +73,37 @@ func (a *Adapter) ReadyTimeout() time.Duration {
 
 // Start - запуск http сервера.
 func (a *Adapter) Start(ctx context.Context, ready func()) error {
-	logger := mrlog.Ctx(ctx).With().Str("server", a.caption).Logger()
-	logger.Info().Msgf("Starting the server with address: %s", a.srv.Addr)
+	a.log(ctx, "Starting the server with address: "+a.srv.Addr)
 
-	if ready != nil {
-		ready()
-	}
+	ready()
 
 	if err := a.srv.ListenAndServe(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
-			return mrcore.ErrInternal.Wrap(err)
+			return mr.ErrInternal.Wrap(err)
 		}
 	}
 
-	logger.Info().Msg("The server has been stopped")
+	a.log(ctx, "The server has been stopped")
 
 	return nil
 }
 
 // Shutdown - корректная остановка http сервера.
 func (a *Adapter) Shutdown(ctx context.Context) error {
-	logger := mrlog.Ctx(ctx).With().Str("server", a.caption).Logger()
-	logger.Info().Msg("Shutting down the server...")
+	a.log(ctx, "Shutting down the server...")
 
 	ctx, cancel := context.WithTimeout(ctx, a.shutdownTimeout)
 	defer cancel()
 
 	if err := a.srv.Shutdown(ctx); err != nil {
-		return mrcore.ErrInternal.Wrap(err)
+		return mr.ErrInternal.Wrap(err)
 	}
 
 	return nil
+}
+
+func (a *Adapter) log(ctx context.Context, msg string) {
+	if a.logger != nil {
+		a.logger.Info(ctx, msg)
+	}
 }

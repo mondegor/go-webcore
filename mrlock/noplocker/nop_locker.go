@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/mondegor/go-webcore/mrlock"
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-webcore/mrsender"
 )
 
 const (
@@ -14,12 +14,16 @@ const (
 
 type (
 	// Locker - заглушка реализующая интерфейс блокировщика указанного ключа.
-	Locker struct{}
+	Locker struct {
+		tracer mrsender.Tracer
+	}
 )
 
 // New - создаёт объект Locker.
-func New() *Locker {
-	return &Locker{}
+func New(tracer mrsender.Tracer) *Locker {
+	return &Locker{
+		tracer: tracer,
+	}
 }
 
 // Lock - эмулирует блокировку указанного ключа с временем блокировки по умолчанию
@@ -43,10 +47,10 @@ func (l *Locker) LockWithExpiry(ctx context.Context, key string, expiry time.Dur
 }
 
 func (l *Locker) traceCmd(ctx context.Context, command, key string) {
-	mrlog.Ctx(ctx).
-		Trace().
-		Str("source", nopLockerName).
-		Str("cmd", command).
-		Str("key", key).
-		Send()
+	l.tracer.Trace(
+		ctx,
+		"source", nopLockerName,
+		"cmd", command,
+		"key", key,
+	)
 }

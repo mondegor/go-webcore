@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	VarRestOfURL = "{{restOfUrl}}" // VarRestOfURL - переменная остатка пути
+	// VarRestOfURL - переменная остатка пути.
+	VarRestOfURL = "{{restOfUrl}}"
 )
 
 type (

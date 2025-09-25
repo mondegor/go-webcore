@@ -1,24 +1,48 @@
 package schedule
 
-import "github.com/mondegor/go-webcore/mrworker"
+import (
+	"time"
+
+	"github.com/mondegor/go-webcore/mrworker"
+)
 
 type (
 	// Option - настройка объекта TaskScheduler.
-	Option func(s *TaskScheduler)
+	Option func(o *options)
 )
 
 // WithCaption - устанавливает опцию caption для TaskScheduler.
 func WithCaption(value string) Option {
-	return func(s *TaskScheduler) {
+	return func(o *options) {
 		if value != "" {
-			s.caption = value
+			o.caption = value
+		}
+	}
+}
+
+// WithCaptionPrefix - устанавливает опцию caption для TaskScheduler.
+func WithCaptionPrefix(value string) Option {
+	return func(o *options) {
+		if value != "" {
+			o.captionPrefix = value
+		}
+	}
+}
+
+// WithReadyTimeout - устанавливает опцию readyTimeout для TaskScheduler.
+func WithReadyTimeout(value time.Duration) Option {
+	return func(o *options) {
+		if value > 0 {
+			o.readyTimeout = value
 		}
 	}
 }
 
 // WithTasks - устанавливает опцию tasks для TaskScheduler.
 func WithTasks(values ...mrworker.Task) Option {
-	return func(s *TaskScheduler) {
-		s.tasks = values
+	return func(o *options) {
+		if len(values) > 0 {
+			o.tasks = values
+		}
 	}
 }

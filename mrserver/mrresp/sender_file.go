@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
@@ -15,13 +16,15 @@ type (
 	// FileSender - формирует и отправляет клиенту ответ с указанным файлом.
 	FileSender struct {
 		*Sender
+		logger mrlog.Logger
 	}
 )
 
 // NewFileSender - создаёт объект FileSender.
-func NewFileSender(base *Sender) *FileSender {
+func NewFileSender(base *Sender, logger mrlog.Logger) *FileSender {
 	return &FileSender{
 		Sender: base,
+		logger: logger,
 	}
 }
 
@@ -50,7 +53,7 @@ func (rs *FileSender) sendFile(ctx context.Context, w http.ResponseWriter, file 
 	w.WriteHeader(http.StatusOK)
 
 	if _, err := io.Copy(w, file.Body); err != nil {
-		mrlog.Ctx(ctx).Error().Err(err).Msgf("error file %s", file.FileInfo.Path)
+		rs.logger.Error(ctx, "error file", "file", file.FileInfo.Path, "error", err)
 	}
 
 	return nil

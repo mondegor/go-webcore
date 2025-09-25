@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
 )
 
 const (
-	Placeholder = "{{path}}" // Placeholder - плейсхолдер в пути по умолчанию
+	// Placeholder - плейсхолдер в пути по умолчанию.
+	Placeholder = "{{path}}"
 )
 
 type (
@@ -29,7 +30,7 @@ func New(basePath, placeholder string) (*Builder, error) {
 		}, nil
 	}
 
-	return nil, mrcore.ErrInternalWithDetails.New(fmt.Sprintf("placeholder '%s' is not found in path '%s'", placeholder, basePath))
+	return nil, mr.ErrInternal.Wrap(fmt.Errorf("placeholder '%s' is not found in path '%s'", placeholder, basePath))
 }
 
 // BuildPath - comment method.

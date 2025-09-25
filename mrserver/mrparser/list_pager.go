@@ -3,7 +3,8 @@ package mrparser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 )
@@ -11,6 +12,7 @@ import (
 type (
 	// ListPager - парсер параметров для выборки части списка элементов.
 	ListPager struct {
+		logger             mrlog.Logger
 		paramNamePageIndex string
 		paramNamePageSize  string
 		pageSizeMax        uint64
@@ -27,8 +29,9 @@ type (
 )
 
 // NewListPager - создаёт объект ListPager.
-func NewListPager(opts ListPagerOptions) *ListPager {
+func NewListPager(logger mrlog.Logger, opts ListPagerOptions) *ListPager {
 	lp := ListPager{
+		logger:             logger,
 		paramNamePageIndex: "pageIndex",
 		paramNamePageSize:  "pageSize",
 		pageSizeMax:        1000,
@@ -64,7 +67,7 @@ func (p *ListPager) PageParams(r *http.Request) mrtype.PageParams {
 
 	if err != nil || value.Size == 0 || value.Size > p.pageSizeMax {
 		if err != nil {
-			mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+			p.logger.Warn(r.Context(), "PageParams", "error", err)
 		}
 
 		return mrtype.PageParams{

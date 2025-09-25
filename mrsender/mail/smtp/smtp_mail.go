@@ -7,8 +7,9 @@ import (
 	"net/textproto"
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+
+	"github.com/mondegor/go-webcore/mrsender"
 )
 
 const (
@@ -21,14 +22,16 @@ type (
 	MailClient struct {
 		address string
 		auth    smtp.Auth
+		tracer  mrsender.Tracer
 	}
 )
 
 // NewMailClient - создаёт объект MailClient.
-func NewMailClient(host, port, username, password string) *MailClient {
+func NewMailClient(host, port, username, password string, tracer mrsender.Tracer) *MailClient {
 	return &MailClient{
 		address: host + ":" + port,
 		auth:    smtp.PlainAuth("", username, password, host),
+		tracer:  tracer,
 	}
 }
 
@@ -36,11 +39,11 @@ func NewMailClient(host, port, username, password string) *MailClient {
 // Где from - электронный адрес отправителя, to - электронные адреса получателей.
 func (c *MailClient) SendMail(ctx context.Context, from string, to []string, header textproto.MIMEHeader, body string) error {
 	if from == "" {
-		return mrcore.ErrUseCaseRequiredDataIsEmpty.New("From address")
+		return mr.ErrUseCaseIncorrectInternalInputData.New("reason", "from address is empty")
 	}
 
 	if len(to) == 0 || to[0] == "" {
-		return mrcore.ErrUseCaseRequiredDataIsEmpty.New("To address")
+		return mr.ErrUseCaseIncorrectInternalInputData.New("reason", "to address is empty")
 	}
 
 	var buf bytes.Buffer
@@ -85,20 +88,17 @@ func (c *MailClient) SendMail(ctx context.Context, from string, to []string, hea
 	buf.WriteString("\r\n")
 	buf.WriteString(body)
 
-	mrlog.Ctx(ctx).
-		Trace().
-		Str("source", smtpMailClientName).
-		Str("cmd", "SendMail").
-		MsgFunc(
-			func() string {
-				return "SMTP-Header: \n" + buf.String() + "\n" +
-					"SMTP-From: " + from + "\n" +
-					"SMTP-To: " + strings.Join(to, ", ")
-			},
-		)
+	c.tracer.Trace(
+		ctx,
+		"source", smtpMailClientName,
+		"cmd", "SendMail",
+		"SMTP-Header", buf.String(),
+		"SMTP-From", from,
+		"SMTP-To", strings.Join(to, ", "),
+	)
 
 	if err := smtp.SendMail(c.address, c.auth, from, to, buf.Bytes()); err != nil {
-		return mrcore.ErrUseCaseOperationFailed.Wrap(err)
+		return mr.ErrUseCaseOperationFailed.Wrap(err)
 	}
 
 	return nil

@@ -1,0 +1,31 @@
+@startuml
+
+' !include config/sd/theme.iuml
+' !include config/sd/autonumber.iuml
+
+' title Получение ссылки на результат вычислений
+
+participant "User" as user order 10
+
+box "WebApp" #LightSteelBlue
+  participant "Controller" as app order 20
+end box
+
+user -> app: запуск приложения
+app -> app: иницилизация
+app -> app: парсинг параметров
+app -> app: создание общих компонентов, накат миграций
+app -> app: регистрация ошибок
+app -> app: создание API компонентов
+app -> app: создание модулей
+app -> app: создание планировщика
+app -> app: создание REST сервера
+app -> app: создание Internal сервера
+
+app -> app: запуск приложения
+app -> app: последовательный запуск: планировщика, REST сервера, Internal сервера
+app -> app: выполнение onStartup функции
+
+app -> app: ожидание команды завершения или системной ошибки
+
+@enduml

@@ -1,13 +1,16 @@
 package mrenum
 
 import (
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+)
+
+// Направление сортировки.
+const (
+	SortDirectionASC  SortDirection = iota // по возрастанию
+	SortDirectionDESC                      // по убыванию
 )
 
 const (
-	SortDirectionASC  SortDirection = iota // SortDirectionASC - сортировка по возрастанию
-	SortDirectionDESC                      // SortDirectionDESC - сортировка по убыванию
-
 	enumNameSortDirection = "SortDirection"
 )
 
@@ -36,7 +39,7 @@ func (e *SortDirection) ParseAndSet(value string) error {
 		return nil
 	}
 
-	return mrcore.ErrInternalKeyNotFoundInSource.New(value, enumNameSortDirection)
+	return mr.ErrInternalKeyNotFoundInSource.New(value, enumNameSortDirection)
 }
 
 // String - возвращает значение в виде строки.

@@ -39,14 +39,14 @@ func NewStatusFlow(list []StatusFlowItem) *StatusFlow {
 	}
 }
 
-// Exists - проверяет, что данный статус зарегистрирован в карте статусов.
+// Exists - сообщает, зарегистрирован ли данный статус в карте статусов.
 func (f *StatusFlow) Exists(status mrstatus.Getter) bool {
 	_, ok := f.registeredMap[status]
 
 	return ok
 }
 
-// Check - проверяет возможность переключения из указанного статуса в указанный статус.
+// Check - сообщает, возможно ли переключить состояние из указанного статуса в указанный статус.
 func (f *StatusFlow) Check(from, to mrstatus.Getter) bool {
 	toStatuses, ok := f.fromToMap[from]
 	if !ok {

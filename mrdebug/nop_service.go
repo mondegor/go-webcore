@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrlog"
 )
 
 type (
@@ -28,14 +28,14 @@ func (e *nopServiceError) Error() string {
 // Пример: appRunner.Add(mrdebug.PrepareNopServiceWithTimeoutToStart(ctx, "s1", 5 * time.Second)).
 func PrepareNopServiceWithTimeoutToStart(
 	ctx context.Context,
+	logger mrlog.Logger,
 	name string,
 	expiry time.Duration,
 ) (execute func() error, interrupt func(error)) {
 	ctx, cancel := context.WithTimeout(ctx, expiry)
-	logger := mrlog.Ctx(ctx)
 
 	return func() error {
-			logger.Info().Msgf("Running the NopService '%s' with timeout", name)
+			logger.Info(ctx, fmt.Sprintf("Running the NopService '%s' with timeout", name))
 			<-ctx.Done()
 
 			err := ctx.Err()
@@ -54,12 +54,12 @@ func PrepareNopServiceWithTimeoutToStart(
 
 			if errService, ok := err.(*nopServiceError); ok { //nolint:errorlint
 				if errService.name == name {
-					logger.Info().Msgf("Shutting down the NopService '%s' by timeout", name)
+					logger.Info(ctx, fmt.Sprintf("Shutting down the NopService '%s' by timeout", name))
 				} else {
-					logger.Info().Msgf("Shutting down the NopService '%s' by process '%s'", name, errService.name)
+					logger.Info(ctx, fmt.Sprintf("Shutting down the NopService '%s' by process '%s'", name, errService.name))
 				}
 			} else {
-				logger.Info().Msgf("Shutting down the NopService '%s' by another process", name)
+				logger.Info(ctx, fmt.Sprintf("Shutting down the NopService '%s' by another process", name))
 			}
 		}
 }

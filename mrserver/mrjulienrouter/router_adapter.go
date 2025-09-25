@@ -1,13 +1,15 @@
 package mrjulienrouter
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"reflect"
 	"runtime"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/mondegor/go-sysmess/mrlog"
 
-	"github.com/mondegor/go-webcore/mrlog"
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
@@ -58,7 +60,8 @@ func (rt *RouterAdapter) RegisterMiddleware(handlers ...func(next http.Handler) 
 	for i := len(handlers) - 1; i >= 0; i-- {
 		rt.generalHandler = handlers[i](rt.generalHandler)
 
-		rt.logger.Debug().MsgFunc(
+		rt.logger.DebugFunc(
+			context.Background(),
 			func() string {
 				return "Registered Middleware " +
 					runtime.FuncForPC(reflect.ValueOf(rt.generalHandler).Pointer()).Name()
@@ -84,7 +87,7 @@ func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFu
 		path += " -> " + convertedPath
 	}
 
-	rt.logger.Debug().Msgf("- registered: %s %s", method, path)
+	rt.logger.Debug(context.Background(), fmt.Sprintf("- registered: %s %s", method, path))
 	rt.router.Handler(method, convertedPath, handler)
 }
 

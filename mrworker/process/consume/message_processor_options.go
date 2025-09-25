@@ -6,76 +6,89 @@ import (
 
 type (
 	// Option - настройка объекта MessageProcessor.
-	Option func(p *MessageProcessor)
+	Option func(o *options)
 )
 
 // WithCaption - устанавливает опцию caption для MessageProcessor.
 func WithCaption(value string) Option {
-	return func(p *MessageProcessor) {
+	return func(o *options) {
 		if value != "" {
-			p.caption = value
+			o.caption = value
+		}
+	}
+}
+
+// WithCaptionPrefix - устанавливает опцию caption для JobWrapper.
+func WithCaptionPrefix(value string) Option {
+	return func(o *options) {
+		if value != "" {
+			o.captionPrefix = value
 		}
 	}
 }
 
 // WithReadyTimeout - устанавливает опцию readyTimeout для MessageProcessor.
 func WithReadyTimeout(value time.Duration) Option {
-	return func(p *MessageProcessor) {
+	return func(o *options) {
 		if value > 0 {
-			p.readyTimeout = value
+			o.readyTimeout = value
 		}
-	}
-}
-
-// WithStartReadDelay - устанавливает опцию отложенного старта чтения данных.
-func WithStartReadDelay(value time.Duration) Option {
-	return func(p *MessageProcessor) {
-		p.startReadDelay = value
 	}
 }
 
 // WithReadPeriod - устанавливает опцию периода чтения данных консьюмером, когда он в состоянии простоя.
 func WithReadPeriod(value time.Duration) Option {
-	return func(p *MessageProcessor) {
+	return func(o *options) {
 		if value > 0 {
-			p.readPeriod = value
+			o.readPeriod = value
 		}
 	}
 }
 
-// WithCancelReadTimeout - устанавливает опцию таймаута на время отмены чтения данных
+// WithConsumerTimeout - устанавливает опцию таймаута на время отмены чтения данных
 // консьюмером при неожиданном завершении работы воркеров.
-func WithCancelReadTimeout(value time.Duration) Option {
-	return func(p *MessageProcessor) {
-		if value > 0 {
-			p.cancelReadTimeout = value
+func WithConsumerTimeout(read, write time.Duration) Option {
+	return func(o *options) {
+		if read > 0 {
+			o.consumerReadTimeout = read
+		}
+
+		if write > 0 {
+			o.consumerWriteTimeout = write
 		}
 	}
 }
 
 // WithHandlerTimeout - устанавливает опцию handlerTimeout выполнения обработчика сообщения.
 func WithHandlerTimeout(value time.Duration) Option {
-	return func(p *MessageProcessor) {
+	return func(o *options) {
 		if value > 0 {
-			p.handlerTimeout = value
+			o.handlerTimeout = value
 		}
 	}
 }
 
 // WithQueueSize - устанавливает опцию размера очереди обработки сообщений.
-func WithQueueSize(value uint32) Option {
-	return func(p *MessageProcessor) {
-		if p.queueSize > 0 {
-			p.queueSize = value
+func WithQueueSize(value uint64) Option {
+	return func(o *options) {
+		if o.queueSize > 0 {
+			o.queueSize = value
 		}
 	}
 }
 
 // WithWorkersCount - устанавливает опцию количества воркеров обрабатывающих сообщения.
-func WithWorkersCount(value uint16) Option {
-	return func(p *MessageProcessor) {
+func WithWorkersCount(value uint64) Option {
+	return func(o *options) {
 		if value > 0 {
-			p.workersCount = value
+			o.workersCount = value
 		}
+	}
+}
+
+// WithSignalExecuteHandler - comment func.
+func WithSignalExecuteHandler(ch <-chan struct{}) Option {
+	return func(o *options) {
+		o.signalExecute = ch
 	}
 }

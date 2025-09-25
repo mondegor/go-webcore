@@ -5,9 +5,14 @@ import (
 )
 
 const (
-	SourceEventSeparator = ":"           // SourceEventSeparator - разделитель между источником и названием события
-	DefaultSource        = "EmptySource" // DefaultSource - название источника по умолчанию
+	// SourceEventSeparator - разделитель между источником и названием события.
+	SourceEventSeparator = ":"
+
+	// DefaultSource - название источника по умолчанию.
+	DefaultSource = "EmptySource"
 )
+
+// :TODO: заменить object any ---> args ...any
 
 type (
 	// EventEmitter - отправитель событий.
@@ -24,7 +29,7 @@ type (
 	EventReceiveFunc func(ctx context.Context, eventName, source string, object any)
 )
 
-// Receive - реализация интерфейса EventReceiver для получения события.
+// Receive - реализация интерфейса EventReceiver в виде функции для получения события.
 func (f EventReceiveFunc) Receive(ctx context.Context, eventName, source string, object any) {
 	f(ctx, eventName, source, object)
 }

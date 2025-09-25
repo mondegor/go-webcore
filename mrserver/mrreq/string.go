@@ -3,7 +3,7 @@ package mrreq
 import (
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
 )
 
 const (
@@ -17,14 +17,14 @@ func ParseStr(getter valueGetter, key string, required bool) (string, error) {
 
 	if value == "" {
 		if required {
-			return "", mrcore.ErrHttpRequestParamEmpty.New(key)
+			return "", mr.ErrHttpRequestParamEmpty.New(key)
 		}
 
 		return "", nil
 	}
 
 	if len(value) > maxLenString {
-		return "", mrcore.ErrHttpRequestParamLenMax.New(key, maxLenString)
+		return "", mr.ErrHttpRequestParamLenMax.New(key, maxLenString)
 	}
 
 	return value, nil

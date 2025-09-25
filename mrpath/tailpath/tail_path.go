@@ -11,7 +11,7 @@ type (
 	}
 )
 
-// New - создаёт объект NewBuilderPath.
+// New - создаёт объект Builder.
 // sample: /base/dir/ -> /base/dir/path
 func New(basePath string) *Builder {
 	return &Builder{

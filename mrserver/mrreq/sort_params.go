@@ -4,7 +4,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+
 	"github.com/mondegor/go-webcore/mrtype"
 )
 
@@ -23,11 +24,11 @@ func ParseSortParams(getter valueGetter, keyField, keyDirection string) (mrtype.
 	}
 
 	if len(value) > maxLenSortField {
-		return mrtype.SortParams{}, mrcore.ErrHttpRequestParamLenMax.New(keyField, maxLenSortField)
+		return mrtype.SortParams{}, mr.ErrHttpRequestParamLenMax.New(keyField, maxLenSortField)
 	}
 
 	if !regexpSorterField.MatchString(value) {
-		return mrtype.SortParams{}, mrcore.ErrHttpRequestParseParam.New(keyField, "SortParams", value)
+		return mrtype.SortParams{}, mr.ErrHttpRequestParseParam.New(keyField, "SortParams", value)
 	}
 
 	var params mrtype.SortParams

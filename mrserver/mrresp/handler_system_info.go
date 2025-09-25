@@ -7,9 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrlib"
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 type (
@@ -19,7 +20,7 @@ type (
 		Version     string
 		Environment string
 		IsDebug     bool
-		LogLevel    mrlog.Level
+		LogLevel    string
 		StartedAt   time.Time
 		Processes   func(ctx context.Context) map[string]string
 	}
@@ -37,7 +38,7 @@ type (
 )
 
 // HandlerGetSystemInfoAsJSON - возвращает обработчик для формирования информации о запущенной системе.
-func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) {
+func HandlerGetSystemInfoAsJSON(logger mrlog.Logger, cfg SystemInfoConfig) (http.HandlerFunc, error) {
 	hostName, err := os.Hostname()
 	if err != nil {
 		return nil, err
@@ -49,7 +50,7 @@ func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) 
 		Environment: cfg.Environment,
 		HostName:    hostName,
 		IsDebug:     cfg.IsDebug,
-		LogLevel:    cfg.LogLevel.String(),
+		LogLevel:    cfg.LogLevel,
 		StartedAt:   cfg.StartedAt.Format(time.RFC3339Nano),
 	}
 
@@ -65,11 +66,11 @@ func HandlerGetSystemInfoAsJSON(cfg SystemInfoConfig) (http.HandlerFunc, error) 
 			status = http.StatusUnprocessableEntity
 			bytes = nil
 
-			mrlog.Ctx(r.Context()).Error().Err(mrcore.ErrHttpResponseParseData.Wrap(err)).Msg("marshal failed")
+			logger.Error(r.Context(), "marshal failed", "error", mr.ErrHttpResponseParseData.Wrap(err))
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
-		mrlib.Write(r.Context(), w, bytes)
+		mrlib.Write(r.Context(), logger, w, bytes)
 	}, nil
 }

@@ -6,75 +6,40 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
-	"strings"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrlang"
-	"github.com/rs/xid"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlog"
 
+	"github.com/mondegor/go-webcore/mraccess"
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrcore/mrapp"
 	"github.com/mondegor/go-webcore/mridempotency"
-	"github.com/mondegor/go-webcore/mrlog"
-	"github.com/mondegor/go-webcore/mrperms"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
+	"github.com/mondegor/go-webcore/mrserver/observe"
+	"github.com/mondegor/go-webcore/mrtrace/distribute"
 )
 
-// :TODO: вынести в настройки
+const (
+	// PrivilegePublic - привилегия для всех.
+	PrivilegePublic = "public"
+
+	// PermissionAnyUser - разрешение для любого пользователя.
+	PermissionAnyUser = "any-user"
+
+	// PermissionGuestOnly - разрешение только для гостя.
+	PermissionGuestOnly = "guest-only"
+)
 
 const (
+	// :TODO: вынести в настройки.
 	traceRequestBodyMaxLen  = 2048
 	traceResponseBodyMaxLen = 2048
 )
 
 // go get -u github.com/rs/xid
 
-// MiddlewareGeneral - промежуточный обработчик, который устанавливает в контекст
-// requestId, language, logger. А также другие параметры, которые используются в статистике запросов.
-func MiddlewareGeneral(
-	tr *mrlang.Translator,
-	observeRequestFunc func(l mrlog.Logger, start time.Time, sr *StatRequestReader, sw *StatResponseWriter),
-) func(next http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			start := time.Now()
-
-			requestID := xid.New().String()
-			logger := mrlog.Ctx(r.Context()).With().Str(mrapp.KeyRequestID, requestID).Logger()
-			w.Header().Add(mrreq.HeaderKeyRequestID, requestID)
-
-			if correlationID, err := mrreq.ParseCorrelationID(r.Header); err != nil || correlationID != "" {
-				if err != nil {
-					logger.Warn().Err(err).Msg("mrreq.ParseCorrelationID()")
-				} else {
-					logger = logger.With().Str(mrapp.KeyCorrelationID, correlationID).Logger()
-					requestID += mrapp.KeySeparator + correlationID
-				}
-			}
-
-			acceptLanguages := mrreq.ParseLanguage(r.Header)
-			logger.Debug().Msgf("Accept-Language: %s", strings.Join(acceptLanguages, ", "))
-
-			locale := tr.FindFirstLocale(acceptLanguages...)
-			logger.Info().
-				Str("method", r.Method).
-				Str("uri", r.RequestURI).
-				Str("language", locale.LangCode()).
-				Msg("request")
-
-			r = r.WithContext(logger.WithContext(locale.WithContext(mrapp.WithProcessContext(r.Context(), requestID))))
-			sr := NewStatRequestReader(r, traceRequestBodyMaxLen)
-			sw := NewStatResponseWriter(w, traceResponseBodyMaxLen)
-
-			defer observeRequestFunc(logger, start, sr, sw)
-
-			next.ServeHTTP(sw, sr.Request())
-		})
-	}
-}
-
 // MiddlewareRecoverHandler - промежуточный обработчик для перехвата panic.
-func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(next http.Handler) http.Handler {
+func MiddlewareRecoverHandler(logger mrlog.Logger, isDebug bool, fatalFunc http.HandlerFunc) func(next http.Handler) http.Handler {
 	if fatalFunc == nil {
 		fatalFunc = func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -98,15 +63,16 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 						os.Stderr.Write([]byte(fmt.Sprintf("; panic: %v\n", rvr)))
 						os.Stderr.Write(debug.Stack())
 					} else {
-						mrlog.Ctx(ctx).
-							Error().
-							Err(
-								mrcore.ErrInternalCaughtPanic.New(
-									errorMessage,
-									rvr,
-									string(debug.Stack()),
-								),
-							).Send()
+						logger.Error(
+							ctx,
+							"MiddlewareRecoverHandler",
+							"error",
+							mr.ErrInternalCaughtPanic.New(
+								errorMessage,
+								rvr,
+								string(debug.Stack()),
+							),
+						)
 					}
 
 					fatalFunc(w, r)
@@ -118,44 +84,161 @@ func MiddlewareRecoverHandler(isDebug bool, fatalFunc http.HandlerFunc) func(nex
 	}
 }
 
+// MiddlewareRequestID - промежуточный обработчик,
+// который устанавливает в контекст requestId, correlationId, traceId.
+func MiddlewareRequestID(logger mrlog.Logger, idGenerator mrcore.IdentifierGenerator) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requestID := idGenerator.GenID()
+			ctx := distribute.WithRequestID(r.Context(), requestID)
+			w.Header().Set(mrreq.HeaderKeyRequestID, requestID)
+
+			if correlationID, err := mrreq.ParseCorrelationID(r.Header); err != nil {
+				logger.Warn(ctx, "MiddlewareRequestID", "error", err)
+			} else if correlationID != "" {
+				ctx = distribute.WithCorrelationID(ctx, correlationID)
+				w.Header().Set(mrreq.HeaderKeyCorrelationID, correlationID)
+			}
+
+			r.Header.Del(mrreq.HeaderKeyUserIDSlashGroup)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+// MiddlewareObserver - промежуточный обработчик, который собирает статистику запросов.
+func MiddlewareObserver(
+	logger mrlog.Logger,
+	observer RequestStat,
+) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
+
+			logger.Info(r.Context(), "REQUEST",
+				"method", r.Method,
+				"uri", r.RequestURI,
+			)
+
+			sr := observe.NewRequestReader(r, traceRequestBodyMaxLen)
+			sw := observe.NewResponseWriter(w, traceResponseBodyMaxLen)
+
+			defer func() {
+				observer.Emit(
+					sr.Request(),
+					sr.Content(),
+					sr.Size(),
+					sw.Content(),
+					sw.Size(),
+					time.Since(start),
+					sw.StatusCode(),
+				)
+			}()
+
+			next.ServeHTTP(sw, sr.Request())
+		})
+	}
+}
+
 // MiddlewareHandlerAdapter - переходник с HttpHandlerFunc на http.HandlerFunc.
-func MiddlewareHandlerAdapter(s ErrorResponseSender) func(next HttpHandlerFunc) http.HandlerFunc {
+func MiddlewareHandlerAdapter(errSender ErrorResponseSender) func(next HttpHandlerFunc) http.HandlerFunc {
 	return func(next HttpHandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if err := next(w, r); err != nil {
-				s.SendError(w, r, err)
+				if mr.ErrUseCaseEntityNotFound.Is(err) { // подменяются только необёрнутые ошибки этого типа
+					err = mr.ErrHttpResourceNotFound.New()
+				}
+
+				errSender.SendError(w, r, err)
 			}
+		}
+	}
+}
+
+// MiddlewareHandlerCheckAccessToken - промежуточный обработчик запрещает доступ к обработчику авторизованному пользователю.
+func MiddlewareHandlerCheckAccessToken(logger mrlog.Logger, handlerName string) func(next HttpHandlerFunc) HttpHandlerFunc {
+	return func(next HttpHandlerFunc) HttpHandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) error {
+			logger.Debug(r.Context(), "MiddlewareHandlerCheckAccessToken", "handler", handlerName)
+
+			if accessToken := mrreq.ParseAccessToken(r.Header); accessToken != "" {
+				return mr.ErrHttpAccessForbidden.New()
+			}
+
+			return next(w, r)
 		}
 	}
 }
 
 // MiddlewareHandlerCheckAccess - промежуточный обработчик проверки доступа к секции и конечному обработчику.
 func MiddlewareHandlerCheckAccess(
-	handlerName string,
-	access mrperms.AccessRightsFactory,
-	privilege, permission string,
+	logger mrlog.Logger,
+	handlerName, privilege, permission string,
+	userProvider mraccess.MemberProvider,
+	userGroups mraccess.RightsGetter,
 ) func(next HttpHandlerFunc) HttpHandlerFunc {
 	return func(next HttpHandlerFunc) HttpHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {
-			mrlog.Ctx(r.Context()).Debug().Str("handler", handlerName).Msg("exec handler")
+			ctx := r.Context()
+			logger.Debug(
+				ctx,
+				"MiddlewareHandlerCheckAccess",
+				"handler", handlerName,
+				"privilege", privilege,
+				"permission", permission,
+			)
 
-			rights := access.NewAccessRights("administrators", "guests") // TODO: брать у пользователя
-
-			if rights.CheckPrivilege(privilege) && rights.CheckPermission(permission) {
-				return next(w, r)
+			accessToken := mrreq.ParseAccessToken(r.Header)
+			if accessToken == "" {
+				return mr.ErrHttpClientUnauthorized.New()
 			}
 
-			if rights.IsGuestAccess() {
-				return mrcore.ErrHttpClientUnauthorized.New()
+			currentUser, err := userProvider.MemberByToken(ctx, accessToken)
+			if err != nil {
+				if mr.ErrUseCaseAccessForbidden.Is(err) {
+					return mr.ErrHttpAccessForbidden.New()
+				}
+
+				return err
 			}
 
-			return mrcore.ErrHttpAccessForbidden.New()
+			logger.Debug(ctx, "current user", "userId", currentUser.ID().String())
+
+			userRights := userGroups.Rights(currentUser.Group())
+
+			if privilege != PrivilegePublic && !userRights.CheckPrivilege(privilege) {
+				return mr.ErrHttpAccessForbidden.New()
+			}
+
+			if !userRights.CheckPermission(permission) {
+				return mr.ErrHttpAccessForbidden.New()
+			}
+
+			// замена языка переданного клиентом в заголовке Accept-Language
+			// на язык, который был установлен пользователем
+			if code := currentUser.LangCode(); code != "" {
+				r.Header.Set(mrreq.HeaderKeyAcceptLanguage, code)
+			}
+
+			r.Header.Set(mrreq.HeaderKeyUserIDSlashGroup, currentUser.ID().String()+"/"+currentUser.Group()) // userId/realm/kind
+
+			if err = next(w, r); err != nil {
+				if mr.ErrUseCaseAccessForbidden.Is(err) {
+					return mr.ErrHttpAccessForbidden.New()
+				}
+
+				// если ошибка обработчика не связана с доступом к ресурсу
+				return err
+			}
+
+			return nil
 		}
 	}
 }
 
 // MiddlewareHandlerIdempotency - промежуточный обработчик для организации идемпотентных запросов.
-func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender ResponseSender) func(next HttpHandlerFunc) HttpHandlerFunc {
+func MiddlewareHandlerIdempotency(logger mrlog.Logger, provider mridempotency.Provider, sender ResponseSender) func(next HttpHandlerFunc) HttpHandlerFunc {
 	return func(next HttpHandlerFunc) HttpHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {
 			idempotencyKey := r.Header.Get(mrreq.HeaderKeyIdempotencyKey)
@@ -195,7 +278,7 @@ func MiddlewareHandlerIdempotency(provider mridempotency.Provider, sender Respon
 			}
 
 			if err = provider.Store(r.Context(), idempotencyKey, sw); err != nil {
-				mrlog.Ctx(r.Context()).Error().Err(err).Send()
+				logger.Error(r.Context(), "MiddlewareHandlerIdempotency->Store", "error", err)
 			}
 
 			return nil

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
 )
 
 type (
@@ -24,7 +24,7 @@ func (p *JsonDecoder) ParseToStruct(_ context.Context, content io.Reader, struct
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(structPointer); err != nil {
-		return mrcore.ErrHttpRequestParseData.New(err.Error())
+		return mr.ErrHttpRequestParseData.New(err)
 	}
 
 	return nil

@@ -1,19 +1,27 @@
 package main
 
 import (
-	"github.com/mondegor/go-sysmess/mrmsg"
+	"os"
 
-	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrargs"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlog/litelog"
+	"github.com/mondegor/go-sysmess/mrlog/slog"
 )
 
 func main() {
-	logger := mrlog.Default().With().Str("example", "errors").Logger()
+	l, _ := slog.NewLoggerAdapter(slog.WithWriter(os.Stdout))
+	logger := litelog.NewLogger(l)
 
-	logger.Error().Err(mrcore.ErrInternal).Msg("this is ErrInternal")
-	logger.Error().Err(mrcore.ErrInternalTypeAssertion.New("MY-TYPE", "MY-VALUE")).Send()
-	logger.Error().Err(mrcore.ErrInternal.New().WithAttr("MY-DATA-KEY", mrmsg.Data{"itemId": "id-001"})).Send()
-	logger.Error().Err(mrcore.ErrInternalWithDetails.New("this is ErrInternalWithDetails")).Send()
+	logger.Error("this is ErrInternal", "error", mr.ErrInternal)
+	logger.Error("this is ErrInternalTypeAssertion", "error", mr.ErrInternalTypeAssertion.New("MY-TYPE", "MY-VALUE"))
+	logger.Error("this is ErrInternal with attr", "error", mr.ErrInternal.New().WithAttr("MY-DATA-KEY", mrargs.Group{"itemId": "id-001"}))
 
-	logger.Fatal().Int("int1", 1).Int("int2", 2).Int("int3", 3).Msg(mrcore.ErrInternal.New().Error())
+	logger.Error(
+		"this is ErrInternal with attrs",
+		"error", mr.ErrInternal.New(),
+		"int1", 1,
+		"int2", 2,
+		"int3", 3,
+	)
 }

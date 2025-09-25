@@ -1,9 +1,11 @@
 package mrparser
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrlog"
+
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrtype"
 	"github.com/mondegor/go-webcore/mrview"
@@ -12,6 +14,7 @@ import (
 type (
 	// ListSorter - парсер параметров для сортировки списка элементов.
 	ListSorter struct {
+		logger                 mrlog.Logger
 		paramNameSortField     string
 		paramNameSortDirection string
 	}
@@ -24,8 +27,9 @@ type (
 )
 
 // NewListSorter - создаёт объект ListSorter.
-func NewListSorter(opts ListSorterOptions) *ListSorter {
+func NewListSorter(logger mrlog.Logger, opts ListSorterOptions) *ListSorter {
 	ls := ListSorter{
+		logger:                 logger,
 		paramNameSortField:     "sortField",
 		paramNameSortDirection: "sortDirection",
 	}
@@ -49,7 +53,7 @@ func (p *ListSorter) SortParams(r *http.Request, sorter mrview.ListSorter) mrtyp
 		p.paramNameSortDirection,
 	)
 	if err != nil {
-		mrlog.Ctx(r.Context()).Warn().Err(err).Send()
+		p.logger.Warn(r.Context(), "SortParams", "error", err)
 	}
 
 	if value.FieldName == "" {
@@ -57,7 +61,7 @@ func (p *ListSorter) SortParams(r *http.Request, sorter mrview.ListSorter) mrtyp
 	}
 
 	if !sorter.CheckField(value.FieldName) {
-		mrlog.Ctx(r.Context()).Warn().Msgf("sort field '%s' is not registered", value.FieldName)
+		p.logger.Warn(r.Context(), fmt.Sprintf("sort field '%s' is not registered", value.FieldName), "error", err)
 
 		return sorter.DefaultSort()
 	}

@@ -3,7 +3,7 @@ package mrreq
 import (
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
 )
 
 const (
@@ -20,7 +20,7 @@ func ParseStrList(getter valueGetter, key string) ([]string, error) {
 	}
 
 	if len(value) > maxLenStringsList {
-		return nil, mrcore.ErrHttpRequestParamLenMax.New(key, maxLenStringsList)
+		return nil, mr.ErrHttpRequestParamLenMax.New(key, maxLenStringsList)
 	}
 
 	items := strings.Split(value, ",")

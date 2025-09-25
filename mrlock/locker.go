@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	DefaultExpiry = time.Second // DefaultExpiry - истечение срока блокировки по умолчанию
+	// DefaultExpiry - истечение срока блокировки по умолчанию.
+	DefaultExpiry = time.Second
 )
 
 type (

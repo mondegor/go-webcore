@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlog"
 )
 
 type (
@@ -25,11 +25,11 @@ type (
 
 // PrepareProbesForCheck - возвращает функцию с заряженными пробами, для проверки работоспособности сервиса.
 // Если хотя бы одна проба не завершится успешно, то возвращаемая функция вернёт false.
-func PrepareProbesForCheck(probes ...ProbeChecker) func(ctx context.Context) bool {
+func PrepareProbesForCheck(logger mrlog.Logger, probes ...ProbeChecker) func(ctx context.Context) bool {
 	return func(ctx context.Context) bool {
 		for _, probe := range probes {
 			if err := probe.Check(ctx); err != nil {
-				mrlog.Ctx(ctx).Error().Err(err).Send()
+				logger.Error(ctx, "PrepareProbesForCheck", "error", err)
 
 				return false
 			}
@@ -41,7 +41,7 @@ func PrepareProbesForCheck(probes ...ProbeChecker) func(ctx context.Context) boo
 
 // PrepareProbes - возвращает функцию с заряженными пробами, для проверки работоспособности сервиса.
 // Сама возвращаемая функция возвращает список проведённых проб с их статусами выполнения.
-func PrepareProbes(probes ...ProbeChecker) func(ctx context.Context) []FinishedProbe {
+func PrepareProbes(logger mrlog.Logger, probes ...ProbeChecker) func(ctx context.Context) []FinishedProbe {
 	return func(ctx context.Context) []FinishedProbe {
 		info := make([]FinishedProbe, len(probes))
 
@@ -49,7 +49,7 @@ func PrepareProbes(probes ...ProbeChecker) func(ctx context.Context) []FinishedP
 			status := http.StatusOK
 
 			if err := probe.Check(ctx); err != nil {
-				mrlog.Ctx(ctx).Error().Err(err).Send()
+				logger.Error(ctx, "PrepareProbes", "error", err)
 
 				status = http.StatusUnprocessableEntity
 			}
@@ -71,6 +71,6 @@ func WithAppReadyProbe(app *AppHealth) func(ctx context.Context) error {
 			return nil
 		}
 
-		return mrcore.ErrUseCaseTemporarilyUnavailable.Wrap(errors.New("app is not ready"))
+		return mr.ErrUseCaseTemporarilyUnavailable.Wrap(errors.New("app is not ready"))
 	}
 }

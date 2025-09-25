@@ -1,21 +1,33 @@
 package main
 
 import (
+	"os"
+
+	"github.com/mondegor/go-sysmess/mrlog/litelog"
+	"github.com/mondegor/go-sysmess/mrlog/slog"
+
 	"github.com/mondegor/go-webcore/mrlib"
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 func main() {
-	logger := mrlog.Default().With().Str("example", "mimetype").Logger()
+	l, _ := slog.NewLoggerAdapter(slog.WithWriter(os.Stdout))
+	logger := litelog.NewLogger(l)
 
-	mime := mrlib.NewMimeTypeList(logger, getMimeTypeListFromConfig())
+	mime := mrlib.NewMimeTypeList(getMimeTypeListFromConfig())
 	jpegZip, _ := mime.MimeTypesByExts([]string{".jpeg", ".zip"})
 
-	logger.Info().Msgf(".json content-type: [%s]", mime.ContentType("json"))
-	logger.Info().Msgf(".jpeg content-type: [%s]", mime.ContentType(".jpeg"))
-	logger.Info().Msgf(".pdf content-type: [%s]", mime.ContentTypeByFileName("file-name.pdf"))
-	logger.Info().Msgf("image/jpeg extension: [.%s]", mime.Ext("image/jpeg"))
-	logger.Info().Msgf("jpeg/zip mime-types: [.%v]", jpegZip)
+	resultWrapper := func(str string, err error) string {
+		if err != nil {
+			return "ERROR!"
+		}
+
+		return str
+	}
+
+	logger.Info(".json", "content-type", resultWrapper(mime.ContentTypeByExt("json")))
+	logger.Info(".pdf", "content-type", resultWrapper(mime.ContentTypeByExt(".pdf")))
+	logger.Info("image/jpeg", "extension", resultWrapper(mime.ExtByContentType("image/jpeg")))
+	logger.Info("jpeg/zip", "mime-types", jpegZip)
 }
 
 func getMimeTypeListFromConfig() []mrlib.MimeType {

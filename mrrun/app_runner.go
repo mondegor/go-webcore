@@ -2,19 +2,30 @@ package mrrun
 
 import (
 	"context"
+
+	"github.com/mondegor/go-sysmess/mrlog"
 )
 
 type (
 	// AppRunner - компонент запуска группы процессов.
 	AppRunner struct {
-		runner ProcessRunner
+		runner          ProcessRunner
+		logger          mrlog.Logger
+		contextEmbedder contextEmbedder
+	}
+
+	contextEmbedder interface {
+		NewContextWithIDs(originalCtx context.Context) context.Context
+		WithProcessIDContext(ctx context.Context) context.Context
 	}
 )
 
 // NewAppRunner - создаёт объект AppRunner.
-func NewAppRunner(runner ProcessRunner) *AppRunner {
+func NewAppRunner(runner ProcessRunner, logger mrlog.Logger, contextEmbedder contextEmbedder) *AppRunner {
 	return &AppRunner{
-		runner: runner,
+		runner:          runner,
+		logger:          logger,
+		contextEmbedder: contextEmbedder,
 	}
 }
 
@@ -27,28 +38,28 @@ func (r *AppRunner) Add(execute func() error, interrupt func(error)) {
 // AddProcess - добавляет функции запуска и остановки процесса.
 // Запуск будет осуществлён параллельно с другими добавленными процессами.
 func (r *AppRunner) AddProcess(ctx context.Context, process Process) {
-	executer := MakeExecuter(ctx, process)
-	r.runner.Add(executer.Execute, executer.Interrupt)
+	ex := r.makeExecuter(ctx, process)
+	r.runner.Add(ex.Execute, ex.Interrupt)
 }
 
 // AddFirstProcess - добавляет функции запуска и остановки процесса.
 // Также возвращает канал, по которому будет передано событие, что процесс запущен.
 // Запуск будет осуществлён параллельно с другими добавленными процессами.
-func (r *AppRunner) AddFirstProcess(ctx context.Context, process Process) (first StartingProcess) {
-	executer := MakeNextExecuter(ctx, process, StartingProcess{})
-	r.runner.Add(executer.Execute, executer.Interrupt)
+func (r *AppRunner) AddFirstProcess(ctx context.Context, process Process) (first ProcessSync) {
+	ex := r.makeNextExecuter(ctx, process, ProcessSync{})
+	r.runner.Add(ex.Execute, ex.Interrupt)
 
-	return executer.Starting
+	return ex.Synchronizer
 }
 
 // AddNextProcess - добавляет функции запуска и остановки процесса.
 // Также возвращает канал, по которому будет передано событие, что процесс запущен.
 // Запуск процесса будет осуществлён только при получении события по каналу chPrev (если канал указан).
-func (r *AppRunner) AddNextProcess(ctx context.Context, process Process, prev StartingProcess) (next StartingProcess) {
-	executer := MakeNextExecuter(ctx, process, prev)
-	r.runner.Add(executer.Execute, executer.Interrupt)
+func (r *AppRunner) AddNextProcess(ctx context.Context, process Process, prev ProcessSync) (next ProcessSync) {
+	ex := r.makeNextExecuter(ctx, process, prev)
+	r.runner.Add(ex.Execute, ex.Interrupt)
 
-	return executer.Starting
+	return ex.Synchronizer
 }
 
 // Run - запуск всех добавленных процессов.

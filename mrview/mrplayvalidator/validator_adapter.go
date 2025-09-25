@@ -8,30 +8,34 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/mondegor/go-sysmess/mrerr"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrerrors"
+	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/mrmsg"
 
-	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrlib"
-	"github.com/mondegor/go-webcore/mrlog"
 )
 
 // go get -u github.com/go-playground/validator/v10
 
 const (
-	validatorErrorPrefix = "validator.err"
+	validatorErrorPrefix = "Validator_"
+	validatorErrorID     = "ValidateError"
 )
 
 type (
 	// ValidatorAdapter - адаптер валидатора структур и их полей на базе тегов.
 	ValidatorAdapter struct {
-		validate *validator.Validate
+		validate  *validator.Validate
+		logger    mrlog.Logger
+		tag2error map[string]*mrerrors.ProtoError
 	}
 )
 
-var errValidatorTagIsNotFound = mrerr.NewProto(
-	validatorErrorPrefix, mrerr.ErrorKindUser, "validator error: tag is empty").New()
+var errValidatorTagIsNotFound = mrerr.NewKindInternal("validator error: tag is empty")
 
 // New - создаёт объект ValidatorAdapter.
-func New() *ValidatorAdapter {
+func New(logger mrlog.Logger) *ValidatorAdapter {
 	validate := validator.New()
 
 	// возвращение в качестве имени поля названия из тега json
@@ -47,11 +51,22 @@ func New() *ValidatorAdapter {
 
 	return &ValidatorAdapter{
 		validate: validate,
+		logger:   logger,
+		tag2error: map[string]*mrerrors.ProtoError{
+			"http_url": createProtoUserError("http_url", false),
+			"required": createProtoUserError("required", false),
+			"gte":      createProtoUserError("gte", true),
+			"lte":      createProtoUserError("lte", true),
+			"max":      createProtoUserError("max", true),
+			"min":      createProtoUserError("min", true),
+		},
 	}
 }
 
 // Register - регистрирует новые именованные функции валидации полей.
 func (v *ValidatorAdapter) Register(tagName string, fn func(value string) bool) error {
+	v.tag2error[tagName] = createProtoUserError(tagName, false)
+
 	return v.validate.RegisterValidation(
 		tagName,
 		func(fl validator.FieldLevel) bool {
@@ -72,20 +87,20 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 
 	errorList, ok := err.(validator.ValidationErrors) //nolint:errorlint
 	if !ok {
-		return mrcore.ErrInternal.Wrap(err)
+		return mr.ErrInternal.Wrap(err)
 	}
 
 	fields := make(mrerr.CustomErrors, len(errorList))
-	logger := mrlog.Ctx(ctx)
 
 	for i, errField := range errorList {
 		fieldName := mrlib.CutBefore(errField.Namespace(), '.')
 		fields[i] = mrerr.NewCustomError(
 			fieldName,
-			v.createAppError(fieldName, errField),
+			v.createUserError(ctx, fieldName, errField),
 		)
 
-		logger.Debug().Str("validate.field", errField.Namespace()).MsgFunc(
+		v.logger.DebugFunc(
+			ctx,
 			func() string {
 				return fmt.Sprintf(
 					"{Field: %s, "+
@@ -106,37 +121,50 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 					errField.Param(),
 				)
 			},
+			"validate.field", errField.Namespace(),
 		)
 	}
 
 	return fields
 }
 
-func (v *ValidatorAdapter) createAppError(fieldName string, field validator.FieldError) *mrerr.AppError {
-	if len(field.Tag()) == 0 {
-		return errValidatorTagIsNotFound
+func (v *ValidatorAdapter) createUserError(ctx context.Context, fieldName string, field validator.FieldError) error {
+	tag := field.Tag()
+
+	if tag == "" {
+		return errValidatorTagIsNotFound.New().WithAttr("field", fieldName) // TODO: нужна ли эта проверка?
 	}
 
-	// TODO: шаблон динамической ошибки можно кэшировать
-
-	// здесь передаются все атрибуты поля, которые можно вывести пользователю,
-	id := validatorErrorPrefix + "_" + field.Tag()
-	message := id + ": name={{ .name }}, type={{ .type }}, value={{ .value }}"
-	args := [4]any{fieldName, field.Kind().String(), field.Value()}
+	args := make([]any, 0, 4)
+	args = append(args, fieldName, field.Kind().String(), field.Value())
 
 	if field.Param() != "" {
-		args[3] = field.Param()
-
-		return mrerr.NewProto(
-			id,
-			mrerr.ErrorKindUser,
-			message+", param={{ .param }}",
-		).New(args[:]...)
+		args = append(args, field.Param())
 	}
 
-	return mrerr.NewProto(
-		id,
-		mrerr.ErrorKindUser,
+	if e, ok := v.tag2error[tag]; ok {
+		return e.New(args...)
+	}
+
+	v.logger.Warn(ctx, "validator tag not registered", "tag", tag, "fieldName", fieldName)
+
+	return createProtoUserError(tag, field.Param() != "").New(args...)
+}
+
+func createProtoUserError(tag string, withParam bool) *mrerrors.ProtoError {
+	message := validatorErrorPrefix + tag + ": {Name}, {Type}, {Value}" // 1={Name}, 2={Type}, 3={Value}
+
+	if withParam {
+		message += ", {Param}" // 4={Param}
+	}
+
+	return mrerr.NewKindUser(
+		validatorErrorID,
 		message,
-	).New(args[:3]...)
+		mrerr.WithArgsReplacer(
+			func(message string) mrerrors.MessageReplacer {
+				return mrmsg.NewMessageReplacer("{", "}", message)
+			},
+		),
+	)
 }

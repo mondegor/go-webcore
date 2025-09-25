@@ -4,30 +4,35 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-sysmess/mrlog"
 )
 
 const (
-	signalChanLen       = 10
-	processCaption      = "SignalInterception"
-	processReadyTimeout = 60 * time.Second
+	signalBufferLen     = 10
+	processCaption      = "SignalInterceptor"
+	processReadyTimeout = 30 * time.Second
 )
 
-// Interception - сервис перехвата системных событий с целью
-// корректной (graceful) остановки всего приложения.
-type Interception struct {
-	cancel     context.CancelFunc
-	signalStop chan os.Signal
-}
+type (
+	// Interceptor - сервис перехвата системных событий с целью
+	// корректной (graceful) остановки всего приложения.
+	Interceptor struct {
+		cancel     context.CancelFunc
+		signalStop chan os.Signal
+		logger     mrlog.Logger
+		wgMain     sync.WaitGroup
+	}
+)
 
-// NewInterception - создаёт объект Interception и возвращает контекст,
+// NewInterceptor - создаёт объект Interceptor и возвращает контекст,
 // в котором установлена его отмена при перехвате системного события.
-func NewInterception(ctx context.Context) (context.Context, *Interception) {
+func NewInterceptor(ctx context.Context, logger mrlog.Logger) (context.Context, *Interceptor) {
 	ctx, cancel := context.WithCancel(ctx)
-	signalStop := make(chan os.Signal, signalChanLen)
+	signalStop := make(chan os.Signal, signalBufferLen)
 
 	signal.Notify(
 		signalStop,
@@ -38,25 +43,32 @@ func NewInterception(ctx context.Context) (context.Context, *Interception) {
 		syscall.SIGTERM,
 	)
 
-	return ctx, &Interception{
+	return ctx, &Interceptor{
 		cancel:     cancel,
 		signalStop: signalStop,
+		logger:     logger,
+		wgMain:     sync.WaitGroup{},
 	}
 }
 
 // Caption - возвращает название сервиса.
-func (p *Interception) Caption() string {
+func (p *Interceptor) Caption() string {
 	return processCaption
 }
 
 // ReadyTimeout - возвращает максимальное время, за которое должен быть запущен сервис.
-func (p *Interception) ReadyTimeout() time.Duration {
+func (p *Interceptor) ReadyTimeout() time.Duration {
 	return processReadyTimeout
 }
 
 // Start - запуск сервиса перехвата системных событий.
-func (p *Interception) Start(ctx context.Context, ready func()) error {
-	mrlog.Ctx(ctx).Info().Msg("Starting the application...")
+// Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
+func (p *Interceptor) Start(ctx context.Context, ready func()) error {
+	p.wgMain.Add(1)
+	defer p.wgMain.Done()
+
+	p.logger.Debug(ctx, "Starting the signal interceptor...")
+	defer p.logger.Debug(ctx, "The signal interceptor has been stopped")
 
 	if ready != nil {
 		ready()
@@ -64,9 +76,9 @@ func (p *Interception) Start(ctx context.Context, ready func()) error {
 
 	select {
 	case signalApp := <-p.signalStop:
-		mrlog.Ctx(ctx).Info().Msgf("Shutting down the application by signal: " + signalApp.String())
+		p.logger.Info(ctx, "Interceptor detected an interrupting signal", "value", signalApp.String())
 	case <-ctx.Done():
-		mrlog.Ctx(ctx).Info().Msg("Shutting down the application by a neighboring process")
+		p.logger.Info(ctx, "Interceptor detected context signal 'cancel'")
 
 		return ctx.Err()
 	}
@@ -75,12 +87,14 @@ func (p *Interception) Start(ctx context.Context, ready func()) error {
 }
 
 // Shutdown - корректная остановка сервиса перехвата системных событий.
-func (p *Interception) Shutdown(ctx context.Context) error {
-	mrlog.Ctx(ctx).Debug().Msg("Cancel the main context of the application")
-
+func (p *Interceptor) Shutdown(ctx context.Context) error {
+	p.logger.Debug(ctx, "Shutting down the signal interceptor...")
 	signal.Stop(p.signalStop)
-	p.cancel()
 	close(p.signalStop)
+
+	p.wgMain.Wait()
+	p.cancel()
+	p.logger.Debug(ctx, "The signal interceptor has been shut down")
 
 	return nil
 }

@@ -1,7 +1,15 @@
 package mrresp
 
+import (
+	"github.com/mondegor/go-sysmess/mrerr"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+
+	"github.com/mondegor/go-webcore/mrcore"
+)
+
 const (
-	ErrorAttributeIDByDefault = "generalError" // ErrorAttributeIDByDefault - название пользовательской ошибки по умолчанию
+	// ErrorAttributeIDByDefault - название пользовательской ошибки по умолчанию.
+	ErrorAttributeIDByDefault = "GeneralError"
 )
 
 type (
@@ -24,3 +32,35 @@ type (
 		ErrorTraceID string `json:"errorTraceId,omitempty"`
 	}
 )
+
+// NewErrorAttribute - создаёт объект ErrorAttribute.
+func NewErrorAttribute(lz mrcore.Localizer, err error, withDebugInfo bool) ErrorAttribute {
+	var (
+		errCode    string
+		customCode string
+	)
+
+	if e, ok := err.(*mrerr.CustomError); ok { //nolint:errorlint
+		customCode = "/" + e.CustomCode()
+		err = e.Err()
+	}
+
+	e := mr.CastOrWrapUnexpectedInternal(err)
+
+	if e.Code() != "" {
+		errCode = e.Code()
+	} else {
+		errCode = ErrorAttributeIDByDefault
+	}
+
+	attr := ErrorAttribute{
+		ID:    errCode + customCode,
+		Value: lz.TranslateError(e),
+	}
+
+	if withDebugInfo {
+		attr.DebugInfo = e.Error()
+	}
+
+	return attr
+}

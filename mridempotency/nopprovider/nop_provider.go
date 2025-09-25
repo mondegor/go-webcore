@@ -6,7 +6,7 @@ import (
 
 	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mridempotency/nopresponser"
-	"github.com/mondegor/go-webcore/mrlog"
+	"github.com/mondegor/go-webcore/mrsender"
 )
 
 const (
@@ -16,12 +16,16 @@ const (
 
 type (
 	// Provider - заглушка реализующая интерфейс идемпотентности запроса.
-	Provider struct{}
+	Provider struct {
+		tracer mrsender.Tracer
+	}
 )
 
 // New - создаёт объект Provider.
-func New() *Provider {
-	return &Provider{}
+func New(tracer mrsender.Tracer) *Provider {
+	return &Provider{
+		tracer: tracer,
+	}
 }
 
 // Validate - эмулирует успешную валидацию данных.
@@ -49,20 +53,20 @@ func (l *Provider) Get(ctx context.Context, key string) (mridempotency.Responser
 func (l *Provider) Store(ctx context.Context, key string, result mridempotency.Responser) error {
 	l.traceCmd(ctx, "Store:"+key, key)
 
-	mrlog.Ctx(ctx).
-		Trace().
-		Int("statusCode", result.StatusCode()).
-		Bytes("body", result.Content()).
-		Send()
+	l.tracer.Trace(
+		ctx,
+		"statusCode", result.StatusCode(),
+		"body", result.Content(),
+	)
 
 	return nil
 }
 
 func (l *Provider) traceCmd(ctx context.Context, command, key string) {
-	mrlog.Ctx(ctx).
-		Trace().
-		Str("source", nopProviderName).
-		Str("cmd", command).
-		Str("key", key).
-		Send()
+	l.tracer.Trace(
+		ctx,
+		"source", nopProviderName,
+		"cmd", command,
+		"key", key,
+	)
 }

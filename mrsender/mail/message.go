@@ -1,11 +1,12 @@
 package mail
 
 import (
+	"encoding/base64"
 	"net/mail"
 	"net/textproto"
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr"
 )
 
 const (
@@ -35,6 +36,9 @@ type (
 	}
 )
 
+// ErrParsingAddressFailed - parsing address failed.
+var ErrParsingAddressFailed = mrerr.NewKindInternal("parsing address failed")
+
 // NewMessage - создаёт объект Message.
 // Где from - электронный адрес отправителя, to - электронный адрес получателя.
 func NewMessage(from, to string, opts ...MessageOption) (*Message, error) {
@@ -42,12 +46,12 @@ func NewMessage(from, to string, opts ...MessageOption) (*Message, error) {
 
 	fromEmail, err := emailParser.Parse(from)
 	if err != nil {
-		return nil, mrcore.ErrInternalWithDetails.Wrap(err, "parsing from address failed")
+		return nil, ErrParsingAddressFailed.Wrap(err)
 	}
 
 	toEmail, err := emailParser.Parse(to)
 	if err != nil {
-		return nil, mrcore.ErrInternalWithDetails.Wrap(err, "parsing to address failed")
+		return nil, ErrParsingAddressFailed.Wrap(err)
 	}
 
 	wm := message{
@@ -115,33 +119,37 @@ func (d *Message) To() []string {
 	return d.to
 }
 
-func createMessageHeader(m *message, from, to string) textproto.MIMEHeader {
+func createMessageHeader(msg *message, from, to string) textproto.MIMEHeader {
 	header := make(textproto.MIMEHeader)
 
 	header.Set("Mime-Version", "1.0")
-	header.Set("Subject", m.subject)
-	header.Set("Content-Type", m.contentType+"; charset=\""+"UTF-8"+"\"")
+	header.Set("Subject", encodeValue(msg.subject, "UTF-8"))
+	header.Set("Content-Type", msg.contentType+"; charset=\"UTF-8\"")
 	header.Set("From", from)
 	header.Set("To", to)
 
-	if len(m.cc) > 0 {
+	if len(msg.cc) > 0 {
 		var buf strings.Builder
 
-		buf.WriteString(m.cc[0].String())
+		buf.WriteString(msg.cc[0].String())
 
-		for i := 1; i < len(m.cc); i++ {
+		for i := 1; i < len(msg.cc); i++ {
 			buf.WriteString(", ")
-			buf.WriteString(m.cc[i].String())
+			buf.WriteString(msg.cc[i].String())
 		}
 
 		header.Set("cc", buf.String())
 	}
 
-	if m.replyTo != nil {
-		header.Set("Reply-To", m.replyTo.String())
+	if msg.replyTo != nil {
+		header.Set("Reply-To", msg.replyTo.String())
 	}
 
-	header.Set("Return-Path", m.returnEmail)
+	header.Set("Return-Path", msg.returnEmail)
 
 	return header
+}
+
+func encodeValue(value, charset string) string {
+	return "=?" + charset + "?B?" + base64.StdEncoding.EncodeToString([]byte(value)) + "?="
 }

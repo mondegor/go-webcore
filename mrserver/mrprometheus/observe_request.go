@@ -59,8 +59,8 @@ func (o *ObserveRequest) Collectors() []prometheus.Collector {
 }
 
 // SetStatusWithTime - устанавливает статус запроса (200, 404, 500, и т.д) и время исполнения запроса для указанного URL.
-func (o *ObserveRequest) SetStatusWithTime(method, location, status string, start time.Time) {
-	o.requestDuration.With(prometheus.Labels{"method": method, "location": location, "status": status}).Observe(time.Since(start).Seconds())
+func (o *ObserveRequest) SetStatusWithTime(method, location, status string, duration time.Duration) {
+	o.requestDuration.With(prometheus.Labels{"method": method, "location": location, "status": status}).Observe(float64(duration.Microseconds()))
 }
 
 // IncrementRequestSize - добавляет размер тела запроса в байтах для указанного URL.

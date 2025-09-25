@@ -3,11 +3,13 @@ package mrserver
 import (
 	"context"
 	"io"
+	"net"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrenum"
 	"github.com/mondegor/go-webcore/mrtype"
 	"github.com/mondegor/go-webcore/mrview"
@@ -95,6 +97,24 @@ type (
 	// RequestParserItemStatus - парсер данных запроса для преобразования их в []mrenum.ItemStatus.
 	RequestParserItemStatus interface {
 		FilterStatusList(r *http.Request, key string) []mrenum.ItemStatus
+	}
+
+	// RequestParserClientIP - comment interface.
+	RequestParserClientIP interface {
+		RealIP(r *http.Request) net.IP
+		DetailedIP(r *http.Request) mrtype.DetailedIP
+	}
+
+	// RequestParserLocale - comment interface.
+	RequestParserLocale interface {
+		Language(r *http.Request) string
+		Localizer(r *http.Request) mrcore.Localizer
+	}
+
+	// RequestParserUser - comment interface.
+	RequestParserUser interface {
+		UserID(r *http.Request) uuid.UUID
+		UserAndGroup(r *http.Request) (userID uuid.UUID, group string)
 	}
 
 	// RequestParserParamFunc - функция для парсинга URL для извлечения из него параметров.

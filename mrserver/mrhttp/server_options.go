@@ -1,7 +1,11 @@
 package mrhttp
 
 import (
+	"context"
+	"net"
 	"time"
+
+	"github.com/mondegor/go-sysmess/mrlog"
 )
 
 // Option - опция используемая при создании http сервера.
@@ -17,6 +21,22 @@ func WithHostAndPort(host, port string) Option {
 		}
 
 		s.srv.Addr = host + port
+	}
+}
+
+// WithLogger - устанавливает логгер для логирования работы сервера.
+func WithLogger(value mrlog.Logger) Option {
+	return func(s *Adapter) {
+		s.logger = value
+	}
+}
+
+// WithBaseContext - устанавливает контекст, который будет использоваться в каждом запросе.
+func WithBaseContext(ctx context.Context) Option {
+	return func(s *Adapter) {
+		s.srv.BaseContext = func(_ net.Listener) context.Context {
+			return ctx
+		}
 	}
 }
 

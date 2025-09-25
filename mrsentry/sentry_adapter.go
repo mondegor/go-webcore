@@ -1,12 +1,12 @@
 package mrsentry
 
 import (
+	"context"
 	"time"
 
 	"github.com/getsentry/sentry-go"
-	"github.com/mondegor/go-sysmess/mrerr"
-
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrerrors"
 )
 
 // go get -u github.com/getsentry/sentry-go
@@ -52,7 +52,7 @@ func New(opts Options) (*Adapter, error) {
 
 	client, err := sentry.NewClient(sentryOpts)
 	if err != nil {
-		return nil, mrcore.ErrStorageConnectionFailed.Wrap(err, connectionName)
+		return nil, mr.ErrStorageConnectionFailed.Wrap(err, connectionName)
 	}
 
 	if opts.FlushTimeout == 0 {
@@ -71,7 +71,7 @@ func (a *Adapter) Cli() *sentry.Client {
 }
 
 // CaptureAppError - comment method.
-func (a *Adapter) CaptureAppError(err *mrerr.AppError) (instanceID string) {
+func (a *Adapter) CaptureAppError(_ context.Context, err *mrerrors.InstantError) (instanceID string) {
 	sentry.CurrentHub().WithScope(
 		func(scope *sentry.Scope) {
 			// TODO: добавить отправку аргументов и атрибутов ошибки с помощью scope.SetExtras()
@@ -94,7 +94,8 @@ func (a *Adapter) CaptureAppError(err *mrerr.AppError) (instanceID string) {
 				},
 			)
 
-			if eventID := a.client.CaptureException(mrerr.WithoutStackTrace(err), nil, scope); eventID != nil {
+			// ??????????????????????????????????????????? CastLessVerboseError
+			if eventID := a.client.CaptureException(mrerrors.CastLessVerboseError(err), nil, scope); eventID != nil {
 				instanceID = string(*eventID)
 			}
 		},
@@ -106,7 +107,7 @@ func (a *Adapter) CaptureAppError(err *mrerr.AppError) (instanceID string) {
 // Close - comment method.
 func (a *Adapter) Close() error {
 	if a.client == nil {
-		return mrcore.ErrStorageConnectionIsNotOpened.New(connectionName)
+		return mr.ErrStorageConnectionIsNotOpened.New(connectionName)
 	}
 
 	a.client.Flush(a.flushTimeout)

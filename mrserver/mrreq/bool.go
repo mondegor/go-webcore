@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
 )
 
 // ParseRequiredBool - возвращает Bool значение из внешнего строкового параметра по указанному ключу.
@@ -13,12 +13,12 @@ func ParseRequiredBool(getter valueGetter, key string) (bool, error) {
 	value := strings.TrimSpace(getter.Get(key))
 
 	if value == "" {
-		return false, mrcore.ErrHttpRequestParamEmpty.New(key)
+		return false, mr.ErrHttpRequestParamEmpty.New(key)
 	}
 
 	item, err := strconv.ParseBool(value)
 	if err != nil {
-		return false, mrcore.ErrHttpRequestParseParam.Wrap(err, key, "RequiredBool", value)
+		return false, mr.ErrHttpRequestParseParam.Wrap(err, key, "RequiredBool", value)
 	}
 
 	return item, nil
@@ -35,7 +35,7 @@ func ParseNullableBool(getter valueGetter, key string) (*bool, error) {
 
 	item, err := strconv.ParseBool(value)
 	if err != nil {
-		return nil, mrcore.ErrHttpRequestParseParam.Wrap(err, key, "NullableBool", value)
+		return nil, mr.ErrHttpRequestParseParam.Wrap(err, key, "NullableBool", value)
 	}
 
 	return &item, nil

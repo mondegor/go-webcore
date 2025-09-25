@@ -3,7 +3,7 @@ package mrreq
 import (
 	"strings"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	"github.com/mondegor/go-sysmess/mrerr/mr"
 )
 
 const (
@@ -20,7 +20,7 @@ func ParseEnumList(getter valueGetter, key string) ([]string, error) {
 	}
 
 	if len(value) > maxLenEnumList {
-		return nil, mrcore.ErrHttpRequestParamLenMax.New(key, maxLenEnumList)
+		return nil, mr.ErrHttpRequestParamLenMax.New(key, maxLenEnumList)
 	}
 
 	items := strings.Split(strings.ToUpper(value), ",")
@@ -29,7 +29,7 @@ func ParseEnumList(getter valueGetter, key string) ([]string, error) {
 		item = strings.TrimSpace(item)
 
 		if !regexpEnum.MatchString(item) {
-			return nil, mrcore.ErrHttpRequestParseParam.New(key, "Enum", value)
+			return nil, mr.ErrHttpRequestParseParam.New(key, "Enum", value)
 		}
 
 		items[i] = item
