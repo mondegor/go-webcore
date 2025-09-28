@@ -30,7 +30,7 @@ type (
 		minSize                 uint64 // bytes
 		maxSize                 uint64 // bytes
 		maxTotalSize            uint64 // bytes
-		maxFiles                uint64
+		maxFiles                int
 		checkRequestContentType bool
 		allowedMimeTypes        *extfile.MimeTypeList
 		logger                  mrlog.Logger
@@ -66,7 +66,7 @@ func NewFile(logger mrlog.Logger, opts ...FileOption) *File {
 		f.maxTotalSize = f.maxSize
 
 		if f.maxFiles > 0 {
-			f.maxTotalSize *= f.maxFiles
+			f.maxTotalSize *= uint64(f.maxFiles)
 		}
 	}
 
@@ -133,7 +133,7 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 		return nil, nil
 	}
 
-	countFiles := uint64(len(fds))
+	countFiles := len(fds)
 
 	if p.maxFiles > 0 && countFiles > p.maxFiles {
 		countFiles = p.maxFiles
@@ -145,7 +145,7 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 
 	files := make([]mrtype.FileHeader, 0, countFiles)
 
-	for i := uint64(0); i < countFiles; i++ {
+	for i := 0; i < countFiles; i++ {
 		if err = p.checkFile(fds[i]); err != nil {
 			return nil, err
 		}
@@ -207,11 +207,11 @@ func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	return nil
 }
 
-func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles uint64) error {
+func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles int) error {
 	if p.maxTotalSize > 0 {
 		var currentSize uint64
 
-		for i := uint64(0); i < countFiles; i++ {
+		for i := 0; i < countFiles; i++ {
 			if fds[i].Size < 0 {
 				continue // игнорируются отрицательный размер файла, ошибка произойдёт в checkFile()
 			}

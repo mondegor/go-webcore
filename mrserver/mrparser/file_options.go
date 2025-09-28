@@ -22,7 +22,7 @@ func WithFileMaxSize(value uint64) FileOption {
 }
 
 // WithFileMaxFiles - устанавливает опцию maxFiles для File.
-func WithFileMaxFiles(value uint64) FileOption {
+func WithFileMaxFiles(value int) FileOption {
 	return func(f *File) {
 		f.maxFiles = value
 	}

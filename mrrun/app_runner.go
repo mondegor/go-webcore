@@ -15,8 +15,8 @@ type (
 	}
 
 	traceManager interface {
-		NewContextWithIDs(originalCtx context.Context) context.Context
 		WithGeneratedProcessID(ctx context.Context) context.Context
+		NewContextWithIDs(originalCtx context.Context) context.Context
 	}
 )
 

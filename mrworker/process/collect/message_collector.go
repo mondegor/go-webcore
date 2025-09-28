@@ -31,8 +31,8 @@ type (
 		readyTimeout   time.Duration
 		flushPeriod    time.Duration
 		handlerTimeout time.Duration
-		batchSize      uint64
-		workersCount   uint64
+		batchSize      int
+		workersCount   int
 
 		handler      mrworker.MessageBatchHandler
 		errorHandler mrcore.ErrorHandler
@@ -46,20 +46,20 @@ type (
 		done          chan struct{}
 	}
 
-	traceManager interface {
-		NewContextWithIDs(originalCtx context.Context) context.Context
-		WithGeneratedWorkerID(ctx context.Context) context.Context
-		WithGeneratedTaskID(ctx context.Context) context.Context
-	}
-
 	options struct {
 		caption        string
 		captionPrefix  string
 		readyTimeout   time.Duration
 		flushPeriod    time.Duration
 		handlerTimeout time.Duration
-		batchSize      uint64
-		workersCount   uint64
+		batchSize      int
+		workersCount   int
+	}
+
+	traceManager interface {
+		WithGeneratedWorkerID(ctx context.Context) context.Context
+		WithGeneratedTaskID(ctx context.Context) context.Context
+		NewContextWithIDs(originalCtx context.Context) context.Context
 	}
 )
 
@@ -169,7 +169,7 @@ func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
 		case message := <-p.messageQueue:
 			messageBatch = append(messageBatch, message)
 
-			if uint64(len(messageBatch)) < p.batchSize {
+			if len(messageBatch) < p.batchSize {
 				continue
 			}
 		}
@@ -209,7 +209,7 @@ func (p *MessageCollector) Shutdown(ctx context.Context) error {
 }
 
 func (p *MessageCollector) startWorkers(ctx context.Context, wg *sync.WaitGroup) {
-	for i := uint64(0); i < p.workersCount; i++ {
+	for i := 0; i < p.workersCount; i++ {
 		wg.Add(1)
 
 		go func(ctx context.Context) {

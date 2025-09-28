@@ -33,8 +33,8 @@ type (
 		readyTimeout   time.Duration
 		readPeriod     time.Duration
 		handlerTimeout time.Duration
-		queueSize      uint64
-		workersCount   uint64
+		queueSize      int
+		workersCount   int
 
 		consumer     mrworker.MessageConsumer
 		handler      mrworker.MessageHandler
@@ -48,12 +48,6 @@ type (
 		done          chan struct{}
 	}
 
-	traceManager interface {
-		NewContextWithIDs(originalCtx context.Context) context.Context
-		WithGeneratedWorkerID(ctx context.Context) context.Context
-		WithGeneratedTaskID(ctx context.Context) context.Context
-	}
-
 	options struct {
 		caption              string
 		captionPrefix        string
@@ -62,9 +56,15 @@ type (
 		consumerReadTimeout  time.Duration
 		consumerWriteTimeout time.Duration
 		handlerTimeout       time.Duration
-		queueSize            uint64
-		workersCount         uint64
+		queueSize            int
+		workersCount         int
 		signalExecute        <-chan struct{}
+	}
+
+	traceManager interface {
+		WithGeneratedWorkerID(ctx context.Context) context.Context
+		WithGeneratedTaskID(ctx context.Context) context.Context
+		NewContextWithIDs(originalCtx context.Context) context.Context
 	}
 )
 
@@ -214,7 +214,7 @@ func (p *MessageProcessor) Shutdown(ctx context.Context) error {
 }
 
 func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup) {
-	for i := uint64(0); i < p.workersCount; i++ {
+	for i := 0; i < p.workersCount; i++ {
 		wg.Add(1)
 
 		go func(ctx context.Context) {

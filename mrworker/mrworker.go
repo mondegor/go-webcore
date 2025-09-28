@@ -10,7 +10,7 @@ import (
 type (
 	// MessageConsumer - получатель сообщений с возможностью подтверждения их получения.
 	MessageConsumer interface {
-		ReadMessages(ctx context.Context, limit uint64) (messages []any, err error)
+		ReadMessages(ctx context.Context, limit int) (messages []any, err error)
 		CancelMessages(ctx context.Context, messages []any) error
 		CommitMessage(ctx context.Context, message any, preCommit func(ctx context.Context) error) error
 		RejectMessage(ctx context.Context, message any, causeErr error) error

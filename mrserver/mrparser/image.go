@@ -142,7 +142,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 		return nil, nil
 	}
 
-	countFiles := uint64(len(fds))
+	countFiles := len(fds)
 
 	if p.file.maxFiles > 0 && countFiles > p.file.maxFiles {
 		countFiles = p.file.maxFiles
@@ -154,7 +154,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 
 	images := make([]mrtype.ImageHeader, 0, countFiles)
 
-	for i := uint64(0); i < countFiles; i++ {
+	for i := 0; i < countFiles; i++ {
 		err = func() error { // for defer file.Close()
 			if err := p.file.checkFile(fds[i]); err != nil {
 				return err

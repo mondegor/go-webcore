@@ -69,7 +69,7 @@ func WithHandlerTimeout(value time.Duration) Option {
 }
 
 // WithQueueSize - устанавливает опцию размера очереди обработки сообщений.
-func WithQueueSize(value uint64) Option {
+func WithQueueSize(value int) Option {
 	return func(o *options) {
 		if o.queueSize > 0 {
 			o.queueSize = value
@@ -78,7 +78,7 @@ func WithQueueSize(value uint64) Option {
 }
 
 // WithWorkersCount - устанавливает опцию количества воркеров обрабатывающих сообщения.
-func WithWorkersCount(value uint64) Option {
+func WithWorkersCount(value int) Option {
 	return func(o *options) {
 		if value > 0 {
 			o.workersCount = value

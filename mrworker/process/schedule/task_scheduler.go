@@ -34,16 +34,16 @@ type (
 		done         chan struct{}
 	}
 
-	traceManager interface {
-		WithGeneratedWorkerID(ctx context.Context) context.Context
-		WithGeneratedTaskID(ctx context.Context) context.Context
-	}
-
 	options struct {
 		caption       string
 		captionPrefix string
 		readyTimeout  time.Duration
 		tasks         []mrworker.Task
+	}
+
+	traceManager interface {
+		WithGeneratedWorkerID(ctx context.Context) context.Context
+		WithGeneratedTaskID(ctx context.Context) context.Context
 	}
 )
 

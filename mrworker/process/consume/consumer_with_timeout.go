@@ -29,7 +29,7 @@ func NewConsumerWithTimeout(base mrworker.MessageConsumer, readTimeout, writeTim
 }
 
 // ReadMessages - comment method.
-func (t *ConsumerWithTimeout) ReadMessages(ctx context.Context, limit uint64) (messages []any, err error) {
+func (t *ConsumerWithTimeout) ReadMessages(ctx context.Context, limit int) (messages []any, err error) {
 	ctx, cancel := context.WithTimeout(ctx, t.readTimeout)
 	defer cancel()
 

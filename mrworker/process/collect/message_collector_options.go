@@ -55,7 +55,7 @@ func WithHandlerTimeout(value time.Duration) Option {
 }
 
 // WithBatchSize - устанавливает опцию размера пачки сообщений, которая будет разом обработана.
-func WithBatchSize(value uint64) Option {
+func WithBatchSize(value int) Option {
 	return func(o *options) {
 		if o.batchSize > 0 {
 			o.batchSize = value
@@ -64,7 +64,7 @@ func WithBatchSize(value uint64) Option {
 }
 
 // WithWorkersCount - устанавливает опцию количества воркеров обрабатывающих пачки сообщений.
-func WithWorkersCount(value uint64) Option {
+func WithWorkersCount(value int) Option {
 	return func(o *options) {
 		if value > 0 {
 			o.workersCount = value

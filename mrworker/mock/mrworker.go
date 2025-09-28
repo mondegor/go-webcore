@@ -64,7 +64,7 @@ func (mr *MockMessageConsumerMockRecorder) CommitMessage(ctx, message, preCommit
 }
 
 // ReadMessages mocks base method.
-func (m *MockMessageConsumer) ReadMessages(ctx context.Context, limit uint64) ([]any, error) {
+func (m *MockMessageConsumer) ReadMessages(ctx context.Context, limit int) ([]any, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadMessages", ctx, limit)
 	ret0, _ := ret[0].([]any)
