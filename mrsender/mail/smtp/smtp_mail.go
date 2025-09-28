@@ -8,8 +8,7 @@ import (
 	"strings"
 
 	"github.com/mondegor/go-sysmess/mrerr/mr"
-
-	"github.com/mondegor/go-webcore/mrsender"
+	"github.com/mondegor/go-sysmess/mrtrace"
 )
 
 const (
@@ -22,12 +21,12 @@ type (
 	MailClient struct {
 		address string
 		auth    smtp.Auth
-		tracer  mrsender.Tracer
+		tracer  mrtrace.Tracer
 	}
 )
 
 // NewMailClient - создаёт объект MailClient.
-func NewMailClient(host, port, username, password string, tracer mrsender.Tracer) *MailClient {
+func NewMailClient(host, port, username, password string, tracer mrtrace.Tracer) *MailClient {
 	return &MailClient{
 		address: host + ":" + port,
 		auth:    smtp.PlainAuth("", username, password, host),

@@ -1,8 +1,6 @@
 package mrreq
 
-import (
-	"github.com/mondegor/go-webcore/mrtype"
-)
+import "github.com/mondegor/go-sysmess/mrtype"
 
 // ParseRangeInt64 - возвращает RangeInt64 из строковых параметров по указанному префиксу ключа.
 func ParseRangeInt64(getter valueGetter, prefixKey string) (mrtype.RangeInt64, error) {

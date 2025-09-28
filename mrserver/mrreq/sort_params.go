@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/mondegor/go-sysmess/mrerr/mr"
-
-	"github.com/mondegor/go-webcore/mrtype"
+	"github.com/mondegor/go-sysmess/mrtype"
+	"github.com/mondegor/go-sysmess/mrtype/enums"
 )
 
 const (
@@ -31,15 +31,19 @@ func ParseSortParams(getter valueGetter, keyField, keyDirection string) (mrtype.
 		return mrtype.SortParams{}, mr.ErrHttpRequestParseParam.New(keyField, "SortParams", value)
 	}
 
-	var params mrtype.SortParams
-
-	if direction := getter.Get(keyDirection); direction != "" {
-		if err := params.Direction.ParseAndSet(strings.ToUpper(direction)); err != nil {
-			return params, err
-		}
+	params := mrtype.SortParams{
+		FieldName: value,
+		Direction: enums.SortDirectionASC,
 	}
 
-	params.FieldName = value
+	if value := getter.Get(keyDirection); value != "" {
+		sortDirection, err := enums.ParseSortDirection(strings.ToUpper(value))
+		if err != nil {
+			return mrtype.SortParams{}, mr.ErrHttpRequestParseParam.New(keyField+".Direction", value)
+		}
+
+		params.Direction = sortDirection
+	}
 
 	return params, nil
 }

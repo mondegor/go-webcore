@@ -9,23 +9,23 @@ import (
 type (
 	// AppRunner - компонент запуска группы процессов.
 	AppRunner struct {
-		runner          ProcessRunner
-		logger          mrlog.Logger
-		contextEmbedder contextEmbedder
+		runner       ProcessRunner
+		logger       mrlog.Logger
+		traceManager traceManager
 	}
 
-	contextEmbedder interface {
+	traceManager interface {
 		NewContextWithIDs(originalCtx context.Context) context.Context
-		WithProcessIDContext(ctx context.Context) context.Context
+		WithGeneratedProcessID(ctx context.Context) context.Context
 	}
 )
 
 // NewAppRunner - создаёт объект AppRunner.
-func NewAppRunner(runner ProcessRunner, logger mrlog.Logger, contextEmbedder contextEmbedder) *AppRunner {
+func NewAppRunner(runner ProcessRunner, logger mrlog.Logger, traceManager traceManager) *AppRunner {
 	return &AppRunner{
-		runner:          runner,
-		logger:          logger,
-		contextEmbedder: contextEmbedder,
+		runner:       runner,
+		logger:       logger,
+		traceManager: traceManager,
 	}
 }
 

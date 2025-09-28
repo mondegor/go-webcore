@@ -1,6 +1,6 @@
 package mrparser
 
-import "github.com/mondegor/go-webcore/mrlib"
+import "github.com/mondegor/go-sysmess/mrlib/extfile"
 
 type (
 	// FileOption - настройка объекта File.
@@ -36,10 +36,10 @@ func WithFileCheckRequestContentType(value bool) FileOption {
 }
 
 // WithFileAllowedMimeTypes - устанавливает опцию с разрешенными типами файлов.
-func WithFileAllowedMimeTypes(values []mrlib.MimeType) FileOption {
+func WithFileAllowedMimeTypes(values []extfile.MimeType) FileOption {
 	return func(f *File) {
 		if len(values) > 0 {
-			f.allowedMimeTypes = mrlib.NewMimeTypeList(values)
+			f.allowedMimeTypes = extfile.NewMimeTypeList(values)
 		}
 	}
 }

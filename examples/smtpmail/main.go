@@ -4,12 +4,12 @@ import (
 	"context"
 	"os"
 
+	"github.com/mondegor/go-sysmess/mrlog"
 	"github.com/mondegor/go-sysmess/mrlog/litelog"
 	"github.com/mondegor/go-sysmess/mrlog/slog"
 
 	"github.com/mondegor/go-webcore/mrsender/mail"
 	"github.com/mondegor/go-webcore/mrsender/mail/smtp"
-	"github.com/mondegor/go-webcore/mrsender/tracer"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	)
 
 	logger := litelog.NewLogger(l)
-	tr := tracer.New(l)
+	tr := mrlog.NewDebugTracer(l)
 
 	smtpHost := "{host}" // smtp.gmail.com
 	smtpPort := "{port}" // 587 с поддержкой STARTTLS

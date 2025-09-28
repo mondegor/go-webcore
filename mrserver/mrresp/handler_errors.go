@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlib/extio"
 	"github.com/mondegor/go-sysmess/mrlog"
-
-	"github.com/mondegor/go-webcore/mrlib"
 )
 
 // HandlerGetNotFoundAsJSON - возвращает обработчик для формирования 404 ошибки.
@@ -61,6 +60,6 @@ func HandlerErrorResponse(logger mrlog.Logger, status int, title, details string
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
-		mrlib.Write(r.Context(), logger, w, bytes)
+		extio.Write(r.Context(), logger, w, bytes)
 	}
 }

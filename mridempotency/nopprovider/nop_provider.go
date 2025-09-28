@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/mondegor/go-sysmess/mrtrace"
+
 	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mridempotency/nopresponser"
-	"github.com/mondegor/go-webcore/mrsender"
 )
 
 const (
@@ -17,12 +18,12 @@ const (
 type (
 	// Provider - заглушка реализующая интерфейс идемпотентности запроса.
 	Provider struct {
-		tracer mrsender.Tracer
+		tracer mrtrace.Tracer
 	}
 )
 
 // New - создаёт объект Provider.
-func New(tracer mrsender.Tracer) *Provider {
+func New(tracer mrtrace.Tracer) *Provider {
 	return &Provider{
 		tracer: tracer,
 	}
@@ -42,7 +43,7 @@ func (l *Provider) Lock(ctx context.Context, key string) (unlock func(), err err
 	}, nil
 }
 
-// Get - возвращает пустой ответ.
+// Get - всегда возвращает пустой ответ.
 func (l *Provider) Get(ctx context.Context, key string) (mridempotency.Responser, error) {
 	l.traceCmd(ctx, "Get:"+key, key)
 

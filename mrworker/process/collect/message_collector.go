@@ -34,10 +34,10 @@ type (
 		batchSize      uint64
 		workersCount   uint64
 
-		handler         mrworker.MessageBatchHandler
-		errorHandler    mrcore.ErrorHandler
-		logger          mrlog.Logger
-		contextEmbedder contextEmbedder
+		handler      mrworker.MessageBatchHandler
+		errorHandler mrcore.ErrorHandler
+		logger       mrlog.Logger
+		traceManager traceManager
 
 		wgMain        sync.WaitGroup
 		isSendStopped atomic.Bool
@@ -46,10 +46,10 @@ type (
 		done          chan struct{}
 	}
 
-	contextEmbedder interface {
+	traceManager interface {
 		NewContextWithIDs(originalCtx context.Context) context.Context
-		WithWorkerIDContext(ctx context.Context) context.Context
-		WithTaskIDContext(ctx context.Context) context.Context
+		WithGeneratedWorkerID(ctx context.Context) context.Context
+		WithGeneratedTaskID(ctx context.Context) context.Context
 	}
 
 	options struct {
@@ -73,7 +73,7 @@ func NewMessageCollector(
 	handler mrworker.MessageBatchHandler,
 	errorHandler mrcore.ErrorHandler,
 	logger mrlog.Logger,
-	idGenerator contextEmbedder,
+	traceManager traceManager,
 	opts ...Option,
 ) *MessageCollector {
 	o := options{
@@ -97,10 +97,10 @@ func NewMessageCollector(
 		batchSize:      o.batchSize,
 		workersCount:   o.workersCount,
 
-		handler:         handler,
-		errorHandler:    errorHandler,
-		logger:          logger,
-		contextEmbedder: idGenerator,
+		handler:      handler,
+		errorHandler: errorHandler,
+		logger:       logger,
+		traceManager: traceManager,
 
 		wgMain:       sync.WaitGroup{},
 		messageQueue: make(chan []byte),
@@ -128,7 +128,7 @@ func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
 	// WARNING: используется новый контекст со скопированными ID процессами из основного контекста,
 	// для того чтобы можно было останавливать процессор только через его метод Shutdown().
 	// При вызове этого метода гарантируется корректное завершение работы воркеров процессора.
-	ctx = p.contextEmbedder.NewContextWithIDs(ctx)
+	ctx = p.traceManager.NewContextWithIDs(ctx)
 
 	p.logger.Debug(ctx, "Starting the message collector...", "collector_name", p.caption)
 	defer p.logger.Debug(ctx, "The message collector has been stopped")
@@ -213,7 +213,7 @@ func (p *MessageCollector) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 		wg.Add(1)
 
 		go func(ctx context.Context) {
-			ctx = p.contextEmbedder.WithWorkerIDContext(ctx)
+			ctx = p.traceManager.WithGeneratedWorkerID(ctx)
 
 			defer func() {
 				wg.Done()
@@ -241,7 +241,7 @@ func (p *MessageCollector) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 
 func (p *MessageCollector) workerFunc(messages [][]byte) func(ctx context.Context) {
 	return func(ctx context.Context) {
-		handlerCtx, cancel := context.WithTimeout(p.contextEmbedder.WithTaskIDContext(ctx), p.handlerTimeout)
+		handlerCtx, cancel := context.WithTimeout(p.traceManager.WithGeneratedTaskID(ctx), p.handlerTimeout)
 		defer cancel()
 
 		if err := p.handler.Execute(handlerCtx, messages); err != nil {

@@ -12,11 +12,9 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog"
 
 	"github.com/mondegor/go-webcore/mraccess"
-	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
 	"github.com/mondegor/go-webcore/mrserver/observe"
-	"github.com/mondegor/go-webcore/mrtrace/distribute"
 )
 
 const (
@@ -34,6 +32,14 @@ const (
 	// :TODO: вынести в настройки.
 	traceRequestBodyMaxLen  = 2048
 	traceResponseBodyMaxLen = 2048
+)
+
+type (
+	traceManager interface {
+		WithCorrelationID(ctx context.Context, id string) context.Context
+		WithGeneratedRequestID(ctx context.Context) context.Context
+		RequestID(ctx context.Context) string
+	}
 )
 
 // go get -u github.com/rs/xid
@@ -85,21 +91,21 @@ func MiddlewareRecoverHandler(logger mrlog.Logger, isDebug bool, fatalFunc http.
 }
 
 // MiddlewareRequestID - промежуточный обработчик,
-// который устанавливает в контекст requestId, correlationId, traceId.
-func MiddlewareRequestID(logger mrlog.Logger, idGenerator mrcore.IdentifierGenerator) func(next http.Handler) http.Handler {
+// который устанавливает в контекст requestId, correlationId.
+func MiddlewareRequestID(logger mrlog.Logger, traceManager traceManager) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			requestID := idGenerator.GenID()
-			ctx := distribute.WithRequestID(r.Context(), requestID)
-			w.Header().Set(mrreq.HeaderKeyRequestID, requestID)
+			ctx := traceManager.WithGeneratedRequestID(r.Context())
+			w.Header().Set(mrreq.HeaderKeyRequestID, traceManager.RequestID(ctx))
 
 			if correlationID, err := mrreq.ParseCorrelationID(r.Header); err != nil {
 				logger.Warn(ctx, "MiddlewareRequestID", "error", err)
 			} else if correlationID != "" {
-				ctx = distribute.WithCorrelationID(ctx, correlationID)
+				ctx = traceManager.WithCorrelationID(ctx, correlationID)
 				w.Header().Set(mrreq.HeaderKeyCorrelationID, correlationID)
 			}
 
+			// необходимо гарантировать, чтобы этот заголовок не был передан из вне
 			r.Header.Del(mrreq.HeaderKeyUserIDSlashGroup)
 
 			next.ServeHTTP(w, r.WithContext(ctx))

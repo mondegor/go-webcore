@@ -11,53 +11,53 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockcontextEmbedder is a mock of contextEmbedder interface.
-type MockcontextEmbedder struct {
+// MocktraceManager is a mock of traceManager interface.
+type MocktraceManager struct {
 	ctrl     *gomock.Controller
-	recorder *MockcontextEmbedderMockRecorder
+	recorder *MocktraceManagerMockRecorder
 }
 
-// MockcontextEmbedderMockRecorder is the mock recorder for MockcontextEmbedder.
-type MockcontextEmbedderMockRecorder struct {
-	mock *MockcontextEmbedder
+// MocktraceManagerMockRecorder is the mock recorder for MocktraceManager.
+type MocktraceManagerMockRecorder struct {
+	mock *MocktraceManager
 }
 
-// NewMockcontextEmbedder creates a new mock instance.
-func NewMockcontextEmbedder(ctrl *gomock.Controller) *MockcontextEmbedder {
-	mock := &MockcontextEmbedder{ctrl: ctrl}
-	mock.recorder = &MockcontextEmbedderMockRecorder{mock}
+// NewMocktraceManager creates a new mock instance.
+func NewMocktraceManager(ctrl *gomock.Controller) *MocktraceManager {
+	mock := &MocktraceManager{ctrl: ctrl}
+	mock.recorder = &MocktraceManagerMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockcontextEmbedder) EXPECT() *MockcontextEmbedderMockRecorder {
+func (m *MocktraceManager) EXPECT() *MocktraceManagerMockRecorder {
 	return m.recorder
 }
 
-// WithTaskIDContext mocks base method.
-func (m *MockcontextEmbedder) WithTaskIDContext(ctx context.Context) context.Context {
+// WithGeneratedTaskID mocks base method.
+func (m *MocktraceManager) WithGeneratedTaskID(ctx context.Context) context.Context {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WithTaskIDContext", ctx)
+	ret := m.ctrl.Call(m, "WithGeneratedTaskID", ctx)
 	ret0, _ := ret[0].(context.Context)
 	return ret0
 }
 
-// WithTaskIDContext indicates an expected call of WithTaskIDContext.
-func (mr *MockcontextEmbedderMockRecorder) WithTaskIDContext(ctx interface{}) *gomock.Call {
+// WithGeneratedTaskID indicates an expected call of WithGeneratedTaskID.
+func (mr *MocktraceManagerMockRecorder) WithGeneratedTaskID(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithTaskIDContext", reflect.TypeOf((*MockcontextEmbedder)(nil).WithTaskIDContext), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithGeneratedTaskID", reflect.TypeOf((*MocktraceManager)(nil).WithGeneratedTaskID), ctx)
 }
 
-// WithWorkerIDContext mocks base method.
-func (m *MockcontextEmbedder) WithWorkerIDContext(ctx context.Context) context.Context {
+// WithGeneratedWorkerID mocks base method.
+func (m *MocktraceManager) WithGeneratedWorkerID(ctx context.Context) context.Context {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WithWorkerIDContext", ctx)
+	ret := m.ctrl.Call(m, "WithGeneratedWorkerID", ctx)
 	ret0, _ := ret[0].(context.Context)
 	return ret0
 }
 
-// WithWorkerIDContext indicates an expected call of WithWorkerIDContext.
-func (mr *MockcontextEmbedderMockRecorder) WithWorkerIDContext(ctx interface{}) *gomock.Call {
+// WithGeneratedWorkerID indicates an expected call of WithGeneratedWorkerID.
+func (mr *MocktraceManagerMockRecorder) WithGeneratedWorkerID(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithWorkerIDContext", reflect.TypeOf((*MockcontextEmbedder)(nil).WithWorkerIDContext), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WithGeneratedWorkerID", reflect.TypeOf((*MocktraceManager)(nil).WithGeneratedWorkerID), ctx)
 }

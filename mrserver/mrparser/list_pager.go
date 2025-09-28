@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/mrtype"
 
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
-	"github.com/mondegor/go-webcore/mrtype"
 )
 
 type (

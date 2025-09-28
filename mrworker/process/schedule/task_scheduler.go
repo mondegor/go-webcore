@@ -24,19 +24,19 @@ const (
 type (
 	// TaskScheduler - многопоточный сервис запуска задач по расписанию (планировщик задач).
 	TaskScheduler struct {
-		caption         string
-		readyTimeout    time.Duration
-		tasks           []mrworker.Task
-		errorHandler    mrcore.ErrorHandler
-		logger          mrlog.Logger
-		contextEmbedder contextEmbedder
-		wgMain          sync.WaitGroup
-		done            chan struct{}
+		caption      string
+		readyTimeout time.Duration
+		tasks        []mrworker.Task
+		errorHandler mrcore.ErrorHandler
+		logger       mrlog.Logger
+		traceManager traceManager
+		wgMain       sync.WaitGroup
+		done         chan struct{}
 	}
 
-	contextEmbedder interface {
-		WithWorkerIDContext(ctx context.Context) context.Context
-		WithTaskIDContext(ctx context.Context) context.Context
+	traceManager interface {
+		WithGeneratedWorkerID(ctx context.Context) context.Context
+		WithGeneratedTaskID(ctx context.Context) context.Context
 	}
 
 	options struct {
@@ -56,7 +56,7 @@ var (
 )
 
 // NewTaskScheduler - создаёт объект TaskScheduler.
-func NewTaskScheduler(errorHandler mrcore.ErrorHandler, logger mrlog.Logger, contextEmbedder contextEmbedder, opts ...Option) *TaskScheduler {
+func NewTaskScheduler(errorHandler mrcore.ErrorHandler, logger mrlog.Logger, traceManager traceManager, opts ...Option) *TaskScheduler {
 	o := options{
 		caption:      defaultCaption,
 		readyTimeout: defaultReadyTimeout,
@@ -67,14 +67,14 @@ func NewTaskScheduler(errorHandler mrcore.ErrorHandler, logger mrlog.Logger, con
 	}
 
 	return &TaskScheduler{
-		caption:         o.captionPrefix + o.caption,
-		readyTimeout:    o.readyTimeout,
-		tasks:           o.tasks,
-		errorHandler:    errorHandler,
-		logger:          logger,
-		contextEmbedder: contextEmbedder,
-		wgMain:          sync.WaitGroup{},
-		done:            make(chan struct{}),
+		caption:      o.captionPrefix + o.caption,
+		readyTimeout: o.readyTimeout,
+		tasks:        o.tasks,
+		errorHandler: errorHandler,
+		logger:       logger,
+		traceManager: traceManager,
+		wgMain:       sync.WaitGroup{},
+		done:         make(chan struct{}),
 	}
 }
 
@@ -109,7 +109,7 @@ func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
 		go func(ctx context.Context, task mrworker.Task) {
 			defer wg.Done()
 
-			ctx = s.contextEmbedder.WithWorkerIDContext(ctx)
+			ctx = s.traceManager.WithGeneratedWorkerID(ctx)
 			s.logger.Info(ctx, "Starting worker", "task_name", task.Caption())
 
 			ticker := time.NewTicker(task.Period())
@@ -143,7 +143,7 @@ func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
 				}
 
 				func(ctx context.Context) {
-					ctx = s.contextEmbedder.WithTaskIDContext(ctx)
+					ctx = s.traceManager.WithGeneratedTaskID(ctx)
 					s.logger.Info(ctx, "Execute task", "task_name", task.Caption())
 
 					ctx, cancel := context.WithTimeout(ctx, task.Timeout())

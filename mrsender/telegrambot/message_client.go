@@ -6,8 +6,7 @@ import (
 
 	tgclient "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
-
-	"github.com/mondegor/go-webcore/mrsender"
+	"github.com/mondegor/go-sysmess/mrtrace"
 )
 
 const (
@@ -18,12 +17,12 @@ const (
 type (
 	MessageClient struct {
 		botAPI *tgclient.BotAPI
-		tracer mrsender.Tracer
+		tracer mrtrace.Tracer
 	}
 )
 
 // NewMessageClient - создаёт объект MessageClient.
-func NewMessageClient(apiToken string, tracer mrsender.Tracer) (client *MessageClient, err error) {
+func NewMessageClient(apiToken string, tracer mrtrace.Tracer) (client *MessageClient, err error) {
 	botAPI, err := tgclient.NewBotAPI(apiToken)
 	if err != nil {
 		return nil, mr.ErrInternal.Wrap(err)

@@ -1,8 +1,6 @@
 package mrreq
 
-import (
-	"github.com/mondegor/go-webcore/mrtype"
-)
+import "github.com/mondegor/go-sysmess/mrtype"
 
 // ParseRangeFloat64 - возвращает RangeFloat64 из строковых параметров по указанному префиксу ключа.
 func ParseRangeFloat64(getter valueGetter, prefixKey string) (mrtype.RangeFloat64, error) {

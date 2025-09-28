@@ -8,13 +8,13 @@ import (
 
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlib/extio"
 	"github.com/mondegor/go-sysmess/mrlocale/model"
 	"github.com/mondegor/go-sysmess/mrlog"
+	mrtracectx "github.com/mondegor/go-sysmess/mrtrace/context"
 
 	"github.com/mondegor/go-webcore/mrcore"
-	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrserver"
-	"github.com/mondegor/go-webcore/mrtrace/distribute"
 )
 
 type (
@@ -156,7 +156,7 @@ func (rs *ErrorSender) sendStructResponse(
 
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
-	mrlib.Write(ctx, rs.logger, w, bytes)
+	extio.Write(ctx, rs.logger, w, bytes)
 }
 
 func (rs *ErrorSender) getErrorListResponse(r *http.Request, errors ...*mrerr.CustomError) ErrorListResponse {
@@ -172,7 +172,7 @@ func (rs *ErrorSender) getErrorListResponse(r *http.Request, errors ...*mrerr.Cu
 
 func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, err error) ErrorDetailsResponse {
 	errorMessage := model.ParseErrorMessage(rs.parserLocale.Localizer(r).TranslateError(err))
-	errorTraceID := distribute.RequestID(r.Context())
+	errorTraceID := mrtracectx.RequestID(r.Context())
 
 	if e, ok := err.(interface{ ID() string }); ok && e.ID() != "" {
 		errorTraceID = e.ID()

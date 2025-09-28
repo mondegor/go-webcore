@@ -5,10 +5,9 @@ import (
 	"net/http"
 
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/mrtype"
 
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
-	"github.com/mondegor/go-webcore/mrtype"
-	"github.com/mondegor/go-webcore/mrview"
 )
 
 type (
@@ -46,7 +45,7 @@ func NewListSorter(logger mrlog.Logger, opts ListSorterOptions) *ListSorter {
 }
 
 // SortParams - возвращает распарсенные параметры сортировки списка элементов.
-func (p *ListSorter) SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams {
+func (p *ListSorter) SortParams(r *http.Request, sorter mrtype.ListSorter) mrtype.SortParams {
 	value, err := mrreq.ParseSortParams(
 		r.URL.Query(),
 		p.paramNameSortField,

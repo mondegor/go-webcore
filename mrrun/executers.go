@@ -20,7 +20,7 @@ type (
 )
 
 func (r *AppRunner) contextWithProcessID(ctx context.Context, process Process) context.Context {
-	ctx = r.contextEmbedder.WithProcessIDContext(ctx)
+	ctx = r.traceManager.WithGeneratedProcessID(ctx)
 	r.logger.Info(ctx, "Start new process", "process_name", process.Caption())
 
 	return ctx
@@ -39,7 +39,7 @@ func (r *AppRunner) makeExecuter(ctx context.Context, process Process) Executer 
 			// WARNING: создаётся новый контекст без возможности внешней отмены
 			// для того чтобы метод Shutdown гарантированно отработал
 			// при этом внутри Shutdown следует организовать персональный таймаут
-			if err := process.Shutdown(r.contextEmbedder.NewContextWithIDs(ctx)); err != nil {
+			if err := process.Shutdown(r.traceManager.NewContextWithIDs(ctx)); err != nil {
 				r.logger.Error(ctx, "AppRunner.makeExecuter", "error", err)
 			}
 		},
@@ -90,7 +90,7 @@ func (r *AppRunner) makeNextExecuter(ctx context.Context, process Process, prev 
 			// WARNING: создаётся новый контекст без возможности внешней отмены
 			// для того чтобы метод Shutdown гарантированно отработал
 			// при этом внутри Shutdown следует организовать персональный таймаут
-			if err := process.Shutdown(r.contextEmbedder.NewContextWithIDs(ctx)); err != nil {
+			if err := process.Shutdown(r.traceManager.NewContextWithIDs(ctx)); err != nil {
 				r.logger.Error(ctx, "AppRunner.makeNextExecuter", "error", err)
 			}
 		},

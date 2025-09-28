@@ -4,8 +4,7 @@ import (
 	"math"
 
 	"github.com/mondegor/go-sysmess/mrerr/mr"
-
-	"github.com/mondegor/go-webcore/mrtype"
+	"github.com/mondegor/go-sysmess/mrtype"
 )
 
 // ParsePageParams - возвращает PageParams из строковых параметров по указанным ключам.

@@ -24,9 +24,9 @@ type SchedulerTestSuite struct {
 	ctrl *gomock.Controller
 	ctx  context.Context
 
-	mockTask            *mock_mrworker.MockTask
-	mockContextEmbedder *mock_schedule.MockcontextEmbedder
-	mockErrorHandler    *mock_mrcore.MockErrorHandler
+	mockTask         *mock_mrworker.MockTask
+	mockTraceManager *mock_schedule.MocktraceManager
+	mockErrorHandler *mock_mrcore.MockErrorHandler
 }
 
 func TestSchedulerTestSuite(t *testing.T) {
@@ -47,7 +47,7 @@ func (ts *SchedulerTestSuite) SetupTest() {
 	ts.mockTask = mock_mrworker.NewMockTask(ts.ctrl)
 	ts.mockTask.EXPECT().Caption().Return("mockTaskCaption").AnyTimes()
 
-	ts.mockContextEmbedder = mock_schedule.NewMockcontextEmbedder(ts.ctrl)
+	ts.mockTraceManager = mock_schedule.NewMocktraceManager(ts.ctrl)
 	ts.mockErrorHandler = mock_mrcore.NewMockErrorHandler(ts.ctrl)
 }
 
@@ -55,7 +55,7 @@ func (ts *SchedulerTestSuite) Test_StartWithNoTasks() {
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
 		nop.NewLoggerAdapter(),
-		ts.mockContextEmbedder,
+		ts.mockTraceManager,
 	)
 
 	err := ts.taskSchedulerStart(taskScheduler)
@@ -69,7 +69,7 @@ func (ts *SchedulerTestSuite) Test_StartWithTaskZeroPeriod() {
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
 		nop.NewLoggerAdapter(),
-		ts.mockContextEmbedder,
+		ts.mockTraceManager,
 		schedule.WithTasks(ts.mockTask),
 	)
 
@@ -84,7 +84,7 @@ func (ts *SchedulerTestSuite) Test_StartWithTaskZeroTimeout() {
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
 		nop.NewLoggerAdapter(),
-		ts.mockContextEmbedder,
+		ts.mockTraceManager,
 		schedule.WithTasks(ts.mockTask),
 	)
 
@@ -107,7 +107,7 @@ func (ts *SchedulerTestSuite) Test_StartWithStartupTask() {
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
 		nop.NewLoggerAdapter(),
-		ts.mockContextEmbedder,
+		ts.mockTraceManager,
 		schedule.WithTasks(ts.mockTask),
 	)
 
@@ -121,8 +121,8 @@ func (ts *SchedulerTestSuite) Test_StartAndShutdown() {
 	taskExecuted := make(chan struct{})
 	schedulerFinished := make(chan struct{})
 
-	ts.mockContextEmbedder.EXPECT().WithWorkerIDContext(ts.ctx).Return(ts.ctx).Times(2)
-	ts.mockContextEmbedder.EXPECT().WithTaskIDContext(ts.ctx).Return(ts.ctx).MinTimes(minTaskExecution)
+	ts.mockTraceManager.EXPECT().WithGeneratedWorkerID(ts.ctx).Return(ts.ctx).Times(2)
+	ts.mockTraceManager.EXPECT().WithGeneratedTaskID(ts.ctx).Return(ts.ctx).MinTimes(minTaskExecution)
 
 	ts.mockTask.EXPECT().Startup().Return(false).Times(2)
 	ts.mockTask.EXPECT().Period().Return(time.Nanosecond).Times(4)
@@ -143,7 +143,7 @@ func (ts *SchedulerTestSuite) Test_StartAndShutdown() {
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
 		nop.NewLoggerAdapter(),
-		ts.mockContextEmbedder,
+		ts.mockTraceManager,
 		schedule.WithTasks(ts.mockTask, ts.mockTask),
 	)
 

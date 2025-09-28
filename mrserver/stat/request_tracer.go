@@ -4,18 +4,18 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-webcore/mrsender"
+	"github.com/mondegor/go-sysmess/mrtrace"
 )
 
 type (
 	// RequestTracer - comment struct.
 	RequestTracer struct {
-		tracer mrsender.Tracer
+		tracer mrtrace.Tracer
 	}
 )
 
 // NewRequestTracer - создаёт объект RequestTracer.
-func NewRequestTracer(tracer mrsender.Tracer) *RequestTracer {
+func NewRequestTracer(tracer mrtrace.Tracer) *RequestTracer {
 	return &RequestTracer{
 		tracer: tracer,
 	}

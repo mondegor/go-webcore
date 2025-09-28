@@ -8,11 +8,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mondegor/go-sysmess/mrtype"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrenum"
-	"github.com/mondegor/go-webcore/mrtype"
-	"github.com/mondegor/go-webcore/mrview"
 )
 
 type (
@@ -86,7 +85,7 @@ type (
 
 	// RequestParserListSorter - парсер данных запроса для преобразования их в mrtype.SortParams.
 	RequestParserListSorter interface {
-		SortParams(r *http.Request, sorter mrview.ListSorter) mrtype.SortParams
+		SortParams(r *http.Request, sorter mrtype.ListSorter) mrtype.SortParams
 	}
 
 	// RequestParserListPager - парсер данных запроса для преобразования их в mrtype.PageParams.

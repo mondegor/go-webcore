@@ -11,6 +11,7 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog/color"
 	"github.com/mondegor/go-sysmess/mrlog/slog"
 	"github.com/mondegor/go-sysmess/mrlog/slog/middleware"
+	"github.com/mondegor/go-sysmess/mrtrace"
 
 	"github.com/mondegor/go-webcore/mrcore"
 )
@@ -82,7 +83,7 @@ func newLogger(cfg LoggerConfig) (*slog.LoggerAdapter, error) {
 						return true
 					})
 
-					rec.Add(ExtractKeys(ctx)...)
+					rec.Add(mrtrace.ExtractKeysValues(ctx)...)
 
 					return rec
 				},
@@ -107,13 +108,12 @@ func newLogger(cfg LoggerConfig) (*slog.LoggerAdapter, error) {
 			slog.WithColorizeAttr(mrcore.KeyAppVersion, color.Yellow, color.LightGray),
 			slog.WithColorizeAttr(mrcore.KeyErrorID, color.Yellow, color.Red),
 
-			slog.WithColorizeAttr(mrcore.KeyProcessID, color.Yellow, color.LightGray),
-			slog.WithColorizeAttr(mrcore.KeyWorkerID, color.Yellow, color.LightGray),
-			slog.WithColorizeAttr(mrcore.KeyTraceID, color.Yellow, color.LightGray),
+			slog.WithColorizeAttr(mrtrace.KeyProcessID, color.Yellow, color.LightGray),
+			slog.WithColorizeAttr(mrtrace.KeyWorkerID, color.Yellow, color.LightGray),
 
-			slog.WithColorizeAttr(mrcore.KeyCorrelationID, color.LightYellow, color.LightGray),
-			slog.WithColorizeAttr(mrcore.KeyTaskID, color.LightYellow, color.LightGray),
-			slog.WithColorizeAttr(mrcore.KeyRequestID, color.LightYellow, color.LightGray),
+			slog.WithColorizeAttr(mrtrace.KeyCorrelationID, color.LightYellow, color.LightGray),
+			slog.WithColorizeAttr(mrtrace.KeyTaskID, color.LightYellow, color.LightGray),
+			slog.WithColorizeAttr(mrtrace.KeyRequestID, color.LightYellow, color.LightGray),
 
 			slog.WithColorizeAttr("sql", color.Cyan, color.Green),
 		)

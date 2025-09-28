@@ -8,8 +8,7 @@ import (
 	"strconv"
 
 	"github.com/mondegor/go-sysmess/mrlog"
-
-	"github.com/mondegor/go-webcore/mrtype"
+	"github.com/mondegor/go-sysmess/mrtype"
 )
 
 type (

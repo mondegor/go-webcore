@@ -5,8 +5,7 @@ import (
 	"net/http"
 
 	"github.com/mondegor/go-sysmess/mrerr"
-
-	"github.com/mondegor/go-webcore/mrtype"
+	"github.com/mondegor/go-sysmess/mrtype"
 )
 
 type (

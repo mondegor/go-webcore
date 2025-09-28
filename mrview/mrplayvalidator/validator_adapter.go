@@ -10,10 +10,9 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrerrors"
+	"github.com/mondegor/go-sysmess/mrlib/extstrings"
 	"github.com/mondegor/go-sysmess/mrlog"
 	"github.com/mondegor/go-sysmess/mrmsg"
-
-	"github.com/mondegor/go-webcore/mrlib"
 )
 
 // go get -u github.com/go-playground/validator/v10
@@ -93,7 +92,7 @@ func (v *ValidatorAdapter) Validate(ctx context.Context, structure any) error {
 	fields := make(mrerr.CustomErrors, len(errorList))
 
 	for i, errField := range errorList {
-		fieldName := mrlib.CutBefore(errField.Namespace(), '.')
+		fieldName := extstrings.TrimBeforeSep(errField.Namespace(), '.')
 		fields[i] = mrerr.NewCustomError(
 			fieldName,
 			v.createUserError(ctx, fieldName, errField),
@@ -132,7 +131,7 @@ func (v *ValidatorAdapter) createUserError(ctx context.Context, fieldName string
 	tag := field.Tag()
 
 	if tag == "" {
-		return errValidatorTagIsNotFound.New().WithAttr("field", fieldName) // TODO: нужна ли эта проверка?
+		return errValidatorTagIsNotFound.New("field", fieldName) // TODO: нужна ли эта проверка?
 	}
 
 	args := make([]any, 0, 4)

@@ -5,12 +5,13 @@ import (
 	"mime/multipart"
 	"net/http"
 
+	"github.com/mondegor/go-sysmess/mrdto"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrlib/extfile"
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/mrtype"
 
-	"github.com/mondegor/go-webcore/mrlib"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
-	"github.com/mondegor/go-webcore/mrtype"
 )
 
 const (
@@ -43,7 +44,7 @@ func NewImage(logger mrlog.Logger, opts ...ImageOption) *Image {
 		file: NewFile( // by default
 			logger,
 			WithFileAllowedMimeTypes(
-				[]mrlib.MimeType{
+				[]extfile.MimeType{
 					{
 						ContentType: "image/gif",
 						Extension:   ".gif",
@@ -97,7 +98,7 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	}
 
 	return mrtype.Image{
-		ImageInfo: mrtype.ImageInfo{
+		ImageInfo: mrdto.ImageInfo{
 			ContentType:  contentType,
 			OriginalName: hdr.Filename,
 			Width:        meta.width,
@@ -176,7 +177,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 			images = append(
 				images,
 				mrtype.ImageHeader{
-					ImageInfo: mrtype.ImageInfo{
+					ImageInfo: mrdto.ImageInfo{
 						ContentType:  contentType,
 						OriginalName: fds[i].Filename,
 						Width:        meta.width,
@@ -198,25 +199,25 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 }
 
 func (p *Image) decode(file multipart.File, contentType string) (imageMeta, error) {
-	cfg, err := mrlib.DecodeImageConfig(file, contentType)
+	cfg, err := extfile.DecodeImageConfig(file, contentType)
 	if err != nil {
 		return imageMeta{}, err
 	}
 
 	if cfg.Width < 0 || cfg.Height < 0 {
-		return imageMeta{}, ErrHttpRequestImageSize.New()
+		return imageMeta{}, mr.ErrValidateImageSize.New()
 	}
 
 	if p.maxWidth > 0 && uint64(cfg.Width) > p.maxWidth {
-		return imageMeta{}, ErrHttpRequestImageWidthMax.New(p.maxWidth)
+		return imageMeta{}, mr.ErrValidateImageWidthMax.New(p.maxWidth)
 	}
 
 	if p.maxHeight > 0 && uint64(cfg.Height) > p.maxHeight {
-		return imageMeta{}, ErrHttpRequestImageHeightMax.New(p.maxHeight)
+		return imageMeta{}, mr.ErrValidateImageHeightMax.New(p.maxHeight)
 	}
 
 	if p.checkBody {
-		if err = mrlib.CheckImage(file, contentType); err != nil {
+		if err = extfile.CheckImage(file, contentType); err != nil {
 			return imageMeta{}, err
 		}
 	}

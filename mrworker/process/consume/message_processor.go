@@ -36,11 +36,11 @@ type (
 		queueSize      uint64
 		workersCount   uint64
 
-		consumer        mrworker.MessageConsumer
-		handler         mrworker.MessageHandler
-		errorHandler    mrcore.ErrorHandler
-		logger          mrlog.Logger
-		contextEmbedder contextEmbedder
+		consumer     mrworker.MessageConsumer
+		handler      mrworker.MessageHandler
+		errorHandler mrcore.ErrorHandler
+		logger       mrlog.Logger
+		traceManager traceManager
 
 		wgMain        sync.WaitGroup
 		signalExecute <-chan struct{}
@@ -48,10 +48,10 @@ type (
 		done          chan struct{}
 	}
 
-	contextEmbedder interface {
+	traceManager interface {
 		NewContextWithIDs(originalCtx context.Context) context.Context
-		WithWorkerIDContext(ctx context.Context) context.Context
-		WithTaskIDContext(ctx context.Context) context.Context
+		WithGeneratedWorkerID(ctx context.Context) context.Context
+		WithGeneratedTaskID(ctx context.Context) context.Context
 	}
 
 	options struct {
@@ -76,7 +76,7 @@ func NewMessageProcessor(
 	handler mrworker.MessageHandler,
 	errorHandler mrcore.ErrorHandler,
 	logger mrlog.Logger,
-	idGenerator contextEmbedder,
+	traceManager traceManager,
 	opts ...Option,
 ) *MessageProcessor {
 	o := options{
@@ -102,11 +102,11 @@ func NewMessageProcessor(
 		queueSize:      o.queueSize,
 		workersCount:   o.workersCount,
 
-		consumer:        NewConsumerWithTimeout(consumer, o.consumerReadTimeout, o.consumerWriteTimeout),
-		handler:         handler,
-		errorHandler:    errorHandler,
-		logger:          logger,
-		contextEmbedder: idGenerator,
+		consumer:     NewConsumerWithTimeout(consumer, o.consumerReadTimeout, o.consumerWriteTimeout),
+		handler:      handler,
+		errorHandler: errorHandler,
+		logger:       logger,
+		traceManager: traceManager,
 
 		wgMain:        sync.WaitGroup{},
 		signalExecute: o.signalExecute,
@@ -134,7 +134,7 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 	// WARNING: используется новый контекст со скопированными ID процессами из основного контекста,
 	// для того чтобы можно было останавливать процессор только через его метод Shutdown().
 	// При вызове этого метода гарантируется корректное завершение работы воркеров процессора.
-	ctx = p.contextEmbedder.NewContextWithIDs(ctx)
+	ctx = p.traceManager.NewContextWithIDs(ctx)
 
 	p.logger.Debug(ctx, "Starting the message processor...", "processor_name", p.caption)
 	defer p.logger.Debug(ctx, "The message processor has been stopped")
@@ -171,7 +171,7 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 			p.logger.Debug(ctx, "ticker event", "processor_name", p.caption)
 		}
 
-		ctx = p.contextEmbedder.WithTaskIDContext(ctx) // producerID
+		ctx = p.traceManager.WithGeneratedTaskID(ctx) // producerID
 
 		messages, err := p.consumer.ReadMessages(ctx, p.queueSize)
 		if err != nil {
@@ -218,7 +218,7 @@ func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 		wg.Add(1)
 
 		go func(ctx context.Context) {
-			ctx = p.contextEmbedder.WithWorkerIDContext(ctx)
+			ctx = p.traceManager.WithGeneratedWorkerID(ctx)
 
 			defer func() {
 				wg.Done()
@@ -246,7 +246,7 @@ func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 
 func (p *MessageProcessor) workerFunc(message any) func(ctx context.Context) {
 	return func(ctx context.Context) {
-		ctx = p.contextEmbedder.WithTaskIDContext(ctx)
+		ctx = p.traceManager.WithGeneratedTaskID(ctx)
 
 		handlerCtx, cancel := context.WithTimeout(ctx, p.handlerTimeout)
 		defer cancel()
