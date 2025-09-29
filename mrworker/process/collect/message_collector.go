@@ -11,7 +11,7 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mrworker"
 )
 
@@ -35,9 +35,9 @@ type (
 		workersCount   int
 
 		handler      mrworker.MessageBatchHandler
-		errorHandler mrcore.ErrorHandler
+		errorHandler core.ErrorHandler
 		logger       mrlog.Logger
-		traceManager traceManager
+		traceManager core.TraceManager
 
 		wgMain        sync.WaitGroup
 		isSendStopped atomic.Bool
@@ -55,12 +55,6 @@ type (
 		batchSize      int
 		workersCount   int
 	}
-
-	traceManager interface {
-		WithGeneratedWorkerID(ctx context.Context) context.Context
-		WithGeneratedTaskID(ctx context.Context) context.Context
-		NewContextWithIDs(originalCtx context.Context) context.Context
-	}
 )
 
 var (
@@ -71,9 +65,9 @@ var (
 // NewMessageCollector - создаёт объект MessageCollector.
 func NewMessageCollector(
 	handler mrworker.MessageBatchHandler,
-	errorHandler mrcore.ErrorHandler,
+	errorHandler core.ErrorHandler,
 	logger mrlog.Logger,
-	traceManager traceManager,
+	traceManager core.TraceManager,
 	opts ...Option,
 ) *MessageCollector {
 	o := options{

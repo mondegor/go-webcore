@@ -10,10 +10,9 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog/slog/nop"
 	"github.com/stretchr/testify/suite"
 
-	mock_mrcore "github.com/mondegor/go-webcore/mrcore/mock"
+	mock_core "github.com/mondegor/go-webcore/internal/mock"
 	mock_mrworker "github.com/mondegor/go-webcore/mrworker/mock"
 	"github.com/mondegor/go-webcore/mrworker/process/schedule"
-	mock_schedule "github.com/mondegor/go-webcore/mrworker/process/schedule/mock"
 )
 
 const deadlineTimeout = 3 * time.Second
@@ -25,8 +24,8 @@ type SchedulerTestSuite struct {
 	ctx  context.Context
 
 	mockTask         *mock_mrworker.MockTask
-	mockTraceManager *mock_schedule.MocktraceManager
-	mockErrorHandler *mock_mrcore.MockErrorHandler
+	mockTraceManager *mock_core.MockTraceManager
+	mockErrorHandler *mock_core.MockErrorHandler
 }
 
 func TestSchedulerTestSuite(t *testing.T) {
@@ -47,8 +46,8 @@ func (ts *SchedulerTestSuite) SetupTest() {
 	ts.mockTask = mock_mrworker.NewMockTask(ts.ctrl)
 	ts.mockTask.EXPECT().Caption().Return("mockTaskCaption").AnyTimes()
 
-	ts.mockTraceManager = mock_schedule.NewMocktraceManager(ts.ctrl)
-	ts.mockErrorHandler = mock_mrcore.NewMockErrorHandler(ts.ctrl)
+	ts.mockTraceManager = mock_core.NewMockTraceManager(ts.ctrl)
+	ts.mockErrorHandler = mock_core.NewMockErrorHandler(ts.ctrl)
 }
 
 func (ts *SchedulerTestSuite) Test_StartWithNoTasks() {

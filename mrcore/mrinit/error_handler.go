@@ -4,13 +4,14 @@ import (
 	"context"
 
 	"github.com/mondegor/go-sysmess/mrerr"
+	"github.com/mondegor/go-sysmess/mrerr/handler"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
-// InitErrorHandler - создаёт объект mrapp.AppErrorHandler.
-func InitErrorHandler(logger mrlog.Logger) *mrerr.ErrorHandler {
-	return mrerr.NewErrorHandler(
+// InitErrorHandler - создаёт объект handler.ErrorHandler.
+func InitErrorHandler(logger mrlog.Logger) *handler.ErrorHandler {
+	return handler.NewErrorHandler(
 		func(ctx context.Context, analyzedKind mrerr.ErrorKind, err error) {
 			if analyzedKind == mrerr.ErrorKindUser {
 				// 1. пользовательские ошибки: InstantError, ProtoError kind=User

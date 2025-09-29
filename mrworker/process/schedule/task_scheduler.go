@@ -10,7 +10,7 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mrworker"
 )
 
@@ -27,9 +27,9 @@ type (
 		caption      string
 		readyTimeout time.Duration
 		tasks        []mrworker.Task
-		errorHandler mrcore.ErrorHandler
+		errorHandler core.ErrorHandler
 		logger       mrlog.Logger
-		traceManager traceManager
+		traceManager core.TraceManager
 		wgMain       sync.WaitGroup
 		done         chan struct{}
 	}
@@ -39,11 +39,6 @@ type (
 		captionPrefix string
 		readyTimeout  time.Duration
 		tasks         []mrworker.Task
-	}
-
-	traceManager interface {
-		WithGeneratedWorkerID(ctx context.Context) context.Context
-		WithGeneratedTaskID(ctx context.Context) context.Context
 	}
 )
 
@@ -56,7 +51,7 @@ var (
 )
 
 // NewTaskScheduler - создаёт объект TaskScheduler.
-func NewTaskScheduler(errorHandler mrcore.ErrorHandler, logger mrlog.Logger, traceManager traceManager, opts ...Option) *TaskScheduler {
+func NewTaskScheduler(errorHandler core.ErrorHandler, logger mrlog.Logger, traceManager core.TraceManager, opts ...Option) *TaskScheduler {
 	o := options{
 		caption:      defaultCaption,
 		readyTimeout: defaultReadyTimeout,

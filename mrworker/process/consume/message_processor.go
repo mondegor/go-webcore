@@ -11,7 +11,7 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mrworker"
 )
 
@@ -38,9 +38,9 @@ type (
 
 		consumer     mrworker.MessageConsumer
 		handler      mrworker.MessageHandler
-		errorHandler mrcore.ErrorHandler
+		errorHandler core.ErrorHandler
 		logger       mrlog.Logger
-		traceManager traceManager
+		traceManager core.TraceManager
 
 		wgMain        sync.WaitGroup
 		signalExecute <-chan struct{}
@@ -60,12 +60,6 @@ type (
 		workersCount         int
 		signalExecute        <-chan struct{}
 	}
-
-	traceManager interface {
-		WithGeneratedWorkerID(ctx context.Context) context.Context
-		WithGeneratedTaskID(ctx context.Context) context.Context
-		NewContextWithIDs(originalCtx context.Context) context.Context
-	}
 )
 
 var errInternalWorkersAreStopped = mrerr.NewKindInternal("the message processor workers has been stopped")
@@ -74,9 +68,9 @@ var errInternalWorkersAreStopped = mrerr.NewKindInternal("the message processor 
 func NewMessageProcessor(
 	consumer mrworker.MessageConsumer,
 	handler mrworker.MessageHandler,
-	errorHandler mrcore.ErrorHandler,
+	errorHandler core.ErrorHandler,
 	logger mrlog.Logger,
-	traceManager traceManager,
+	traceManager core.TraceManager,
 	opts ...Option,
 ) *MessageProcessor {
 	o := options{

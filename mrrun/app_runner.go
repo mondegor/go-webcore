@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/mondegor/go-sysmess/mrlog"
+
+	core "github.com/mondegor/go-webcore/internal"
 )
 
 type (
@@ -11,17 +13,12 @@ type (
 	AppRunner struct {
 		runner       ProcessRunner
 		logger       mrlog.Logger
-		traceManager traceManager
-	}
-
-	traceManager interface {
-		WithGeneratedProcessID(ctx context.Context) context.Context
-		NewContextWithIDs(originalCtx context.Context) context.Context
+		traceManager core.TraceManager
 	}
 )
 
 // NewAppRunner - создаёт объект AppRunner.
-func NewAppRunner(runner ProcessRunner, logger mrlog.Logger, traceManager traceManager) *AppRunner {
+func NewAppRunner(runner ProcessRunner, logger mrlog.Logger, traceManager core.TraceManager) *AppRunner {
 	return &AppRunner{
 		runner:       runner,
 		logger:       logger,

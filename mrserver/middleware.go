@@ -11,6 +11,7 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
 
+	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mraccess"
 	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
@@ -32,14 +33,6 @@ const (
 	// :TODO: вынести в настройки.
 	traceRequestBodyMaxLen  = 2048
 	traceResponseBodyMaxLen = 2048
-)
-
-type (
-	traceManager interface {
-		WithCorrelationID(ctx context.Context, id string) context.Context
-		WithGeneratedRequestID(ctx context.Context) context.Context
-		RequestID(ctx context.Context) string
-	}
 )
 
 // go get -u github.com/rs/xid
@@ -92,7 +85,7 @@ func MiddlewareRecoverHandler(logger mrlog.Logger, isDebug bool, fatalFunc http.
 
 // MiddlewareRequestID - промежуточный обработчик,
 // который устанавливает в контекст requestId, correlationId.
-func MiddlewareRequestID(logger mrlog.Logger, traceManager traceManager) func(next http.Handler) http.Handler {
+func MiddlewareRequestID(logger mrlog.Logger, traceManager core.TraceManager) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := traceManager.WithGeneratedRequestID(r.Context())
