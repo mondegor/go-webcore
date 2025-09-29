@@ -1,18 +1,20 @@
-package mrcore
+package core
+
+import "github.com/mondegor/go-sysmess/mrapp"
 
 const (
 	// KeyAppEnvironment - название ключа окружения приложения (сервиса).
-	KeyAppEnvironment = "app_env"
+	KeyAppEnvironment = mrapp.KeyAppEnvironment
 
 	// KeyAppVersion - название ключа версии приложения (сервиса).
-	KeyAppVersion = "app_ver"
+	KeyAppVersion = mrapp.KeyAppVersion
 
 	// KeyUserID - название ключа ID пользователя.
-	// KeyUserID = "user_id".
+	// KeyUserID = mrapp.KeyUserID.
 
 	// KeyLangCode - название ключа кода языка клиента (пользователя).
-	KeyLangCode = "lang"
+	KeyLangCode = mrapp.KeyLangCode
 
 	// KeyErrorID - название ключа ID ошибки.
-	KeyErrorID = "error_id"
+	KeyErrorID = mrapp.KeyErrorID
 )

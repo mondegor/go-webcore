@@ -13,7 +13,7 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog/slog/middleware"
 	"github.com/mondegor/go-sysmess/mrtrace"
 
-	"github.com/mondegor/go-webcore/mrcore"
+	core "github.com/mondegor/go-webcore/internal"
 )
 
 type (
@@ -42,10 +42,10 @@ func InitLogger(cfg LoggerConfig) (logger mrlog.Logger, err error) {
 	}
 
 	if !strings.HasPrefix(cfg.Environment, "local") {
-		logger = logger.WithAttrs(mrcore.KeyAppEnvironment, cfg.Environment)
+		logger = logger.WithAttrs(core.KeyAppEnvironment, cfg.Environment)
 
 		if cfg.Version != "" {
-			logger = logger.WithAttrs(mrcore.KeyAppVersion, cfg.Version)
+			logger = logger.WithAttrs(core.KeyAppVersion, cfg.Version)
 		}
 	}
 
@@ -73,7 +73,7 @@ func newLogger(cfg LoggerConfig) (*slog.LoggerAdapter, error) {
 						if attr.Value.Kind() == sdkslog.KindAny {
 							if e, ok := attr.Value.Any().(instantError); ok {
 								if id := e.ID(); id != "" {
-									rec.Add(mrcore.KeyErrorID, id)
+									rec.Add(core.KeyErrorID, id)
 								}
 
 								rec.Add(e.Attrs()...)
@@ -104,9 +104,9 @@ func newLogger(cfg LoggerConfig) (*slog.LoggerAdapter, error) {
 	if cfg.ColorMode {
 		opts = append(
 			opts,
-			slog.WithColorizeAttr(mrcore.KeyAppEnvironment, color.Yellow, color.LightGray),
-			slog.WithColorizeAttr(mrcore.KeyAppVersion, color.Yellow, color.LightGray),
-			slog.WithColorizeAttr(mrcore.KeyErrorID, color.Yellow, color.Red),
+			slog.WithColorizeAttr(core.KeyAppEnvironment, color.Yellow, color.LightGray),
+			slog.WithColorizeAttr(core.KeyAppVersion, color.Yellow, color.LightGray),
+			slog.WithColorizeAttr(core.KeyErrorID, color.Yellow, color.Red),
 
 			slog.WithColorizeAttr(mrtrace.KeyProcessID, color.Yellow, color.LightGray),
 			slog.WithColorizeAttr(mrtrace.KeyWorkerID, color.Yellow, color.LightGray),
