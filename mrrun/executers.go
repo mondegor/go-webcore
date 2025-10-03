@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/mrtrace"
 )
 
 type (
@@ -20,7 +21,7 @@ type (
 )
 
 func (r *AppRunner) contextWithProcessID(ctx context.Context, process Process) context.Context {
-	ctx = r.traceManager.WithGeneratedProcessID(ctx)
+	ctx = r.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyProcessID)
 	r.logger.Info(ctx, "Start new process", "process_name", process.Caption())
 
 	return ctx

@@ -9,8 +9,8 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/mrtrace"
 
-	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mrworker"
 )
 
@@ -27,9 +27,9 @@ type (
 		caption      string
 		readyTimeout time.Duration
 		tasks        []mrworker.Task
-		errorHandler core.ErrorHandler
+		errorHandler mrerr.ErrorHandler
 		logger       mrlog.Logger
-		traceManager core.TraceManager
+		traceManager mrtrace.ContextManager
 		wgMain       sync.WaitGroup
 		done         chan struct{}
 	}
@@ -51,7 +51,7 @@ var (
 )
 
 // NewTaskScheduler - создаёт объект TaskScheduler.
-func NewTaskScheduler(errorHandler core.ErrorHandler, logger mrlog.Logger, traceManager core.TraceManager, opts ...Option) *TaskScheduler {
+func NewTaskScheduler(errorHandler mrerr.ErrorHandler, logger mrlog.Logger, traceManager mrtrace.ContextManager, opts ...Option) *TaskScheduler {
 	o := options{
 		caption:      defaultCaption,
 		readyTimeout: defaultReadyTimeout,
@@ -104,7 +104,7 @@ func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
 		go func(ctx context.Context, task mrworker.Task) {
 			defer wg.Done()
 
-			ctx = s.traceManager.WithGeneratedWorkerID(ctx)
+			ctx = s.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyWorkerID)
 			s.logger.Info(ctx, "Starting worker", "task_name", task.Caption())
 
 			ticker := time.NewTicker(task.Period())
@@ -138,7 +138,7 @@ func (s *TaskScheduler) Start(ctx context.Context, ready func()) error {
 				}
 
 				func(ctx context.Context) {
-					ctx = s.traceManager.WithGeneratedTaskID(ctx)
+					ctx = s.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID)
 					s.logger.Info(ctx, "Execute task", "task_name", task.Caption())
 
 					ctx, cancel := context.WithTimeout(ctx, task.Timeout())

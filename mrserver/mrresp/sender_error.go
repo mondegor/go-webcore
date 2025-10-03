@@ -13,7 +13,6 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog"
 	mrtracectx "github.com/mondegor/go-sysmess/mrtrace/context"
 
-	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrserver"
 )
@@ -22,7 +21,7 @@ type (
 	// ErrorSender - формирует и отправляет клиенту ответ об ошибке.
 	ErrorSender struct {
 		encoder      mrserver.ResponseEncoder
-		errorHandler core.ErrorHandler
+		errorHandler mrerr.ErrorHandler
 		logger       mrlog.Logger
 		parserLocale parserLocale
 		statusGetter mrserver.ErrorStatusGetter
@@ -37,7 +36,7 @@ type (
 // NewErrorSender - создаёт объект ErrorSender.
 func NewErrorSender(
 	encoder mrserver.ResponseEncoder,
-	errorHandler core.ErrorHandler,
+	errorHandler mrerr.ErrorHandler,
 	logger mrlog.Logger,
 	parserLocale parserLocale,
 	statusGetter mrserver.ErrorStatusGetter,

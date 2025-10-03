@@ -10,8 +10,8 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/mrtrace"
 
-	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mrworker"
 )
 
@@ -35,9 +35,9 @@ type (
 		workersCount   int
 
 		handler      mrworker.MessageBatchHandler
-		errorHandler core.ErrorHandler
+		errorHandler mrerr.ErrorHandler
 		logger       mrlog.Logger
-		traceManager core.TraceManager
+		traceManager mrtrace.ContextManager
 
 		wgMain        sync.WaitGroup
 		isSendStopped atomic.Bool
@@ -65,9 +65,9 @@ var (
 // NewMessageCollector - создаёт объект MessageCollector.
 func NewMessageCollector(
 	handler mrworker.MessageBatchHandler,
-	errorHandler core.ErrorHandler,
+	errorHandler mrerr.ErrorHandler,
 	logger mrlog.Logger,
-	traceManager core.TraceManager,
+	traceManager mrtrace.ContextManager,
 	opts ...Option,
 ) *MessageCollector {
 	o := options{
@@ -207,7 +207,7 @@ func (p *MessageCollector) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 		wg.Add(1)
 
 		go func(ctx context.Context) {
-			ctx = p.traceManager.WithGeneratedWorkerID(ctx)
+			ctx = p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyWorkerID)
 
 			defer func() {
 				wg.Done()
@@ -235,7 +235,7 @@ func (p *MessageCollector) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 
 func (p *MessageCollector) workerFunc(messages [][]byte) func(ctx context.Context) {
 	return func(ctx context.Context) {
-		handlerCtx, cancel := context.WithTimeout(p.traceManager.WithGeneratedTaskID(ctx), p.handlerTimeout)
+		handlerCtx, cancel := context.WithTimeout(p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID), p.handlerTimeout)
 		defer cancel()
 
 		if err := p.handler.Execute(handlerCtx, messages); err != nil {

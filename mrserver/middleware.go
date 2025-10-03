@@ -10,8 +10,8 @@ import (
 
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/mrtrace"
 
-	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mraccess"
 	"github.com/mondegor/go-webcore/mridempotency"
 	"github.com/mondegor/go-webcore/mrserver/mrreq"
@@ -85,16 +85,16 @@ func MiddlewareRecoverHandler(logger mrlog.Logger, isDebug bool, fatalFunc http.
 
 // MiddlewareRequestID - промежуточный обработчик,
 // который устанавливает в контекст requestId, correlationId.
-func MiddlewareRequestID(logger mrlog.Logger, traceManager core.TraceManager) func(next http.Handler) http.Handler {
+func MiddlewareRequestID(logger mrlog.Logger, traceManager mrtrace.ContextManager) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := traceManager.WithGeneratedRequestID(r.Context())
-			w.Header().Set(mrreq.HeaderKeyRequestID, traceManager.RequestID(ctx))
+			ctx := traceManager.WithGeneratedProcessID(r.Context(), mrtrace.KeyRequestID)
+			w.Header().Set(mrreq.HeaderKeyRequestID, traceManager.ProcessID(ctx, mrtrace.KeyRequestID))
 
 			if correlationID, err := mrreq.ParseCorrelationID(r.Header); err != nil {
 				logger.Warn(ctx, "MiddlewareRequestID", "error", err)
 			} else if correlationID != "" {
-				ctx = traceManager.WithCorrelationID(ctx, correlationID)
+				ctx = traceManager.WithProcessID(ctx, mrtrace.KeyCorrelationID, correlationID)
 				w.Header().Set(mrreq.HeaderKeyCorrelationID, correlationID)
 			}
 

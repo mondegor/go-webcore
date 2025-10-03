@@ -40,14 +40,15 @@ func WithPermission(permission string) PrepareHandlerFunc {
 
 // WithMiddlewareCheckAccess - comment func.
 func WithMiddlewareCheckAccess(
-	logger mrlog.LiteLogger,
+	logger mrlog.Logger,
 	section mraccess.Section,
 	memberProvider mraccess.MemberProvider,
 	memberGroups mraccess.RightsGetter,
 	rightsAvailability mraccess.RightsAvailability,
 ) PrepareHandlerFunc {
 	if section.Privilege() != mrserver.PrivilegePublic && !rightsAvailability.HasPrivilege(section.Privilege()) {
-		logger.Warn(
+		mrlog.Warn(
+			logger,
 			fmt.Sprintf(
 				"Privilege '%s' is not registered for section '%s', perhaps, it is not registered in the config or is not associated with any role",
 				section.Privilege(), section.Name(),
@@ -56,7 +57,7 @@ func WithMiddlewareCheckAccess(
 	}
 
 	if memberProvider == nil {
-		logger.Error("MemberProvider is not set for section", "section", section.Name(), "error", mr.ErrInternalNilPointer.New())
+		mrlog.Error(logger, "MemberProvider is not set for section", "section", section.Name(), "error", mr.ErrInternalNilPointer.New())
 
 		return func(handler mrserver.HttpHandler) mrserver.HttpHandler {
 			handler.Func = func(_ http.ResponseWriter, _ *http.Request) error {
@@ -76,7 +77,7 @@ func WithMiddlewareCheckAccess(
 
 		if section.Privilege() == mrserver.PrivilegePublic && handler.Permission == mrserver.PermissionGuestOnly {
 			middlewareFunc := mrserver.MiddlewareHandlerCheckAccessToken(
-				logger.ContextLogger(),
+				logger,
 				handler.URL,
 			)
 
@@ -87,7 +88,8 @@ func WithMiddlewareCheckAccess(
 
 		if section.Privilege() != mrserver.PrivilegePublic &&
 			(handler.Permission == mrserver.PermissionAnyUser || handler.Permission == mrserver.PermissionGuestOnly) {
-			logger.Warn(
+			mrlog.Warn(
+				logger,
 				"This permission cannot be present in the private section",
 				"error", fmt.Errorf("permission '%s' for handler '%s %s'", handler.Permission, handler.Method, handler.URL),
 			)
@@ -100,7 +102,8 @@ func WithMiddlewareCheckAccess(
 		}
 
 		if !rightsAvailability.HasPermission(handler.Permission) {
-			logger.Warn(
+			mrlog.Warn(
+				logger,
 				"Permission is not registered, perhaps, it is not registered in the config or is not associated with any role",
 				"error", fmt.Errorf("permission '%s' for handler '%s %s'", handler.Permission, handler.Method, handler.URL),
 			)
@@ -113,7 +116,7 @@ func WithMiddlewareCheckAccess(
 		}
 
 		middlewareFunc := mrserver.MiddlewareHandlerCheckAccess(
-			logger.ContextLogger(),
+			logger,
 			handler.URL,
 			section.Privilege(),
 			handler.Permission,

@@ -59,7 +59,7 @@ func (p *ListSorter) SortParams(r *http.Request, sorter mrtype.ListSorter) mrtyp
 		return sorter.DefaultSort()
 	}
 
-	if !sorter.CheckField(value.FieldName) {
+	if !sorter.HasField(value.FieldName) {
 		p.logger.Warn(r.Context(), fmt.Sprintf("sort field '%s' is not registered", value.FieldName), "error", err)
 
 		return sorter.DefaultSort()

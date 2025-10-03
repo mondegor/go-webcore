@@ -10,8 +10,8 @@ import (
 	"github.com/mondegor/go-sysmess/mrerr"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/mrtrace"
 
-	core "github.com/mondegor/go-webcore/internal"
 	"github.com/mondegor/go-webcore/mrworker"
 )
 
@@ -38,9 +38,9 @@ type (
 
 		consumer     mrworker.MessageConsumer
 		handler      mrworker.MessageHandler
-		errorHandler core.ErrorHandler
+		errorHandler mrerr.ErrorHandler
 		logger       mrlog.Logger
-		traceManager core.TraceManager
+		traceManager mrtrace.ContextManager
 
 		wgMain        sync.WaitGroup
 		signalExecute <-chan struct{}
@@ -68,9 +68,9 @@ var errInternalWorkersAreStopped = mrerr.NewKindInternal("the message processor 
 func NewMessageProcessor(
 	consumer mrworker.MessageConsumer,
 	handler mrworker.MessageHandler,
-	errorHandler core.ErrorHandler,
+	errorHandler mrerr.ErrorHandler,
 	logger mrlog.Logger,
-	traceManager core.TraceManager,
+	traceManager mrtrace.ContextManager,
 	opts ...Option,
 ) *MessageProcessor {
 	o := options{
@@ -165,7 +165,7 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 			p.logger.Debug(ctx, "ticker event", "processor_name", p.caption)
 		}
 
-		ctx = p.traceManager.WithGeneratedTaskID(ctx) // producerID
+		ctx = p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID) // producerID
 
 		messages, err := p.consumer.ReadMessages(ctx, p.queueSize)
 		if err != nil {
@@ -212,7 +212,7 @@ func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 		wg.Add(1)
 
 		go func(ctx context.Context) {
-			ctx = p.traceManager.WithGeneratedWorkerID(ctx)
+			ctx = p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyWorkerID)
 
 			defer func() {
 				wg.Done()
@@ -240,7 +240,7 @@ func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 
 func (p *MessageProcessor) workerFunc(message any) func(ctx context.Context) {
 	return func(ctx context.Context) {
-		ctx = p.traceManager.WithGeneratedTaskID(ctx)
+		ctx = p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID)
 
 		handlerCtx, cancel := context.WithTimeout(ctx, p.handlerTimeout)
 		defer cancel()

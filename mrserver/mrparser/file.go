@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/mondegor/go-sysmess/mrdto"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlib/extfile"
 	"github.com/mondegor/go-sysmess/mrlog"
@@ -91,7 +90,7 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 	}
 
 	return mrtype.File{
-		FileInfo: mrdto.FileInfo{
+		FileInfo: mrtype.FileInfo{
 			ContentType:  p.detectedContentType(hdr),
 			OriginalName: hdr.Filename,
 			Size:         uint64(hdr.Size), //nolint:gosec
@@ -153,7 +152,7 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 		files = append(
 			files,
 			mrtype.FileHeader{
-				FileInfo: mrdto.FileInfo{
+				FileInfo: mrtype.FileInfo{
 					ContentType:  p.detectedContentType(fds[i]),
 					OriginalName: fds[i].Filename,
 					Size:         uint64(fds[i].Size), //nolint:gosec

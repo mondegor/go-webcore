@@ -7,10 +7,12 @@ import (
 	"time"
 
 	"github.com/golang/mock/gomock"
-	"github.com/mondegor/go-sysmess/mrlog/slog/nop"
+	mock_mrerr "github.com/mondegor/go-sysmess/mrerr/mock"
+	"github.com/mondegor/go-sysmess/mrlog/slog/nopslog"
+	"github.com/mondegor/go-sysmess/mrtrace"
+	mock_mrtrace "github.com/mondegor/go-sysmess/mrtrace/mock"
 	"github.com/stretchr/testify/suite"
 
-	mock_core "github.com/mondegor/go-webcore/internal/mock"
 	mock_mrworker "github.com/mondegor/go-webcore/mrworker/mock"
 	"github.com/mondegor/go-webcore/mrworker/process/schedule"
 )
@@ -23,9 +25,9 @@ type SchedulerTestSuite struct {
 	ctrl *gomock.Controller
 	ctx  context.Context
 
-	mockTask         *mock_mrworker.MockTask
-	mockTraceManager *mock_core.MockTraceManager
-	mockErrorHandler *mock_core.MockErrorHandler
+	mockTask           *mock_mrworker.MockTask
+	mockContextManager *mock_mrtrace.MockContextManager
+	mockErrorHandler   *mock_mrerr.MockErrorHandler
 }
 
 func TestSchedulerTestSuite(t *testing.T) {
@@ -46,15 +48,15 @@ func (ts *SchedulerTestSuite) SetupTest() {
 	ts.mockTask = mock_mrworker.NewMockTask(ts.ctrl)
 	ts.mockTask.EXPECT().Caption().Return("mockTaskCaption").AnyTimes()
 
-	ts.mockTraceManager = mock_core.NewMockTraceManager(ts.ctrl)
-	ts.mockErrorHandler = mock_core.NewMockErrorHandler(ts.ctrl)
+	ts.mockContextManager = mock_mrtrace.NewMockContextManager(ts.ctrl)
+	ts.mockErrorHandler = mock_mrerr.NewMockErrorHandler(ts.ctrl)
 }
 
 func (ts *SchedulerTestSuite) Test_StartWithNoTasks() {
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
-		nop.NewLoggerAdapter(),
-		ts.mockTraceManager,
+		nopslog.New(),
+		ts.mockContextManager,
 	)
 
 	err := ts.taskSchedulerStart(taskScheduler)
@@ -67,8 +69,8 @@ func (ts *SchedulerTestSuite) Test_StartWithTaskZeroPeriod() {
 
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
-		nop.NewLoggerAdapter(),
-		ts.mockTraceManager,
+		nopslog.New(),
+		ts.mockContextManager,
 		schedule.WithTasks(ts.mockTask),
 	)
 
@@ -82,8 +84,8 @@ func (ts *SchedulerTestSuite) Test_StartWithTaskZeroTimeout() {
 
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
-		nop.NewLoggerAdapter(),
-		ts.mockTraceManager,
+		nopslog.New(),
+		ts.mockContextManager,
 		schedule.WithTasks(ts.mockTask),
 	)
 
@@ -105,8 +107,8 @@ func (ts *SchedulerTestSuite) Test_StartWithStartupTask() {
 
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
-		nop.NewLoggerAdapter(),
-		ts.mockTraceManager,
+		nopslog.New(),
+		ts.mockContextManager,
 		schedule.WithTasks(ts.mockTask),
 	)
 
@@ -120,8 +122,8 @@ func (ts *SchedulerTestSuite) Test_StartAndShutdown() {
 	taskExecuted := make(chan struct{})
 	schedulerFinished := make(chan struct{})
 
-	ts.mockTraceManager.EXPECT().WithGeneratedWorkerID(ts.ctx).Return(ts.ctx).Times(2)
-	ts.mockTraceManager.EXPECT().WithGeneratedTaskID(ts.ctx).Return(ts.ctx).MinTimes(minTaskExecution)
+	ts.mockContextManager.EXPECT().WithGeneratedProcessID(ts.ctx, mrtrace.KeyWorkerID).Return(ts.ctx).Times(2)
+	ts.mockContextManager.EXPECT().WithGeneratedProcessID(ts.ctx, mrtrace.KeyTaskID).Return(ts.ctx).MinTimes(minTaskExecution)
 
 	ts.mockTask.EXPECT().Startup().Return(false).Times(2)
 	ts.mockTask.EXPECT().Period().Return(time.Nanosecond).Times(4)
@@ -141,8 +143,8 @@ func (ts *SchedulerTestSuite) Test_StartAndShutdown() {
 
 	taskScheduler := schedule.NewTaskScheduler(
 		ts.mockErrorHandler,
-		nop.NewLoggerAdapter(),
-		ts.mockTraceManager,
+		nopslog.New(),
+		ts.mockContextManager,
 		schedule.WithTasks(ts.mockTask, ts.mockTask),
 	)
 

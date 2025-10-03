@@ -5,7 +5,6 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrdto"
 	"github.com/mondegor/go-sysmess/mrerr/mr"
 	"github.com/mondegor/go-sysmess/mrlib/extfile"
 	"github.com/mondegor/go-sysmess/mrlog"
@@ -98,7 +97,7 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 	}
 
 	return mrtype.Image{
-		ImageInfo: mrdto.ImageInfo{
+		ImageInfo: mrtype.ImageInfo{
 			ContentType:  contentType,
 			OriginalName: hdr.Filename,
 			Width:        meta.width,
@@ -177,7 +176,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 			images = append(
 				images,
 				mrtype.ImageHeader{
-					ImageInfo: mrdto.ImageInfo{
+					ImageInfo: mrtype.ImageInfo{
 						ContentType:  contentType,
 						OriginalName: fds[i].Filename,
 						Width:        meta.width,
