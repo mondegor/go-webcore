@@ -10,7 +10,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-sysmess v0.15.4-0.20251003215957-9ff083f846ca
+	github.com/mondegor/go-sysmess v0.15.4-0.20251004084206-a6c3849a18a2
 	github.com/prometheus/client_golang v1.20.5
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.10.0
