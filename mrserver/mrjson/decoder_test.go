@@ -5,11 +5,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/mrjson"
+	"github.com/mondegor/go-webcore/mrserver/request"
 )
 
-// Make sure the JsonDecoder conforms with the mrserver.RequestDecoder interface.
+// Make sure the JsonDecoder conforms with the request.ParserDecode interface.
 func TestJsonDecoderImplementsRequestDecoder(t *testing.T) {
-	assert.Implements(t, (*mrserver.RequestDecoder)(nil), &mrjson.JsonDecoder{})
+	assert.Implements(t, (*request.ParserDecode)(nil), &mrjson.JsonDecoder{})
 }

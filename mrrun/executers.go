@@ -62,7 +62,7 @@ func (r *AppRunner) makeNextExecuter(ctx context.Context, process Process, prev 
 				select {
 				case <-time.NewTimer(prev.readyTimeout).C:
 					return mr.ErrInternalTimeoutPeriodHasExpired.Wrap(
-						fmt.Errorf("the waiting time for the previous process '%s' has expired", prev.Caption),
+						fmt.Errorf("the waiting time for the previous process has expired (process='%s')", prev.Caption),
 						"process_name", process.Caption(),
 					)
 				case <-prev.ready:

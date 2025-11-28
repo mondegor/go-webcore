@@ -61,7 +61,7 @@ func (p *HealthProbe) Check(ctx context.Context) (err error) {
 				),
 			)
 
-			err = fmt.Errorf("probe '%s' has panic", p.caption)
+			err = fmt.Errorf("probe has panic (caption='%s')", p.caption)
 		}
 	}()
 

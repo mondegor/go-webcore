@@ -1,28 +1,33 @@
 package mraccess
 
+const (
+	// PrivilegePublic - привилегия для всех.
+	PrivilegePublic = "public"
+
+	// PermissionAnyUser - разрешение для любого пользователя.
+	PermissionAnyUser = "any-user"
+
+	// PermissionGuestOnly - разрешение только для гостя.
+	PermissionGuestOnly = "guest-only"
+)
+
 type (
-	// RightsAvailability - comment interface.
-	RightsAvailability interface {
+	// RightsChecker - проверяет наличие указанных привилегий и разрешений сущности.
+	RightsChecker interface {
 		HasPrivilege(name string) bool
 		HasPermission(name string) bool
 	}
 
-	// RightsSource - comment interface.
+	// RightsSource - интерфейс источника ролей, разрешений и привилегий.
 	RightsSource interface {
 		RoleIDsByNames(roles []string) []uint16
 		RoleIDsByPrivilege(name string) []uint16
 		RoleIDsByPermission(name string) []uint16
-		RightsAvailability
+		RightsChecker
 	}
 
-	// RightsChecker - проверяет права доступа к указанным привилегиям и разрешениям.
-	RightsChecker interface {
-		CheckPrivilege(name string) bool
-		CheckPermission(name string) bool
-	}
-
-	// RightsGetter - comment interface.
+	// RightsGetter - возвращает объект проверяющий наличие указанных привилегий и разрешений сущности.
 	RightsGetter interface {
-		Rights(name string) RightsChecker
+		Rights(group string) RightsChecker
 	}
 )

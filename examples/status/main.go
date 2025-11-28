@@ -3,18 +3,17 @@ package main
 import (
 	"fmt"
 
-	"github.com/mondegor/go-webcore/mrenum"
-	"github.com/mondegor/go-webcore/mrstatus/mrflow"
+	"github.com/mondegor/go-sysmess/mrstatus/itemstatus"
 )
 
 func main() {
-	status := mrenum.ItemStatusEnabled
+	status := itemstatus.Enabled
 
 	fmt.Printf("STATUS: %s\n", status.String())
 
-	flow := mrflow.ItemStatusFlow()
+	flow := itemstatus.NewFlowMap()
 
-	fmt.Printf("check: %#v\n", flow.Check(mrenum.ItemStatusDraft, mrenum.ItemStatusEnabled))
-	fmt.Printf("check: %#v\n", flow.Check(mrenum.ItemStatusEnabled, mrenum.ItemStatusDisabled))
-	fmt.Printf("check: %#v\n", flow.Check(mrenum.ItemStatusDisabled, mrenum.ItemStatusDraft))
+	fmt.Printf("is possible: %#v\n", flow.IsPossible(itemstatus.Draft, itemstatus.Enabled))
+	fmt.Printf("is possible: %#v\n", flow.IsPossible(itemstatus.Enabled, itemstatus.Disabled))
+	fmt.Printf("is possible: %#v\n", flow.IsPossible(itemstatus.Disabled, itemstatus.Draft))
 }

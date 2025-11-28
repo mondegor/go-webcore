@@ -25,7 +25,7 @@ func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.For
 
 	if len(form.Value) > 0 {
 		for key, values := range form.Value {
-			logger.Debug(ctx, fmt.Sprintf("key=%s; value=%s", key, strings.Join(values, ", ")))
+			logger.Debug(ctx, fmt.Sprintf("key='%s', value='%s'", key, strings.Join(values, ", ")))
 		}
 	} else {
 		logger.Debug(ctx, "value is EMPTY")
@@ -33,7 +33,7 @@ func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.For
 
 	if len(form.File) > 0 {
 		for key, fhs := range form.File {
-			logger.Debug(ctx, fmt.Sprintf("key=%s; fhs.len=%d", key, len(fhs)))
+			logger.Debug(ctx, fmt.Sprintf("key='%s', fhs.len=%d", key, len(fhs)))
 		}
 	} else {
 		logger.Debug(ctx, "form.File is EMPTY")
