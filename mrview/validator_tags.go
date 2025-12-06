@@ -14,8 +14,14 @@ var (
 	regexpTripleSize        = regexp.MustCompile(`^[0-9]+x[0-9]+x[0-9]+$`)
 )
 
-// ValidateAnd - comment func.
-func ValidateAnd(values ...func(value string) bool) func(value string) bool {
+// NewValidateAND - comment func.
+func NewValidateAND(values ...func(value string) bool) func(value string) bool {
+	if len(values) == 0 {
+		return func(_ string) bool {
+			return false
+		}
+	}
+
 	return func(value string) bool {
 		for _, fn := range values {
 			if !fn(value) {
@@ -27,11 +33,24 @@ func ValidateAnd(values ...func(value string) bool) func(value string) bool {
 	}
 }
 
-// ValidateOr - comment func.
-func ValidateOr(values ...func(value string) bool) func(value string) bool {
+// NewValidateOR - comment func.
+func NewValidateOR(values ...func(value string) bool) func(value string) bool {
 	return func(value string) bool {
 		for _, fn := range values {
 			if fn(value) {
+				return true
+			}
+		}
+
+		return false
+	}
+}
+
+// NewValidateInArray - comment func.
+func NewValidateInArray(items []string) func(value string) bool {
+	return func(value string) bool {
+		for _, item := range items {
+			if item == value {
 				return true
 			}
 		}
