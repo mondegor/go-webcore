@@ -1,15 +1,12 @@
 package mrresp
 
 import (
-	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-sysmess/mrerr/mr"
-
 	"github.com/mondegor/go-webcore/mrcore"
 )
 
 const (
 	// ErrorAttributeIDByDefault - название пользовательской ошибки по умолчанию.
-	ErrorAttributeIDByDefault = "GeneralError"
+	ErrorAttributeIDByDefault = "FailedToProcessError"
 )
 
 type (
@@ -23,7 +20,7 @@ type (
 		DebugInfo string `json:"debugInfo,omitempty"`
 	}
 
-	// ErrorDetailsResponse - application/problem+json (401, 403, 404, 418, 422, 5XX).
+	// ErrorDetailsResponse - application/problem+json (401, 403, 404, 409, 422, 5XX).
 	ErrorDetailsResponse struct {
 		Title        string `json:"title"`
 		Details      string `json:"details"`
@@ -34,32 +31,18 @@ type (
 )
 
 // NewErrorAttribute - создаёт объект ErrorAttribute.
-func NewErrorAttribute(lz mrcore.Localizer, err error, withDebugInfo bool) ErrorAttribute {
-	var (
-		errCode    string
-		customCode string
-	)
-
-	if e, ok := err.(*mrerr.CustomError); ok { //nolint:errorlint
-		customCode = "/" + e.CustomCode()
-		err = e.Err()
-	}
-
-	e := mr.CastOrWrapUnexpectedInternal(err)
-
-	if e.Code() != "" {
-		errCode = e.Code()
-	} else {
-		errCode = ErrorAttributeIDByDefault
+func NewErrorAttribute(lz mrcore.Localizer, code string, err error, withDebugInfo bool) ErrorAttribute {
+	if code == "" {
+		code = ErrorAttributeIDByDefault
 	}
 
 	attr := ErrorAttribute{
-		ID:    errCode + customCode,
-		Value: lz.TranslateError(e),
+		ID:    code,
+		Value: lz.TranslateError(err),
 	}
 
 	if withDebugInfo {
-		attr.DebugInfo = e.Error()
+		attr.DebugInfo = err.Error()
 	}
 
 	return attr

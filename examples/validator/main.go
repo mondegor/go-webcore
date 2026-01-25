@@ -23,9 +23,9 @@ var regexpLogin = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9\-]+[a-zA-Z]$`)
 func main() {
 	l, _ := slog.NewLoggerAdapter(
 		slog.WithWriter(os.Stdout),
-		slog.WithLevel(mrlog.LevelDebug.String()),
+		slog.WithLevel("DEBUG"),
 	)
-	logger := l.WithAttrs("example", "validator")
+	logger := mrlog.WithAttrs(l, "example", "validator")
 
 	validator := mrplayvalidator.New(logger)
 	ctx := context.Background()

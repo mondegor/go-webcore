@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 
 	"github.com/mondegor/go-webcore/mraccess"
@@ -31,26 +31,25 @@ func CheckAccessHandler(
 
 			accessToken := request.AccessToken(r)
 			if accessToken == "" {
-				return mr.ErrHttpClientUnauthorized.New()
+				return errors.ErrHttpClientUnauthorized
 			}
 
 			currentUser, err := userProvider.UserByToken(ctx, accessToken)
 			if err != nil {
-				if mr.ErrUseCaseAccessForbidden.Is(err) {
-					return mr.ErrHttpAccessForbidden.New()
-				}
-
+				// if errors.Is(err, errors.ErrUserUseCaseAccessForbidden) {
+				// 	return errors.ErrHttpAccessForbidden
+				// }
 				return err
 			}
 
 			logger.Debug(ctx, "current user", "userId", uuid.UUID(currentUser.ID()).String())
 
 			if action.Privilege != mraccess.PrivilegePublic && !currentUser.HasPrivilege(action.Privilege) {
-				return mr.ErrHttpAccessForbidden.New()
+				return errors.ErrHttpAccessForbidden
 			}
 
 			if !currentUser.HasPermission(action.Permission) {
-				return mr.ErrHttpAccessForbidden.New()
+				return errors.ErrHttpAccessForbidden
 			}
 
 			// замена языка переданного клиентом в заголовке Accept-Language
@@ -62,10 +61,9 @@ func CheckAccessHandler(
 			r.Header.Set(mrserver.HeaderKeyUserIDSlashGroup, uuid.UUID(currentUser.ID()).String()+"/"+currentUser.Group()) // userId/realm/kind
 
 			if err = next(w, r); err != nil {
-				if mr.ErrUseCaseAccessForbidden.Is(err) {
-					return mr.ErrHttpAccessForbidden.New()
-				}
-
+				// if errors.Is(err, errors.ErrUserUseCaseAccessForbidden) {
+				// 	return errors.ErrHttpAccessForbidden
+				// }
 				// если ошибка обработчика не связана с доступом к ресурсу
 				return err
 			}

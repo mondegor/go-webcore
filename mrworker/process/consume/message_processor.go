@@ -2,13 +2,11 @@ package consume
 
 import (
 	"context"
-	"errors"
 	"runtime/debug"
 	"sync"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 	"github.com/mondegor/go-sysmess/mrtrace"
 
@@ -38,75 +36,73 @@ type (
 
 		consumer     mrworker.MessageConsumer
 		handler      mrworker.MessageHandler
-		errorHandler mrerr.ErrorHandler
+		errorHandler errors.Handler
 		logger       mrlog.Logger
 		traceManager mrtrace.ContextManager
 
-		wgMain        sync.WaitGroup
+		wg            sync.WaitGroup
 		signalExecute <-chan struct{}
 		workersQueue  chan func(ctx context.Context)
 		done          chan struct{}
 	}
-
-	options struct {
-		caption              string
-		captionPrefix        string
-		readyTimeout         time.Duration
-		readPeriod           time.Duration
-		consumerReadTimeout  time.Duration
-		consumerWriteTimeout time.Duration
-		handlerTimeout       time.Duration
-		queueSize            int
-		workersCount         int
-		signalExecute        <-chan struct{}
-	}
 )
 
-var errInternalWorkersAreStopped = mrerr.NewKindInternal("the message processor workers has been stopped")
+var errInternalWorkersAreStopped = errors.NewInternalProto("the message processor workers has been stopped")
 
 // NewMessageProcessor - создаёт объект MessageProcessor.
 func NewMessageProcessor(
 	consumer mrworker.MessageConsumer,
 	handler mrworker.MessageHandler,
-	errorHandler mrerr.ErrorHandler,
+	errorHandler errors.Handler,
 	logger mrlog.Logger,
 	traceManager mrtrace.ContextManager,
 	opts ...Option,
 ) *MessageProcessor {
 	o := options{
-		caption:              defaultCaption,
-		readyTimeout:         defaultReadyTimeout,
-		readPeriod:           defaultReadPeriod,
+		processor: &MessageProcessor{
+			caption:        defaultCaption,
+			readyTimeout:   defaultReadyTimeout,
+			readPeriod:     defaultReadPeriod,
+			handlerTimeout: defaultHandlerTimeout,
+
+			handler:      handler,
+			errorHandler: errorHandler,
+			logger:       logger,
+			traceManager: traceManager,
+
+			wg:           sync.WaitGroup{},
+			workersQueue: make(chan func(ctx context.Context)),
+			done:         make(chan struct{}),
+		},
 		consumerReadTimeout:  defaultConsumerReadTimeout,
 		consumerWriteTimeout: defaultConsumerWriteTimeout,
-		handlerTimeout:       defaultHandlerTimeout,
-		queueSize:            defaultQueueSize,
-		workersCount:         defaultWorkersCount,
 	}
 
 	for _, opt := range opts {
 		opt(&o)
 	}
 
-	return &MessageProcessor{
-		caption:        o.captionPrefix + o.caption,
-		readyTimeout:   o.readyTimeout,
-		readPeriod:     o.readPeriod,
-		handlerTimeout: o.handlerTimeout,
-		queueSize:      o.queueSize,
-		workersCount:   o.workersCount,
-
-		consumer:     NewConsumerWithTimeout(consumer, o.consumerReadTimeout, o.consumerWriteTimeout),
-		handler:      handler,
-		errorHandler: errorHandler,
-		logger:       logger,
-		traceManager: traceManager,
-
-		wgMain:        sync.WaitGroup{},
-		signalExecute: o.signalExecute,
-		workersQueue:  make(chan func(ctx context.Context)),
-		done:          make(chan struct{}),
+	if o.captionPrefix != "" {
+		o.processor.caption = o.captionPrefix + o.processor.caption
 	}
+
+	if o.processor.queueSize < 1 {
+		o.processor.queueSize = defaultQueueSize
+	}
+
+	if o.processor.workersCount < 1 {
+		o.processor.workersCount = defaultWorkersCount
+	}
+
+	if o.consumerReadTimeout > 0 || o.consumerWriteTimeout > 0 {
+		o.processor.consumer = NewConsumerWithTimeout(
+			consumer,
+			o.consumerReadTimeout,
+			o.consumerWriteTimeout,
+		)
+	}
+
+	return o.processor
 }
 
 // Caption - возвращает название сервиса обработки сообщений.
@@ -120,27 +116,24 @@ func (p *MessageProcessor) ReadyTimeout() time.Duration {
 }
 
 // Start - запуск сервиса обработки сообщений.
+// Отмена внешнего контекста приведёт к аварийному завершению процесса,
+// для корректной остановки следует использовать Shutdown.
 // Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
 func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
-	p.wgMain.Add(1)
-	defer p.wgMain.Done()
-
-	// WARNING: используется новый контекст со скопированными ID процессами из основного контекста,
-	// для того чтобы можно было останавливать процессор только через его метод Shutdown().
-	// При вызове этого метода гарантируется корректное завершение работы воркеров процессора.
-	ctx = p.traceManager.NewContextWithIDs(ctx)
+	p.wg.Add(1)
+	defer p.wg.Done()
 
 	p.logger.Debug(ctx, "Starting the message processor...", "processor_name", p.caption)
 	defer p.logger.Debug(ctx, "The message processor has been stopped")
 
-	wg := sync.WaitGroup{}
+	wgWorkers := sync.WaitGroup{}
 	workersStopped := make(chan struct{})
 	ticker := time.NewTicker(p.readPeriod)
 
-	p.startWorkers(ctx, &wg)
+	p.startWorkers(ctx, &wgWorkers)
 
 	go func() {
-		wg.Wait()
+		wgWorkers.Wait()
 		close(workersStopped)
 	}()
 
@@ -158,18 +151,22 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 		select {
 		case <-p.done:
 			return nil
+		case <-ctx.Done():
+			p.logger.Debug(ctx, "The message processor detected context 'Done'", "error", ctx.Err())
+
+			return nil
 		case <-p.signalExecute:
 			p.logger.Debug(ctx, "signalExecute event", "processor_name", p.caption)
 			ticker.Reset(p.readPeriod)
 		case <-ticker.C:
-			p.logger.Debug(ctx, "ticker event", "processor_name", p.caption)
+			p.logger.Debug(ctx, "ticker.C event", "processor_name", p.caption)
 		}
 
 		ctx = p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID) // producerID
 
 		messages, err := p.consumer.ReadMessages(ctx, p.queueSize)
 		if err != nil {
-			if errors.Is(err, mr.ErrInternalTimeoutPeriodHasExpired) || errors.Is(err, mr.ErrInternalUnexpectedEOF) {
+			if errors.Is(err, errors.ErrSystemTimeoutPeriodHasExpired) || errors.Is(err, errors.ErrSystemStorageUnexpectedEOF) {
 				p.errorHandler.Handle(ctx, err)
 
 				continue
@@ -178,18 +175,16 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 			return err
 		}
 
-		p.logger.Info(ctx, "Got messages in message processor...", "countMessages", len(messages))
+		p.logger.Info(ctx, "Got messages in the message processor...", "count_messages", len(messages))
 
 		for i, message := range messages {
 			select {
 			case <-workersStopped:
-				return func() error {
-					if err = p.consumer.CancelMessages(ctx, messages[i:]); err != nil {
-						p.errorHandler.Handle(ctx, err)
-					}
+				if err = p.consumer.CancelMessages(ctx, messages[i:]); err != nil {
+					p.errorHandler.Handle(ctx, err)
+				}
 
-					return errInternalWorkersAreStopped.New("processor_name", p.caption)
-				}()
+				return errInternalWorkersAreStopped.New("processor_name", p.caption)
 			case p.workersQueue <- p.workerFunc(message):
 			}
 		}
@@ -197,12 +192,13 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 }
 
 // Shutdown - корректная остановка сервиса обработки сообщений.
+// При повторном вызове метода произойдёт panic.
 func (p *MessageProcessor) Shutdown(ctx context.Context) error {
-	p.logger.Info(ctx, "Shutting down the message processor...")
+	p.logger.Debug(ctx, "Shutting down the message processor...")
 	close(p.done)
 
-	p.wgMain.Wait()
-	p.logger.Info(ctx, "The message processor has been shut down")
+	p.wg.Wait()
+	p.logger.Debug(ctx, "The message processor has been shut down")
 
 	return nil
 }
@@ -220,10 +216,10 @@ func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 				if rvr := recover(); rvr != nil {
 					p.errorHandler.Handle(
 						ctx,
-						mr.ErrInternalCaughtPanic.New(
-							"message processor: "+p.caption,
-							rvr,
-							string(debug.Stack()),
+						errors.ErrInternalCaughtPanic.New(
+							"source", "message processor: "+p.caption,
+							"recover", rvr,
+							"stack_trace", string(debug.Stack()),
 						),
 					)
 				}

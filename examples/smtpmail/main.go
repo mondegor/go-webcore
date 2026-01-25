@@ -6,10 +6,9 @@ import (
 
 	"github.com/mondegor/go-sysmess/mrlog"
 	"github.com/mondegor/go-sysmess/mrlog/slog"
-	"github.com/mondegor/go-sysmess/mrtrace/logtracer"
+	wireslog "github.com/mondegor/go-sysmess/wire/slog"
 
-	"github.com/mondegor/go-webcore/mrsender/mail"
-	"github.com/mondegor/go-webcore/mrsender/mail/smtp"
+	"github.com/mondegor/go-webcore/mrclient/mail"
 )
 
 func main() {
@@ -17,7 +16,7 @@ func main() {
 		slog.WithWriter(os.Stdout),
 	)
 
-	tracer := logtracer.New(logger)
+	tracer := wireslog.InitTracer(logger)
 
 	smtpHost := "{host}" // smtp.gmail.com
 	smtpPort := "{port}" // 587 с поддержкой STARTTLS
@@ -39,9 +38,9 @@ func main() {
 		mrlog.Fatal(logger, "this is error", "error", err)
 	}
 
-	mailClient := smtp.NewMailClient(smtpHost, smtpPort, smtpUsername, smtpPassword, tracer)
+	smtpClient := mail.NewSMTPClient(smtpHost, smtpPort, smtpUsername, smtpPassword, tracer)
 
-	if err = mailClient.SendMail(context.Background(), msg.From(), msg.To(), msg.Header(), body); err != nil {
-		os.Exit(1)
+	if err = smtpClient.SendMail(context.Background(), msg.From(), msg.To(), msg.Header(), body); err != nil {
+		mrlog.Fatal(logger, "this is error", "error", err)
 	}
 }

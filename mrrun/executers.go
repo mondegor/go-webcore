@@ -2,11 +2,10 @@ package mrrun
 
 import (
 	"context"
-	"fmt"
 	"sync/atomic"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrtrace"
 )
 
@@ -37,10 +36,7 @@ func (r *AppRunner) makeExecuter(ctx context.Context, process Process) Executer 
 			return process.Start(ctx, func() {})
 		},
 		Interrupt: func(_ error) {
-			// WARNING: создаётся новый контекст без возможности внешней отмены
-			// для того чтобы метод Shutdown гарантированно отработал
-			// при этом внутри Shutdown следует организовать персональный таймаут
-			if err := process.Shutdown(r.traceManager.NewContextWithIDs(ctx)); err != nil {
+			if err := process.Shutdown(ctx); err != nil {
 				r.logger.Error(ctx, "AppRunner.makeExecuter", "error", err)
 			}
 		},
@@ -61,15 +57,20 @@ func (r *AppRunner) makeNextExecuter(ctx context.Context, process Process, prev 
 			if prev.ready != nil {
 				select {
 				case <-time.NewTimer(prev.readyTimeout).C:
-					return mr.ErrInternalTimeoutPeriodHasExpired.Wrap(
-						fmt.Errorf("the waiting time for the previous process has expired (process='%s')", prev.Caption),
-						"process_name", process.Caption(),
+					close(chCurrentReady)
+
+					return errors.ErrSystemTimeoutPeriodHasExpired.WithDetails(
+						"the waiting time for the previous process has expired",
+						"previousProcess", prev.Caption,
+						"process", process.Caption(),
 					)
 				case <-prev.ready:
 				}
 			}
 
 			if err := ctx.Err(); err != nil {
+				close(chCurrentReady)
+
 				// ignore errors from other processes (context canceled)
 				return nil //nolint:nilerr
 			}
@@ -84,14 +85,22 @@ func (r *AppRunner) makeNextExecuter(ctx context.Context, process Process, prev 
 			)
 		},
 		Interrupt: func(_ error) {
+			// ожидается готовность функции Execute
+			select {
+			case <-time.NewTimer(process.ReadyTimeout() + prev.readyTimeout).C:
+				r.logger.Error(
+					ctx,
+					"the waiting time to interrupt the process has expired",
+					"process", process.Caption(),
+				)
+			case <-chCurrentReady:
+			}
+
 			if !isStartCalled.Load() {
 				return
 			}
 
-			// WARNING: создаётся новый контекст без возможности внешней отмены
-			// для того чтобы метод Shutdown гарантированно отработал
-			// при этом внутри Shutdown следует организовать персональный таймаут
-			if err := process.Shutdown(r.traceManager.NewContextWithIDs(ctx)); err != nil {
+			if err := process.Shutdown(ctx); err != nil {
 				r.logger.Error(ctx, "AppRunner.makeNextExecuter", "error", err)
 			}
 		},

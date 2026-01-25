@@ -23,7 +23,7 @@ func NewRequestTracer(tracer mrtrace.Tracer) *RequestTracer {
 
 // Enabled - comment method.
 func (rs *RequestTracer) Enabled() bool {
-	return rs.tracer.Enabled()
+	return rs.tracer != mrtrace.NopTracer()
 }
 
 // Emit - функция трассировки http запроса.

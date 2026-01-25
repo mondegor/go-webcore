@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 )
 
 type (
@@ -24,7 +24,7 @@ func (p *JsonDecoder) ParseToStruct(_ context.Context, content io.Reader, struct
 	dec.DisallowUnknownFields()
 
 	if err := dec.Decode(structPointer); err != nil {
-		return mr.ErrHttpRequestParseData.New(err)
+		return errors.ErrHttpRequestParseData.New(err) // данная ошибка передаётся пользователю в виде сообщения
 	}
 
 	return nil

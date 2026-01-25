@@ -1,45 +1,47 @@
 package parser
 
-import "github.com/mondegor/go-sysmess/mrlib/extfile"
+import "github.com/mondegor/go-sysmess/util/mime"
 
 type (
 	// FileOption - настройка объекта File.
-	FileOption func(f *File)
+	FileOption func(o *fileOptions)
+
+	fileOptions struct {
+		file *File
+	}
 )
 
 // WithFileMinSize - устанавливает опцию minSize для File (bytes).
 func WithFileMinSize(value uint64) FileOption {
-	return func(f *File) {
-		f.minSize = value
+	return func(o *fileOptions) {
+		o.file.minSize = value
 	}
 }
 
 // WithFileMaxSize - устанавливает опцию maxSize для File (bytes).
 func WithFileMaxSize(value uint64) FileOption {
-	return func(f *File) {
-		f.maxSize = value
+	return func(o *fileOptions) {
+		o.file.maxSize = value
 	}
 }
 
 // WithFileMaxFiles - устанавливает опцию maxFiles для File.
 func WithFileMaxFiles(value int) FileOption {
-	return func(f *File) {
-		f.maxFiles = value
+	return func(o *fileOptions) {
+		o.file.maxFiles = value
 	}
 }
 
 // WithFileCheckRequestContentType - устанавливает опцию проверки заголовка ContentType в запросе.
 func WithFileCheckRequestContentType(value bool) FileOption {
-	return func(f *File) {
-		f.checkRequestContentType = value
+	return func(o *fileOptions) {
+		o.file.checkRequestContentType = value
 	}
 }
 
 // WithFileAllowedMimeTypes - устанавливает опцию с разрешенными типами файлов.
-func WithFileAllowedMimeTypes(values []extfile.MimeType) FileOption {
-	return func(f *File) {
-		if len(values) > 0 {
-			f.allowedMimeTypes = extfile.NewMimeTypeList(values)
-		}
+func WithFileAllowedMimeTypes(values []mime.Type) FileOption {
+	return func(o *fileOptions) {
+		o.file.allowedMimeTypes = mime.NewTypeList(values)
 	}
 }

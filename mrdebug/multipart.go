@@ -11,11 +11,11 @@ import (
 
 // MultipartForm - comment func.
 func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.Form) {
-	if !logger.Enabled(mrlog.LevelDebug) {
+	if !mrlog.DebugEnabled(logger) {
 		return
 	}
 
-	logger = logger.WithAttrs("func", "MultipartForm")
+	logger = mrlog.WithAttrs(logger, "func", "MultipartForm")
 
 	if form == nil {
 		logger.Debug(ctx, "Param form is nil")
@@ -42,11 +42,11 @@ func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.For
 
 // MultipartFileHeader - comment func.
 func MultipartFileHeader(ctx context.Context, logger mrlog.Logger, hdr *multipart.FileHeader) {
-	if !logger.Enabled(mrlog.LevelDebug) {
+	if !mrlog.DebugEnabled(logger) {
 		return
 	}
 
-	logger = logger.WithAttrs("func", "MultipartFileHeader")
+	logger = mrlog.WithAttrs(logger, "func", "MultipartFileHeader")
 
 	if hdr == nil {
 		logger.Debug(ctx, "Param hdr is nil")

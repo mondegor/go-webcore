@@ -32,7 +32,11 @@ func Middleware(opts Options) func(next http.Handler) http.Handler {
 		AllowCredentials: opts.AllowCredentials,
 	}
 
-	if opts.Logger != nil && opts.Logger.Enabled(mrlog.LevelDebug) {
+	if opts.Logger == nil {
+		opts.Logger = mrlog.NopLogger()
+	}
+
+	if mrlog.DebugEnabled(opts.Logger) {
 		options.Debug = true
 
 		opts.Logger.DebugFunc(

@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 
 	"github.com/mondegor/go-webcore/mrserver"
@@ -17,7 +17,7 @@ func CheckAccessTokenHandler(logger mrlog.Logger, handlerName string) func(next 
 			logger.Debug(r.Context(), "CheckAccessTokenHandler", "handler", handlerName)
 
 			if accessToken := request.AccessToken(r); accessToken != "" {
-				return mr.ErrHttpAccessForbidden.New()
+				return errors.ErrHttpAccessForbidden
 			}
 
 			return next(w, r)

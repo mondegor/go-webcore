@@ -6,7 +6,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
@@ -54,10 +54,10 @@ func (p *HealthProbe) Check(ctx context.Context) (err error) {
 				ctx,
 				"HealthProbe",
 				"error",
-				mr.ErrInternalCaughtPanic.New(
-					"probe: "+p.caption,
-					rvr,
-					string(debug.Stack()),
+				errors.ErrInternalCaughtPanic.New(
+					"source", "probe: "+p.caption,
+					"recover", rvr,
+					"stack_trace", string(debug.Stack()),
 				),
 			)
 

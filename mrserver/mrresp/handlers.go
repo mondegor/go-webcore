@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrlib/extio"
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/util/xio"
 )
 
 // HandlerGetStatusOkAsJSON - возвращает обработчик, который формирует ответ OK в JSON формате.
@@ -13,7 +13,7 @@ func HandlerGetStatusOkAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		extio.Write(r.Context(), logger, w, []byte("{\"status\": \"OK\"}"))
+		xio.Write(r.Context(), logger, w, []byte("{\"status\": \"OK\"}"))
 	}
 }
 

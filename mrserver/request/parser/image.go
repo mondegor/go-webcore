@@ -5,10 +5,11 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
-	"github.com/mondegor/go-sysmess/mrlib/extfile"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 	"github.com/mondegor/go-sysmess/mrtype"
+	"github.com/mondegor/go-sysmess/util/mime"
+	"github.com/mondegor/go-sysmess/util/ximage"
 )
 
 const (
@@ -34,14 +35,15 @@ type (
 
 // NewImage - создаёт объект Image.
 func NewImage(logger mrlog.Logger, opts ...ImageOption) *Image {
-	im := &Image{
-		maxWidth:  defaultMaxWidth,
-		maxHeight: defaultMaxHeight,
-		checkBody: defaultCheckBody,
-		file: NewFile( // by default
-			logger,
-			WithFileAllowedMimeTypes(
-				[]extfile.MimeType{
+	o := imageOptions{
+		image: &Image{
+			maxWidth:  defaultMaxWidth,
+			maxHeight: defaultMaxHeight,
+			checkBody: defaultCheckBody,
+		},
+		fileOptions: []FileOption{
+			WithFileAllowedMimeTypes( // by default
+				[]mime.Type{
 					{
 						ContentType: "image/gif",
 						Extension:   ".gif",
@@ -56,14 +58,16 @@ func NewImage(logger mrlog.Logger, opts ...ImageOption) *Image {
 					},
 				},
 			),
-		),
+		},
 	}
 
 	for _, opt := range opts {
-		opt(im)
+		opt(&o)
 	}
 
-	return im
+	o.image.file = NewFile(logger, o.fileOptions...)
+
+	return o.image
 }
 
 // FormImage - возвращает информацию об изображении со ссылкой для чтения файла изображения из MultipartForm.
@@ -80,7 +84,7 @@ func (p *Image) FormImage(r *http.Request, key string) (mrtype.Image, error) {
 
 	file, err := hdr.Open()
 	if err != nil {
-		return mrtype.Image{}, mr.ErrHttpMultipartFormFile.Wrap(err, key)
+		return mrtype.Image{}, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
 	}
 
 	contentType := p.file.detectedContentType(hdr)
@@ -119,7 +123,7 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrtype.ImageConte
 	var buf bytes.Buffer
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
-		return mrtype.ImageContent{}, mr.ErrInternal.Wrap(err)
+		return mrtype.ImageContent{}, errors.WrapInternalError(err, "reading file.Body failed")
 	}
 
 	return mrtype.ImageContent{
@@ -159,7 +163,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 
 			file, err := fds[i].Open()
 			if err != nil {
-				return mr.ErrHttpMultipartFormFile.Wrap(err, key)
+				return errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
 			}
 
 			defer file.Close()
@@ -196,25 +200,25 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, e
 }
 
 func (p *Image) decode(file multipart.File, contentType string) (imageMeta, error) {
-	cfg, err := extfile.DecodeImageConfig(file, contentType)
+	cfg, err := ximage.DecodeImageConfig(file, contentType)
 	if err != nil {
 		return imageMeta{}, err
 	}
 
 	if cfg.Width < 0 || cfg.Height < 0 {
-		return imageMeta{}, mr.ErrValidateImageSize.New()
+		return imageMeta{}, errors.ErrValidateImageSize
 	}
 
 	if p.maxWidth > 0 && uint64(cfg.Width) > p.maxWidth {
-		return imageMeta{}, mr.ErrValidateImageWidthMax.New(p.maxWidth)
+		return imageMeta{}, errors.ErrValidateImageWidthMax.New(p.maxWidth)
 	}
 
 	if p.maxHeight > 0 && uint64(cfg.Height) > p.maxHeight {
-		return imageMeta{}, mr.ErrValidateImageHeightMax.New(p.maxHeight)
+		return imageMeta{}, errors.ErrValidateImageHeightMax.New(p.maxHeight)
 	}
 
 	if p.checkBody {
-		if err = extfile.CheckImage(file, contentType); err != nil {
+		if err = ximage.CheckImage(file, contentType); err != nil {
 			return imageMeta{}, err
 		}
 	}

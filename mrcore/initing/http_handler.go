@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 
 	"github.com/mondegor/go-webcore/mraccess"
@@ -63,11 +63,16 @@ func WithCheckAccessMiddleware(
 	}
 
 	if userProvider == nil {
-		mrlog.Error(logger, "UserProvider is not set for actionGroup", "actionGroup", actionGroup.Name, "error", mr.ErrInternalNilPointer.New())
+		mrlog.Error(
+			logger,
+			"UserProvider is not set for actionGroup",
+			"actionGroup", actionGroup.Name,
+			"error", errors.ErrInternalNilPointer.New(),
+		)
 
 		return func(handler mrserver.HttpHandler) mrserver.HttpHandler {
 			handler.Func = func(_ http.ResponseWriter, _ *http.Request) error {
-				return mr.ErrHttpClientUnauthorized.New()
+				return errors.ErrHttpClientUnauthorized
 			}
 
 			return handler
@@ -103,7 +108,7 @@ func WithCheckAccessMiddleware(
 			)
 
 			handler.Func = func(_ http.ResponseWriter, _ *http.Request) error {
-				return mr.ErrHttpAccessForbidden.New()
+				return errors.ErrHttpAccessForbidden
 			}
 
 			return handler
@@ -119,7 +124,7 @@ func WithCheckAccessMiddleware(
 			)
 
 			handler.Func = func(_ http.ResponseWriter, _ *http.Request) error {
-				return mr.ErrHttpAccessForbidden.New()
+				return errors.ErrHttpAccessForbidden
 			}
 
 			return handler

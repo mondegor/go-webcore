@@ -2,11 +2,10 @@ package httpserver
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
@@ -37,73 +36,73 @@ type (
 
 // New - создаёт объект Adapter.
 func New(handler http.Handler, opts ...Option) *Adapter {
-	httpServer := &http.Server{
-		Handler: handler,
-		// MaxHeaderBytes: 16 * 1024,
-		ReadTimeout:  defaultReadTimeout,
-		WriteTimeout: defaultWriteTimeout,
-	}
-
-	a := &Adapter{
-		caption:         defaultCaption,
-		srv:             httpServer,
-		shutdownTimeout: defaultShutdownTimeout,
+	o := options{
+		server: &Adapter{
+			caption: defaultCaption,
+			srv: &http.Server{
+				Handler: handler,
+				// MaxHeaderBytes: 16 * 1024,
+				ReadTimeout:  defaultReadTimeout,
+				WriteTimeout: defaultWriteTimeout,
+			},
+			shutdownTimeout: defaultShutdownTimeout,
+		},
 	}
 
 	for _, opt := range opts {
-		opt(a)
+		opt(&o)
 	}
 
-	if a.logger != nil && a.caption != "" {
-		a.logger = a.logger.WithAttrs("server_name", a.caption)
+	if o.server.logger != nil && o.server.caption != "" {
+		o.server.logger = mrlog.WithAttrs(o.server.logger, "server_name", o.server.caption)
 	}
 
-	return a
+	return o.server
 }
 
 // Caption - возвращает название http сервера.
-func (a *Adapter) Caption() string {
-	return a.caption
+func (s *Adapter) Caption() string {
+	return s.caption
 }
 
 // ReadyTimeout - возвращает максимальное время, за которое должен быть запущен сервис.
-func (a *Adapter) ReadyTimeout() time.Duration {
+func (s *Adapter) ReadyTimeout() time.Duration {
 	return serverReadyTimeout
 }
 
 // Start - запуск http сервера.
-func (a *Adapter) Start(ctx context.Context, ready func()) error {
-	a.log(ctx, "Starting the server with address: "+a.srv.Addr)
+func (s *Adapter) Start(ctx context.Context, ready func()) error {
+	s.log(ctx, "Starting the server with address: "+s.srv.Addr)
 
 	ready()
 
-	if err := a.srv.ListenAndServe(); err != nil {
+	if err := s.srv.ListenAndServe(); err != nil {
 		if !errors.Is(err, http.ErrServerClosed) {
-			return mr.ErrInternal.Wrap(err)
+			return errors.WrapInternalError(err, "listening server failed")
 		}
 	}
 
-	a.log(ctx, "The server has been stopped")
+	s.log(ctx, "The server has been stopped")
 
 	return nil
 }
 
 // Shutdown - корректная остановка http сервера.
-func (a *Adapter) Shutdown(ctx context.Context) error {
-	a.log(ctx, "Shutting down the server...")
+func (s *Adapter) Shutdown(ctx context.Context) error {
+	s.log(ctx, "Shutting down the server...")
 
-	ctx, cancel := context.WithTimeout(ctx, a.shutdownTimeout)
+	ctx, cancel := context.WithTimeout(ctx, s.shutdownTimeout)
 	defer cancel()
 
-	if err := a.srv.Shutdown(ctx); err != nil {
-		return mr.ErrInternal.Wrap(err)
+	if err := s.srv.Shutdown(ctx); err != nil {
+		return errors.WrapInternalError(err, "shutting down server failed")
 	}
 
 	return nil
 }
 
-func (a *Adapter) log(ctx context.Context, msg string) {
-	if a.logger != nil {
-		a.logger.Info(ctx, msg)
+func (s *Adapter) log(ctx context.Context, msg string) {
+	if s.logger != nil {
+		s.logger.Info(ctx, msg)
 	}
 }

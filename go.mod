@@ -3,14 +3,13 @@ module github.com/mondegor/go-webcore
 go 1.24.0
 
 require (
-	github.com/getsentry/sentry-go v0.40.0
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/go-playground/validator/v10 v10.28.0
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-sysmess v0.15.4-0.20251206134308-2061d68cc806
+	github.com/mondegor/go-sysmess v0.15.4-0.20260125122500-c01b8859f99b
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1

@@ -10,20 +10,22 @@ import (
 type (
 	// RequestLogger - comment struct.
 	RequestLogger struct {
-		logger mrlog.Logger
+		logger  mrlog.Logger
+		enabled bool
 	}
 )
 
 // NewRequestLogger - создаёт объект RequestLogger.
 func NewRequestLogger(logger mrlog.Logger) *RequestLogger {
 	return &RequestLogger{
-		logger: logger,
+		logger:  logger,
+		enabled: mrlog.InfoEnabled(logger),
 	}
 }
 
 // Enabled - comment method.
 func (rs *RequestLogger) Enabled() bool {
-	return rs.logger.Enabled(mrlog.LevelInfo)
+	return rs.enabled
 }
 
 // Emit - comment method.

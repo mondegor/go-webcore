@@ -2,10 +2,9 @@ package mrrun
 
 import (
 	"context"
-	"errors"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
@@ -71,6 +70,6 @@ func WithAppReadyProbe(app *AppHealth) func(ctx context.Context) error {
 			return nil
 		}
 
-		return mr.ErrUseCaseTemporarilyUnavailable.Wrap(errors.New("app is not ready"))
+		return errors.ErrSystemUseCaseTemporarilyUnavailable.WithDetails("app is not ready")
 	}
 }

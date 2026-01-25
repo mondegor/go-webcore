@@ -14,7 +14,10 @@ const (
 	maxLenCorrelationID = 64
 )
 
-var regexpCorrelationID = regexp.MustCompile(`^[0-9a-zA-Z][0-9a-zA-Z-]+[0-9a-zA-Z]$`)
+var (
+	regexpCorrelationID             = regexp.MustCompile(`^[0-9a-zA-Z][0-9a-zA-Z-]+[0-9a-zA-Z]$`)
+	errHeaderContainsIncorrectValue = fmt.Errorf("header %s contains incorrect value", mrserver.HeaderKeyCorrelationID)
+)
 
 // CorrelationID - возвращает значение заголовка CorrelationID.
 // Если заголовка нет или он пустой, то вернётся пустое значение.
@@ -28,7 +31,7 @@ func CorrelationID(r *http.Request) (string, error) {
 	if len(value) < minLenCorrelationID ||
 		len(value) > maxLenCorrelationID ||
 		!regexpCorrelationID.MatchString(value) {
-		return "", fmt.Errorf("header contains incorrect value (header='%s', value='%s')", mrserver.HeaderKeyCorrelationID, value)
+		return "", errHeaderContainsIncorrectValue
 	}
 
 	return value, nil

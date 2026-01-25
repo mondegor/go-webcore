@@ -25,38 +25,29 @@ type (
 		signalDo <-chan struct{}
 		job      mrworker.Job
 	}
-
-	options struct {
-		caption       string
-		captionPrefix string
-		startup       bool
-		period        time.Duration
-		timeout       time.Duration
-		signalDo      <-chan struct{}
-	}
 )
 
 // NewJobWrapper - создаёт объект JobWrapper.
 func NewJobWrapper(job mrworker.Job, opts ...Option) *JobWrapper {
 	o := options{
-		caption: defaultCaption,
-		startup: defaultStartup,
-		period:  defaultPeriod,
-		timeout: defaultTimeout,
+		job: &JobWrapper{
+			caption: defaultCaption,
+			startup: defaultStartup,
+			period:  defaultPeriod,
+			timeout: defaultTimeout,
+			job:     job,
+		},
 	}
 
 	for _, opt := range opts {
 		opt(&o)
 	}
 
-	return &JobWrapper{
-		caption:  o.captionPrefix + o.caption,
-		startup:  o.startup,
-		period:   o.period,
-		timeout:  o.timeout,
-		signalDo: o.signalDo,
-		job:      job,
+	if o.captionPrefix != "" {
+		o.job.caption = o.captionPrefix + o.job.caption
 	}
+
+	return o.job
 }
 
 // Caption - возвращает название задачи.

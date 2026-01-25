@@ -1,20 +1,20 @@
 package filestorage
 
-// Option - comment func type.
+// Option - настройка объекта permsProvider.
 type (
-	Option func(p *permsProvider)
+	Option func(o *permsProvider)
 )
 
 // WithPrivileges - comment func.
 func WithPrivileges(values []string) Option {
-	return func(p *permsProvider) {
-		p.privileges = values
+	return func(o *permsProvider) {
+		o.privileges = values
 	}
 }
 
 // WithPermissions - comment func.
 func WithPermissions(values []string) Option {
-	return func(p *permsProvider) {
-		p.permissions = values
+	return func(o *permsProvider) {
+		o.permissions = values
 	}
 }

@@ -4,7 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrerr"
+	"github.com/mondegor/go-sysmess/errors"
+	"github.com/mondegor/go-sysmess/errors/helper"
 	"github.com/mondegor/go-sysmess/mrtype"
 )
 
@@ -35,8 +36,42 @@ type (
 		SendError(w http.ResponseWriter, r *http.Request, err error)
 	}
 
-	// ErrorStatusGetter - возвращает http статус на основе указанной ошибки.
-	ErrorStatusGetter interface {
-		ErrorStatus(analyzedKind mrerr.ErrorKind, err error) int
+	// ErrorStatusMapper - возвращает http статус на основе указанной ошибки.
+	ErrorStatusMapper interface {
+		ErrorStatus(err error) int
 	}
 )
+
+// NewHttpErrorStatusMapper - создаёт объект ErrorStatusMapper.
+// Только для: 4XX, 5XX.
+func NewHttpErrorStatusMapper(unexpectedStatus int, codeStatus ...any) ErrorStatusMapper {
+	if unexpectedStatus == 0 {
+		unexpectedStatus = http.StatusInternalServerError
+	}
+
+	codeStatus = append(
+		[]any{
+			errors.ErrHttpClientUnauthorized.Code(), http.StatusUnauthorized,
+			errors.ErrHttpAccessForbidden.Code(), http.StatusForbidden,
+			errors.ErrHttpResourceNotFound.Code(), http.StatusNotFound,
+			errors.ErrUseCaseEntityNotFound.Code(), http.StatusNotFound,
+			errors.ErrUseCaseEntityVersionConflict.Code(), http.StatusConflict,
+			errors.ErrHttpRequestParseData.Code(), http.StatusUnprocessableEntity,
+			errors.ErrHttpTooManyRequests.Code(), http.StatusTooManyRequests,
+		},
+		codeStatus...,
+	)
+
+	s, err := helper.NewErrorStatusMapper(
+		http.StatusBadRequest,
+		http.StatusServiceUnavailable,
+		http.StatusInternalServerError,
+		unexpectedStatus,
+		codeStatus,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	return s
+}

@@ -2,22 +2,20 @@ package parser
 
 import (
 	"bytes"
-	"errors"
 	"mime/multipart"
 	"net/http"
 	"path"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
-	"github.com/mondegor/go-sysmess/mrlib/extfile"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 	"github.com/mondegor/go-sysmess/mrtype"
+	"github.com/mondegor/go-sysmess/util/mime"
 
 	"github.com/mondegor/go-webcore/mrdebug"
 )
 
 const (
-	headerContentType = "Content-Type"
-
+	headerContentType              = "Content-Type"
 	defaultMinSize                 = 0           // bytes
 	defaultMaxSize                 = 1024 * 1024 // 1Mb
 	defaultMaxFiles                = 4
@@ -33,45 +31,49 @@ type (
 		maxTotalSize            uint64 // bytes
 		maxFiles                int
 		checkRequestContentType bool
-		allowedMimeTypes        *extfile.MimeTypeList
+		allowedMimeTypes        *mime.TypeList
 		logger                  mrlog.Logger
 	}
 )
 
 // NewFile - создаёт объект File.
 func NewFile(logger mrlog.Logger, opts ...FileOption) *File {
-	f := &File{
-		minSize:                 defaultMinSize,
-		maxSize:                 defaultMaxSize,
-		maxFiles:                defaultMaxFiles,
-		checkRequestContentType: defaultCheckRequestContentType,
-		allowedMimeTypes: extfile.NewMimeTypeList( // by default
-			[]extfile.MimeType{
-				{
-					ContentType: "application/pdf",
-					Extension:   ".pdf",
+	o := fileOptions{
+		file: &File{
+			minSize:                 defaultMinSize,
+			maxSize:                 defaultMaxSize,
+			maxFiles:                defaultMaxFiles,
+			checkRequestContentType: defaultCheckRequestContentType,
+			allowedMimeTypes: mime.NewTypeList( // by default
+				[]mime.Type{
+					{
+						ContentType: "application/pdf",
+						Extension:   ".pdf",
+					},
+					{
+						ContentType: "application/zip",
+						Extension:   ".zip",
+					},
 				},
-				{
-					ContentType: "application/zip",
-					Extension:   ".zip",
-				},
-			},
-		),
-		logger: logger,
+			),
+			logger: logger,
+		},
 	}
 
-	f.applyOptions(opts)
+	for _, opt := range opts {
+		opt(&o)
+	}
 
 	// вычисление и установка maxTotalSize
-	if f.maxSize > 0 {
-		f.maxTotalSize = f.maxSize
+	if o.file.maxSize > 0 {
+		o.file.maxTotalSize = o.file.maxSize
 
-		if f.maxFiles > 0 {
-			f.maxTotalSize *= uint64(f.maxFiles)
+		if o.file.maxFiles > 0 {
+			o.file.maxTotalSize *= uint64(o.file.maxFiles) //nolint:gosec
 		}
 	}
 
-	return f
+	return o.file
 }
 
 // FormFile - возвращает информацию о файле со ссылкой для чтения файла из MultipartForm.
@@ -88,7 +90,7 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 
 	file, err := hdr.Open()
 	if err != nil {
-		return mrtype.File{}, mr.ErrHttpMultipartFormFile.Wrap(err, key)
+		return mrtype.File{}, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
 	}
 
 	return mrtype.File{
@@ -114,7 +116,7 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent,
 	var buf bytes.Buffer
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
-		return mrtype.FileContent{}, mr.ErrInternal.Wrap(err)
+		return mrtype.FileContent{}, errors.WrapInternalError(err, "reading file.Body failed")
 	}
 
 	return mrtype.FileContent{
@@ -167,33 +169,27 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 	return files, nil
 }
 
-func (p *File) applyOptions(opts []FileOption) {
-	for _, opt := range opts {
-		opt(p)
-	}
-}
-
 func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	if hdr.Size < 0 {
-		return mr.ErrValidateFileSize.New()
+		return errors.ErrValidateFileSize
 	}
 
 	if uint64(hdr.Size) < p.minSize {
-		return mr.ErrValidateFileSizeMin.New(p.minSize)
+		return errors.ErrValidateFileSizeMin.New(p.minSize)
 	}
 
 	if p.maxSize > 0 && uint64(hdr.Size) > p.maxSize {
-		return mr.ErrValidateFileSizeMax.New(p.maxSize)
+		return errors.ErrValidateFileSizeMax.New(p.maxSize)
 	}
 
 	detectedContentType, err := p.allowedMimeTypes.ContentTypeByExt(path.Ext(hdr.Filename))
 	if err != nil {
-		return mr.ErrValidateFileExtension.Wrap(err, path.Ext(hdr.Filename))
+		return errors.ErrValidateFileExtension.Wrap(err, path.Ext(hdr.Filename))
 	}
 
 	if p.checkRequestContentType {
 		if detectedContentType != hdr.Header.Get(headerContentType) {
-			return mr.ErrValidateFileContentType.New(hdr.Header.Get(headerContentType))
+			return errors.ErrValidateFileContentType.New(hdr.Header.Get(headerContentType))
 		}
 	} else {
 		if detectedContentType == "" {
@@ -202,7 +198,7 @@ func (p *File) checkFile(hdr *multipart.FileHeader) error {
 	}
 
 	if detectedContentType == "" {
-		return mr.ErrValidateFileUnsupportedType.New(hdr.Filename)
+		return errors.ErrValidateFileUnsupportedType.New(hdr.Filename)
 	}
 
 	return nil
@@ -221,7 +217,7 @@ func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles int) error
 		}
 
 		if currentSize > p.maxTotalSize {
-			return mr.ErrValidateFileTotalSizeMax.New(p.maxTotalSize)
+			return errors.ErrValidateFileTotalSizeMax.New(p.maxTotalSize)
 		}
 	}
 
@@ -248,10 +244,10 @@ func (p *File) formFiles(r *http.Request, logger mrlog.Logger, key string, maxMe
 			mrdebug.MultipartForm(r.Context(), logger, r.MultipartForm)
 
 			if errors.Is(err, http.ErrMissingBoundary) {
-				return nil, mr.ErrHttpFileUpload.Wrap(err, key)
+				return nil, errors.ErrHttpFileUpload.Wrap(err, key)
 			}
 
-			return nil, mr.ErrHttpMultipartFormFile.Wrap(err, key)
+			return nil, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
 		}
 	}
 
@@ -276,7 +272,7 @@ func (p *File) formFile(r *http.Request, logger mrlog.Logger, key string) (*mult
 	}
 
 	if len(fhs) == 0 {
-		return nil, mr.ErrHttpFileUpload.Wrap(http.ErrMissingFile, key)
+		return nil, errors.ErrHttpFileUpload.Wrap(http.ErrMissingFile, key)
 	}
 
 	return fhs[0], nil

@@ -7,8 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 	"github.com/mondegor/go-sysmess/mrtrace"
 
@@ -35,72 +34,67 @@ type (
 		workersCount   int
 
 		handler      mrworker.MessageBatchHandler
-		errorHandler mrerr.ErrorHandler
+		errorHandler errors.Handler
 		logger       mrlog.Logger
 		traceManager mrtrace.ContextManager
 
-		wgMain        sync.WaitGroup
+		wg            sync.WaitGroup
 		isSendStopped atomic.Bool
 		messageQueue  chan []byte
 		workersQueue  chan func(ctx context.Context)
 		done          chan struct{}
 	}
-
-	options struct {
-		caption        string
-		captionPrefix  string
-		readyTimeout   time.Duration
-		flushPeriod    time.Duration
-		handlerTimeout time.Duration
-		batchSize      int
-		workersCount   int
-	}
 )
 
 var (
-	errInternalWorkersAreStopped       = mrerr.NewKindInternal("the message collector workers has been stopped")
-	errInternalMessageReceptionStopped = mrerr.NewKindInternal("message reception in the message collector has been stopped")
+	errInternalWorkersAreStopped       = errors.NewInternalProto("the message collector workers has been stopped")
+	errInternalMessageReceptionStopped = errors.NewInternalProto("message reception in the message collector has been stopped")
 )
 
 // NewMessageCollector - создаёт объект MessageCollector.
 func NewMessageCollector(
 	handler mrworker.MessageBatchHandler,
-	errorHandler mrerr.ErrorHandler,
+	errorHandler errors.Handler,
 	logger mrlog.Logger,
 	traceManager mrtrace.ContextManager,
 	opts ...Option,
 ) *MessageCollector {
 	o := options{
-		caption:        defaultCaption,
-		readyTimeout:   defaultReadyTimeout,
-		flushPeriod:    defaultFlushPeriod,
-		handlerTimeout: defaultHandlerTimeout,
-		batchSize:      defaultBatchSize,
-		workersCount:   defaultWorkersCount,
+		collector: &MessageCollector{
+			caption:        defaultCaption,
+			readyTimeout:   defaultReadyTimeout,
+			flushPeriod:    defaultFlushPeriod,
+			handlerTimeout: defaultHandlerTimeout,
+
+			handler:      handler,
+			errorHandler: errorHandler,
+			logger:       logger,
+			traceManager: traceManager,
+
+			wg:           sync.WaitGroup{},
+			messageQueue: make(chan []byte),
+			workersQueue: make(chan func(ctx context.Context)),
+			done:         make(chan struct{}),
+		},
 	}
 
 	for _, opt := range opts {
 		opt(&o)
 	}
 
-	return &MessageCollector{
-		caption:        o.captionPrefix + o.caption,
-		readyTimeout:   o.readyTimeout,
-		flushPeriod:    o.flushPeriod,
-		handlerTimeout: o.handlerTimeout,
-		batchSize:      o.batchSize,
-		workersCount:   o.workersCount,
-
-		handler:      handler,
-		errorHandler: errorHandler,
-		logger:       logger,
-		traceManager: traceManager,
-
-		wgMain:       sync.WaitGroup{},
-		messageQueue: make(chan []byte),
-		workersQueue: make(chan func(ctx context.Context)),
-		done:         make(chan struct{}),
+	if o.captionPrefix != "" {
+		o.collector.caption = o.captionPrefix + o.collector.caption
 	}
+
+	if o.collector.batchSize < 1 {
+		o.collector.batchSize = defaultBatchSize
+	}
+
+	if o.collector.workersCount < 1 {
+		o.collector.workersCount = defaultWorkersCount
+	}
+
+	return o.collector
 }
 
 // Caption - возвращает название сервиса обработки сообщений.
@@ -114,27 +108,24 @@ func (p *MessageCollector) ReadyTimeout() time.Duration {
 }
 
 // Start - запуск сервиса обработки сообщений.
+// Отмена внешнего контекста приведёт к аварийному завершению процесса,
+// для корректной остановки следует использовать Shutdown.
 // Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
 func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
-	p.wgMain.Add(1)
-	defer p.wgMain.Done()
-
-	// WARNING: используется новый контекст со скопированными ID процессами из основного контекста,
-	// для того чтобы можно было останавливать процессор только через его метод Shutdown().
-	// При вызове этого метода гарантируется корректное завершение работы воркеров процессора.
-	ctx = p.traceManager.NewContextWithIDs(ctx)
+	p.wg.Add(1)
+	defer p.wg.Done()
 
 	p.logger.Debug(ctx, "Starting the message collector...", "collector_name", p.caption)
 	defer p.logger.Debug(ctx, "The message collector has been stopped")
 
-	wg := sync.WaitGroup{}
+	wgWorkers := sync.WaitGroup{}
 	workersStopped := make(chan struct{})
 	ticker := time.NewTicker(p.flushPeriod)
 
-	p.startWorkers(ctx, &wg)
+	p.startWorkers(ctx, &wgWorkers)
 
 	go func() {
-		wg.Wait()
+		wgWorkers.Wait()
 		close(workersStopped)
 	}()
 
@@ -151,24 +142,51 @@ func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
 	}
 
 	for {
+		isSendStopped := false
+
 		select {
 		case <-p.done:
-			if len(messageBatch) == 0 {
-				return nil
+			isSendStopped = true // т.к. в этом месте гарантированно канал закрыт, то и приём данных уже отключён
+		case <-ctx.Done():
+			p.logger.Debug(ctx, "The message collector detected context 'Done'", "error", ctx.Err())
+
+			// предварительно завершается приём данных
+			p.isSendStopped.Store(true)
+
+			// принудительная очистка очереди
+			for {
+				select {
+				case <-p.messageQueue:
+				default:
+					return nil
+				}
 			}
 		case <-ticker.C:
-			if len(messageBatch) == 0 {
-				continue
-			}
-		case message := <-p.messageQueue:
-			messageBatch = append(messageBatch, message)
-
-			if len(messageBatch) < p.batchSize {
-				continue
-			}
 		}
 
-		p.logger.Info(ctx, "Got message batch in message collector...", "messageBatch", len(messageBatch))
+		for {
+			select {
+			case message := <-p.messageQueue:
+				messageBatch = append(messageBatch, message)
+
+				if len(messageBatch) < p.batchSize {
+					continue
+				}
+			default:
+			}
+
+			break
+		}
+
+		if len(messageBatch) == 0 {
+			if isSendStopped {
+				return nil // если данных нет и их приём остановлен, то процесс завершается
+			}
+
+			continue
+		}
+
+		p.logger.Info(ctx, "Got message batch in the message collector...", "message_batch", len(messageBatch))
 
 		select {
 		case <-workersStopped:
@@ -191,13 +209,14 @@ func (p *MessageCollector) PushMessage(_ context.Context, message []byte) error 
 }
 
 // Shutdown - корректная остановка сервиса обработки сообщений.
+// При повторном вызове метода произойдёт panic.
 func (p *MessageCollector) Shutdown(ctx context.Context) error {
-	p.logger.Info(ctx, "Shutting down the message collector...")
-	p.isSendStopped.Store(true)
+	p.logger.Debug(ctx, "Shutting down the message collector...")
+	p.isSendStopped.Store(true) // завершается приём данных
 	close(p.done)
 
-	p.wgMain.Wait()
-	p.logger.Info(ctx, "The message collector has been shut down")
+	p.wg.Wait()
+	p.logger.Debug(ctx, "The message collector has been shut down")
 
 	return nil
 }
@@ -215,10 +234,10 @@ func (p *MessageCollector) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 				if rvr := recover(); rvr != nil {
 					p.errorHandler.Handle(
 						ctx,
-						mr.ErrInternalCaughtPanic.New(
-							"message collector: "+p.caption,
-							rvr,
-							string(debug.Stack()),
+						errors.ErrInternalCaughtPanic.New(
+							"source", "message collector: "+p.caption,
+							"recover", rvr,
+							"stack_trace", string(debug.Stack()),
 						),
 					)
 				}

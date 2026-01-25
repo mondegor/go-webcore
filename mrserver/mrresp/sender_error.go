@@ -6,12 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-sysmess/mrerr/mr"
-	"github.com/mondegor/go-sysmess/mrlib/extio"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlocale/model"
 	"github.com/mondegor/go-sysmess/mrlog"
 	mrtracectx "github.com/mondegor/go-sysmess/mrtrace/context"
+	"github.com/mondegor/go-sysmess/util/xio"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrserver"
@@ -21,10 +20,10 @@ type (
 	// ErrorSender - формирует и отправляет клиенту ответ об ошибке.
 	ErrorSender struct {
 		encoder      mrserver.ResponseEncoder
-		errorHandler mrerr.ErrorHandler
+		errorHandler errors.Handler
 		logger       mrlog.Logger
 		parserLocale parserLocale
-		statusGetter mrserver.ErrorStatusGetter
+		statusMapper mrserver.ErrorStatusMapper
 		isDebug      bool
 	}
 
@@ -36,10 +35,10 @@ type (
 // NewErrorSender - создаёт объект ErrorSender.
 func NewErrorSender(
 	encoder mrserver.ResponseEncoder,
-	errorHandler mrerr.ErrorHandler,
+	errorHandler errors.Handler,
 	logger mrlog.Logger,
 	parserLocale parserLocale,
-	statusGetter mrserver.ErrorStatusGetter,
+	statusMapper mrserver.ErrorStatusMapper,
 	isDebug bool,
 ) *ErrorSender {
 	return &ErrorSender{
@@ -47,7 +46,7 @@ func NewErrorSender(
 		errorHandler: errorHandler,
 		logger:       logger,
 		parserLocale: parserLocale,
-		statusGetter: statusGetter,
+		statusMapper: statusMapper,
 		isDebug:      isDebug,
 	}
 }
@@ -65,14 +64,14 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 		)
 	}
 
-	if customError, ok := err.(*mrerr.CustomError); ok { //nolint:errorlint
-		if !customError.IsValid() {
-			err = customError.Err()
+	if customError, ok := err.(errors.CustomError); ok { //nolint:errorlint
+		if !customError.IsKindUser() {
+			err = customError.Unwrap() // здесь возвращается ошибка с причиной невалидности
 
 			goto InternalErrorSection
 		}
 
-		rs.errorHandler.Handle(ctx, customError.Err()) // логируется пользовательская ошибка
+		rs.errorHandler.Handle(ctx, customError.Unwrap()) // логируется пользовательская ошибка
 
 		sendResponse(
 			http.StatusBadRequest,
@@ -82,18 +81,18 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 		return // OK, пользовательская ошибка обработана
 	}
 
-	if customErrorList, ok := err.(mrerr.CustomErrors); ok { //nolint:errorlint
+	if customErrors, ok := err.(errors.CustomListError); ok { //nolint:errorlint
 		hasInvalidError := false
 
-		for _, customError := range customErrorList {
-			if hasInvalidError || customError.IsValid() {
-				rs.errorHandler.Handle(ctx, customError.Err()) // логируются все ошибки кроме первой невалидной
+		for _, customError := range customErrors {
+			if hasInvalidError || customError.IsKindUser() {
+				rs.errorHandler.Handle(ctx, customError.Unwrap()) // логируются валидные пользовательские ошибки и невалидные начиная со второй
 
 				continue
 			}
 
 			hasInvalidError = true
-			err = customError.Err() // здесь возвращается внутренняя или системная ошибка
+			err = customError.Unwrap() // здесь возвращается ошибка с причиной невалидности
 		}
 
 		if hasInvalidError {
@@ -102,40 +101,36 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 
 		sendResponse(
 			http.StatusBadRequest,
-			rs.getErrorListResponse(r, customErrorList...),
+			rs.getErrorListResponse(r, customErrors...),
 		)
 
 		return // OK, список пользовательских ошибок обработан
 	}
 
 InternalErrorSection:
-
 	// в эту секцию поступают следующие виды ошибок:
-	// 1. ошибки: InstantError kind=User/Internal/System;
-	// 2. ProtoError kind=User/Internal/System (требуется найти место их создания и добавить для них вызов одного из методов New/Wrap);
-	// 3. остальные ошибки: которые не были обёрнуты в InstantError (требуется найти место их создания и вложить их в InstantError);
-	rs.errorHandler.HandleWith(
-		ctx,
-		err,
-		func(analyzedKind mrerr.ErrorKind, err error) {
-			status := rs.statusGetter.ErrorStatus(analyzedKind, err)
+	// 1. runtime ошибки;
+	// 2. остальные ошибки у которых нет метода Kind() (требуется найти место их возникновения и правильно обработать);
+	rs.errorHandler.Handle(ctx, err)
 
-			if status == http.StatusBadRequest {
-				sendResponse(
-					status,
-					[]ErrorAttribute{
-						NewErrorAttribute(rs.parserLocale.Localizer(r), err, rs.isDebug),
-					},
-				)
+	status := rs.statusMapper.ErrorStatus(err)
 
-				return
-			}
+	// TODO: подумать, нужно ли извлекать Code() из err для NewErrorAttribute
 
-			sendResponse(
-				status,
-				rs.getErrorDetailsResponse(r, err),
-			)
-		},
+	if status == http.StatusBadRequest {
+		sendResponse(
+			status,
+			[]ErrorAttribute{
+				NewErrorAttribute(rs.parserLocale.Localizer(r), "", err, rs.isDebug),
+			},
+		)
+
+		return
+	}
+
+	sendResponse(
+		status,
+		rs.getErrorDetailsResponse(r, err),
 	)
 }
 
@@ -151,20 +146,20 @@ func (rs *ErrorSender) sendStructResponse(
 		status = http.StatusUnprocessableEntity
 		bytes = nil
 
-		rs.logger.Error(ctx, "marshal failed", "error", mr.ErrHttpResponseParseData.Wrap(err))
+		rs.logger.Error(ctx, "marshal failed", "error", errors.ErrInternalHttpResponseParseData.Wrap(err))
 	}
 
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
-	extio.Write(ctx, rs.logger, w, bytes)
+	xio.Write(ctx, rs.logger, w, bytes)
 }
 
-func (rs *ErrorSender) getErrorListResponse(r *http.Request, errors ...*mrerr.CustomError) ErrorListResponse {
+func (rs *ErrorSender) getErrorListResponse(r *http.Request, errorList ...errors.CustomError) ErrorListResponse {
 	lz := rs.parserLocale.Localizer(r)
-	attrs := make([]ErrorAttribute, len(errors))
+	attrs := make([]ErrorAttribute, len(errorList))
 
-	for i, customError := range errors {
-		attrs[i] = NewErrorAttribute(lz, customError, rs.isDebug)
+	for i, customError := range errorList {
+		attrs[i] = NewErrorAttribute(lz, customError.CustomCode(), customError.Unwrap(), rs.isDebug)
 	}
 
 	return attrs

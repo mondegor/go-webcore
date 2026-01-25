@@ -6,7 +6,7 @@ import (
 	"net/textproto"
 	"strings"
 
-	"github.com/mondegor/go-sysmess/mrerr"
+	"github.com/mondegor/go-sysmess/errors"
 )
 
 const (
@@ -23,21 +23,10 @@ type (
 		from   string
 		to     []string
 	}
-
-	message struct {
-		contentType          string
-		subject              string
-		useExtendEmailFormat bool
-		parser               *mail.AddressParser
-		cc                   []*mail.Address
-		replyTo              *mail.Address
-		returnEmail          string
-		err                  error
-	}
 )
 
-// ErrParsingAddressFailed - parsing address failed.
-var ErrParsingAddressFailed = mrerr.NewKindInternal("parsing address failed")
+// ErrInternalParsingAddressFailed - parsing address failed.
+var ErrInternalParsingAddressFailed = errors.NewInternalProto("parsing address failed")
 
 // NewMessage - создаёт объект Message.
 // Где from - электронный адрес отправителя, to - электронный адрес получателя.
@@ -46,54 +35,57 @@ func NewMessage(from, to string, opts ...MessageOption) (*Message, error) {
 
 	fromEmail, err := emailParser.Parse(from)
 	if err != nil {
-		return nil, ErrParsingAddressFailed.Wrap(err)
+		return nil, ErrInternalParsingAddressFailed.Wrap(err)
 	}
 
 	toEmail, err := emailParser.Parse(to)
 	if err != nil {
-		return nil, ErrParsingAddressFailed.Wrap(err)
+		return nil, ErrInternalParsingAddressFailed.Wrap(err)
 	}
 
-	wm := message{
-		contentType:          defaultContentType,
+	o := messageOptions{
 		subject:              defaultMessageSubject,
 		useExtendEmailFormat: defaultUseExtendEmailFormat,
 		parser:               &emailParser,
 	}
 
 	for _, opt := range opts {
-		opt(&wm)
+		opt(&o)
 
-		if wm.err != nil {
-			return nil, wm.err
+		if o.err != nil {
+			return nil, o.err
 		}
 	}
 
-	if !wm.useExtendEmailFormat {
+	if o.contentType == "" {
+		o.contentType = defaultContentType
+	}
+
+	if !o.useExtendEmailFormat {
 		fromEmail.Name = ""
 		toEmail.Name = ""
 
-		for i := range wm.cc {
-			wm.cc[i].Name = ""
+		for i := range o.cc {
+			o.cc[i].Name = ""
 		}
 
-		if wm.replyTo != nil {
-			wm.replyTo.Name = ""
+		if o.replyTo != nil {
+			o.replyTo.Name = ""
 		}
 	}
 
-	if wm.returnEmail == "" {
-		wm.returnEmail = fromEmail.Address
+	if o.returnEmail == "" {
+		o.returnEmail = fromEmail.Address
 	}
 
-	header := createMessageHeader(&wm, fromEmail.String(), toEmail.String())
+	header := createMessageHeader(&o, fromEmail.String(), toEmail.String())
 
-	toList := make([]string, len(wm.cc)+1)
+	toList := make([]string, len(o.cc)+1)
 	toList[0] = toEmail.Address
 
-	if len(wm.cc) > 0 {
-		for i := range wm.cc {
-			toList[i+1] = wm.cc[i].Address
+	if len(o.cc) > 0 {
+		for i := range o.cc {
+			toList[i+1] = o.cc[i].Address
 		}
 	}
 
@@ -119,7 +111,7 @@ func (d *Message) To() []string {
 	return d.to
 }
 
-func createMessageHeader(msg *message, from, to string) textproto.MIMEHeader {
+func createMessageHeader(msg *messageOptions, from, to string) textproto.MIMEHeader {
 	header := make(textproto.MIMEHeader)
 
 	header.Set("Mime-Version", "1.0")

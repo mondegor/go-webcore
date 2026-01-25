@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
-	"github.com/mondegor/go-sysmess/mrlib/extio"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/util/xio"
 )
 
 type (
@@ -65,11 +65,11 @@ func HandlerGetSystemInfoAsJSON(logger mrlog.Logger, cfg SystemInfoConfig) (http
 			status = http.StatusUnprocessableEntity
 			bytes = nil
 
-			logger.Error(r.Context(), "marshal failed", "error", mr.ErrHttpResponseParseData.Wrap(err))
+			logger.Error(r.Context(), "marshal failed", "error", errors.ErrInternalHttpResponseParseData.Wrap(err))
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
-		extio.Write(r.Context(), logger, w, bytes)
+		xio.Write(r.Context(), logger, w, bytes)
 	}, nil
 }

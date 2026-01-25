@@ -3,7 +3,7 @@ package mrresp
 import (
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 
 	"github.com/mondegor/go-webcore/mrserver"
 )
@@ -26,7 +26,7 @@ func NewSender(encoder mrserver.ResponseEncoder) *Sender {
 func (rs *Sender) Send(w http.ResponseWriter, status int, structure any) error {
 	bytes, err := rs.encoder.Marshal(structure)
 	if err != nil {
-		return mr.ErrHttpResponseParseData.Wrap(err)
+		return errors.ErrInternalHttpResponseParseData.Wrap(err)
 	}
 
 	return rs.sendResponse(w, status, rs.encoder.ContentType(), bytes)

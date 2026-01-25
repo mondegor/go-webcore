@@ -7,7 +7,7 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
@@ -40,10 +40,10 @@ func RecoverHandler(logger mrlog.Logger, isDebug bool, fatalFunc http.HandlerFun
 							ctx,
 							"RecoverHandler",
 							"error",
-							mr.ErrInternalCaughtPanic.New(
-								errorMessage,
-								rvr,
-								string(debug.Stack()),
+							errors.ErrInternalCaughtPanic.New(
+								"source", errorMessage,
+								"recover", rvr,
+								"stack_trace", string(debug.Stack()),
 							),
 						)
 					}

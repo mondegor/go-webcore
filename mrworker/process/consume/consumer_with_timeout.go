@@ -2,10 +2,9 @@ package consume
 
 import (
 	"context"
-	"errors"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 
 	"github.com/mondegor/go-webcore/mrworker"
 )
@@ -20,7 +19,10 @@ type (
 )
 
 // NewConsumerWithTimeout - создаёт объект ConsumerWithTimeout.
-func NewConsumerWithTimeout(base mrworker.MessageConsumer, readTimeout, writeTimeout time.Duration) *ConsumerWithTimeout {
+func NewConsumerWithTimeout(
+	base mrworker.MessageConsumer,
+	readTimeout, writeTimeout time.Duration,
+) *ConsumerWithTimeout {
 	return &ConsumerWithTimeout{
 		base:         base,
 		readTimeout:  readTimeout,
@@ -46,7 +48,9 @@ func (t *ConsumerWithTimeout) CancelMessages(ctx context.Context, messages []any
 	ctx, cancel := context.WithTimeout(ctx, t.writeTimeout)
 	defer cancel()
 
-	return t.wrapError(t.base.CancelMessages(ctx, messages))
+	return t.wrapError(
+		t.base.CancelMessages(ctx, messages),
+	)
 }
 
 // CommitMessage - comment method.
@@ -54,7 +58,9 @@ func (t *ConsumerWithTimeout) CommitMessage(ctx context.Context, message any, pr
 	ctx, cancel := context.WithTimeout(ctx, t.writeTimeout)
 	defer cancel()
 
-	return t.wrapError(t.base.CommitMessage(ctx, message, preCommit))
+	return t.wrapError(
+		t.base.CommitMessage(ctx, message, preCommit),
+	)
 }
 
 // RejectMessage - comment method.
@@ -62,16 +68,14 @@ func (t *ConsumerWithTimeout) RejectMessage(ctx context.Context, message any, ca
 	ctx, cancel := context.WithTimeout(ctx, t.writeTimeout)
 	defer cancel()
 
-	return t.wrapError(t.base.RejectMessage(ctx, message, causeErr))
+	return t.wrapError(
+		t.base.RejectMessage(ctx, message, causeErr),
+	)
 }
 
 func (t *ConsumerWithTimeout) wrapError(err error) error {
-	if err == nil {
-		return nil
-	}
-
 	if errors.Is(err, context.DeadlineExceeded) {
-		return mr.ErrInternalTimeoutPeriodHasExpired.Wrap(err)
+		return errors.ErrSystemTimeoutPeriodHasExpired.Wrap(err)
 	}
 
 	return err

@@ -1,4 +1,4 @@
-package smtp
+package mail
 
 import (
 	"bytes"
@@ -7,27 +7,29 @@ import (
 	"net/textproto"
 	"strings"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrtrace"
 )
 
 const (
-	smtpMailClientName = "SmtpMailClient"
-	defaultMailSubject = "The mail without a subject"
+	smtpClientName = "SmtpClient"
 )
 
 type (
-	// MailClient - адаптер для отправки электронных писем через SMTP.
-	MailClient struct {
+	// SMTPClient - адаптер для отправки электронных писем через SMTP.
+	SMTPClient struct {
 		address string
 		auth    smtp.Auth
 		tracer  mrtrace.Tracer
 	}
 )
 
-// NewMailClient - создаёт объект MailClient.
-func NewMailClient(host, port, username, password string, tracer mrtrace.Tracer) *MailClient {
-	return &MailClient{
+// NewSMTPClient - создаёт объект SMTPClient.
+func NewSMTPClient(
+	host, port, username, password string,
+	tracer mrtrace.Tracer,
+) *SMTPClient {
+	return &SMTPClient{
 		address: host + ":" + port,
 		auth:    smtp.PlainAuth("", username, password, host),
 		tracer:  tracer,
@@ -36,13 +38,13 @@ func NewMailClient(host, port, username, password string, tracer mrtrace.Tracer)
 
 // SendMail - отправляет электронное письмо указанному адресату.
 // Где from - электронный адрес отправителя, to - электронные адреса получателей.
-func (c *MailClient) SendMail(ctx context.Context, from string, to []string, header textproto.MIMEHeader, body string) error {
+func (c *SMTPClient) SendMail(ctx context.Context, from string, to []string, header textproto.MIMEHeader, body string) error {
 	if from == "" {
-		return mr.ErrUseCaseIncorrectInternalInputData.New("reason", "from address is empty")
+		return errors.ErrInternalIncorrectInputData.WithDetails("from address is empty")
 	}
 
 	if len(to) == 0 || to[0] == "" {
-		return mr.ErrUseCaseIncorrectInternalInputData.New("reason", "to address is empty")
+		return errors.ErrInternalIncorrectInputData.WithDetails("to address is empty")
 	}
 
 	var buf bytes.Buffer
@@ -64,7 +66,7 @@ func (c *MailClient) SendMail(ctx context.Context, from string, to []string, hea
 	// если в заголовке отсутствует тема письма
 	if len(header) == 0 || header.Get("Subject") == "" {
 		buf.WriteString("Subject: ")
-		buf.WriteString(defaultMailSubject)
+		buf.WriteString(defaultMessageSubject)
 		buf.WriteString("\r\n")
 	}
 
@@ -89,7 +91,7 @@ func (c *MailClient) SendMail(ctx context.Context, from string, to []string, hea
 
 	c.tracer.Trace(
 		ctx,
-		"source", smtpMailClientName,
+		"source", smtpClientName,
 		"cmd", "SendMail",
 		"SMTP-Header", buf.String(),
 		"SMTP-From", from,
@@ -97,7 +99,7 @@ func (c *MailClient) SendMail(ctx context.Context, from string, to []string, hea
 	)
 
 	if err := smtp.SendMail(c.address, c.auth, from, to, buf.Bytes()); err != nil {
-		return mr.ErrUseCaseOperationFailed.Wrap(err)
+		return errors.ErrInternalUseCaseOperationFailed.WithError(err, "sending mail failed")
 	}
 
 	return nil

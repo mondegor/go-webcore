@@ -21,33 +21,19 @@ type (
 	// Interceptor - сервис перехвата системных событий с целью
 	// корректной (graceful) остановки всего приложения.
 	Interceptor struct {
-		cancel     context.CancelFunc
-		signalStop chan os.Signal
-		logger     mrlog.Logger
-		wgMain     sync.WaitGroup
+		logger mrlog.Logger
+		wg     sync.WaitGroup
+		done   chan struct{}
 	}
 )
 
 // NewInterceptor - создаёт объект Interceptor и возвращает контекст,
 // в котором установлена его отмена при перехвате системного события.
-func NewInterceptor(ctx context.Context, logger mrlog.Logger) (context.Context, *Interceptor) {
-	ctx, cancel := context.WithCancel(ctx)
-	signalStop := make(chan os.Signal, signalBufferLen)
-
-	signal.Notify(
-		signalStop,
-		syscall.SIGABRT,
-		syscall.SIGQUIT,
-		syscall.SIGHUP,
-		os.Interrupt,
-		syscall.SIGTERM,
-	)
-
-	return ctx, &Interceptor{
-		cancel:     cancel,
-		signalStop: signalStop,
-		logger:     logger,
-		wgMain:     sync.WaitGroup{},
+func NewInterceptor(logger mrlog.Logger) *Interceptor {
+	return &Interceptor{
+		logger: logger,
+		wg:     sync.WaitGroup{},
+		done:   make(chan struct{}),
 	}
 }
 
@@ -62,38 +48,54 @@ func (p *Interceptor) ReadyTimeout() time.Duration {
 }
 
 // Start - запуск сервиса перехвата системных событий.
+// Отмена внешнего контекста приведёт к аварийному завершению процесса,
+// для корректной остановки следует использовать Shutdown.
 // Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
 func (p *Interceptor) Start(ctx context.Context, ready func()) error {
-	p.wgMain.Add(1)
-	defer p.wgMain.Done()
+	p.wg.Add(1)
+	defer p.wg.Done()
+
+	signalStop := make(chan os.Signal, signalBufferLen)
+
+	signal.Notify(
+		signalStop,
+		syscall.SIGABRT,
+		syscall.SIGQUIT,
+		syscall.SIGHUP,
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
 
 	p.logger.Debug(ctx, "Starting the signal interceptor...")
-	defer p.logger.Debug(ctx, "The signal interceptor has been stopped")
+
+	defer func() {
+		signal.Stop(signalStop)
+		close(signalStop)
+		p.logger.Debug(ctx, "The signal interceptor has been stopped")
+	}()
 
 	if ready != nil {
 		ready()
 	}
 
 	select {
-	case signalApp := <-p.signalStop:
-		p.logger.Info(ctx, "Interceptor detected an interrupting signal", "value", signalApp.String())
+	case <-p.done:
 	case <-ctx.Done():
-		p.logger.Info(ctx, "Interceptor detected context signal 'cancel'")
-
-		return ctx.Err()
+		p.logger.Debug(ctx, "The signal interceptor detected context 'Done'", "error", ctx.Err())
+	case signalApp := <-signalStop:
+		p.logger.Debug(ctx, "The signal interceptor detected an interrupting signal", "value", signalApp.String())
 	}
 
 	return nil
 }
 
 // Shutdown - корректная остановка сервиса перехвата системных событий.
+// При повторном вызове метода произойдёт panic.
 func (p *Interceptor) Shutdown(ctx context.Context) error {
 	p.logger.Debug(ctx, "Shutting down the signal interceptor...")
-	signal.Stop(p.signalStop)
-	close(p.signalStop)
+	close(p.done)
 
-	p.wgMain.Wait()
-	p.cancel()
+	p.wg.Wait()
 	p.logger.Debug(ctx, "The signal interceptor has been shut down")
 
 	return nil
