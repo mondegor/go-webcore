@@ -41,7 +41,7 @@ func NewImage(logger mrlog.Logger, opts ...ImageOption) *Image {
 			maxHeight: defaultMaxHeight,
 			checkBody: defaultCheckBody,
 		},
-		fileOptions: []FileOption{
+		fileOpts: []FileOption{
 			WithFileAllowedMimeTypes( // by default
 				[]mime.Type{
 					{
@@ -65,7 +65,7 @@ func NewImage(logger mrlog.Logger, opts ...ImageOption) *Image {
 		opt(&o)
 	}
 
-	o.image.file = NewFile(logger, o.fileOptions...)
+	o.image.file = NewFile(logger, o.fileOpts...)
 
 	return o.image
 }

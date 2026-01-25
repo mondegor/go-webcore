@@ -5,8 +5,8 @@ type (
 	ImageOption func(o *imageOptions)
 
 	imageOptions struct {
-		image       *Image
-		fileOptions []FileOption
+		image    *Image
+		fileOpts []FileOption
 	}
 )
 
@@ -31,9 +31,9 @@ func WithImageCheckBody(value bool) ImageOption {
 	}
 }
 
-// WithImageFileOptions - устанавливает опции File для Image.
-func WithImageFileOptions(opts ...FileOption) ImageOption {
+// WithImageFileOpts - устанавливает опции File для Image.
+func WithImageFileOpts(opts ...FileOption) ImageOption {
 	return func(o *imageOptions) {
-		o.fileOptions = append(o.fileOptions, opts...)
+		o.fileOpts = append(o.fileOpts, opts...)
 	}
 }
