@@ -2,8 +2,7 @@ package config
 
 import (
 	"fmt"
-
-	"github.com/mondegor/go-sysmess/util/xstrings"
+	"slices"
 )
 
 const (
@@ -29,7 +28,7 @@ func ValidateActionGroups(actionGroups []ActionGroup, allPrivileges []string) er
 		uniqPaths[group.BasePath] = true
 
 		if group.Privilege != PublicPrivilege {
-			if !xstrings.InArray(group.Privilege, allPrivileges) {
+			if !slices.Contains(allPrivileges, group.Privilege) {
 				return fmt.Errorf("privilege is not found in privileges for actionGroup (name='%s', group='%s')", group.Privilege, group.Name)
 			}
 		}
