@@ -197,15 +197,18 @@ func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
 	}
 }
 
-// PushMessage - comment method.
-func (p *MessageCollector) PushMessage(_ context.Context, message []byte) error {
+// PushMessage - отправляет сообщение в очередь для дальнейшей её обработки.
+func (p *MessageCollector) PushMessage(ctx context.Context, message []byte) error {
 	if p.isSendStopped.Load() {
 		return errInternalMessageReceptionStopped.New("collector_name", p.caption)
 	}
 
-	p.messageQueue <- message
-
-	return nil
+	select {
+	case p.messageQueue <- message:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 // Shutdown - корректная остановка сервиса обработки сообщений.

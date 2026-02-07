@@ -29,10 +29,10 @@ type (
 
 		Kind() kind.Enum
 		// Attrs() []any
-		Baggage() any
+		Hint() any
 	}
 
-	errorBaggage interface {
+	errorHint interface {
 		ErrorID() string
 		StackTraceIterator() func() (index int, name, file string, line int)
 	}
@@ -86,7 +86,7 @@ func (a *Adapter) CaptureError(_ context.Context, err error) (eventID string) {
 			event := sentry.NewEvent()
 			event.Level = sentry.LevelError
 
-			if bag, ok := e.Baggage().(errorBaggage); ok {
+			if bag, ok := e.Hint().(errorHint); ok {
 				// TODO: stack = strings.Join(stacktrace.ToStrings(bag.StackTraceIterator()), " | ") // TODO: disable function name of stack on prod
 				event.EventID = sentry.EventID(bag.ErrorID())
 			}
