@@ -12,13 +12,13 @@ type (
 	// ListSorter - парсер параметров для сортировки списка элементов.
 	ListSorter struct {
 		logger                 mrlog.Logger
-		paramNameSortField     string
+		paramNameSortColumn    string
 		paramNameSortDirection string
 	}
 
 	// ListSorterOptions - опции для создания ListSorter.
 	ListSorterOptions struct {
-		ParamNameSortField     string
+		ParamNameSortColumn    string
 		ParamNameSortDirection string
 	}
 )
@@ -27,12 +27,12 @@ type (
 func NewListSorter(logger mrlog.Logger, opts ListSorterOptions) *ListSorter {
 	ls := ListSorter{
 		logger:                 logger,
-		paramNameSortField:     "sortField",
+		paramNameSortColumn:    "sortColumn",
 		paramNameSortDirection: "sortDirection",
 	}
 
-	if opts.ParamNameSortField != "" {
-		ls.paramNameSortField = opts.ParamNameSortField
+	if opts.ParamNameSortColumn != "" {
+		ls.paramNameSortColumn = opts.ParamNameSortColumn
 	}
 
 	if opts.ParamNameSortDirection != "" {
@@ -45,24 +45,24 @@ func NewListSorter(logger mrlog.Logger, opts ListSorterOptions) *ListSorter {
 // SortParams - возвращает распарсенные параметры сортировки списка элементов.
 func (p *ListSorter) SortParams(r *http.Request, sorter mrtype.ListSorter) mrtype.SortParams {
 	value, err := parse.SortParams(
-		r.URL.Query().Get(p.paramNameSortField),
+		r.URL.Query().Get(p.paramNameSortColumn),
 		r.URL.Query().Get(p.paramNameSortDirection),
 	)
 	if err != nil {
 		p.logger.Warn(
 			r.Context(), "SortParams",
-			"field", p.paramNameSortField,
+			"column", p.paramNameSortColumn,
 			"direction", p.paramNameSortDirection,
 			"error", err,
 		)
 	}
 
-	if value.FieldName == "" {
+	if value.Column == "" {
 		return sorter.DefaultSort()
 	}
 
-	if !sorter.HasField(value.FieldName) {
-		p.logger.Warn(r.Context(), "sort field is not registered", "field", value.FieldName)
+	if !sorter.HasColumn(value.Column) {
+		p.logger.Warn(r.Context(), "sort column is not registered", "column", value.Column)
 
 		return sorter.DefaultSort()
 	}

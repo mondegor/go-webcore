@@ -13,8 +13,6 @@ import (
 	"github.com/mondegor/go-webcore/mrworker"
 )
 
-//go:generate mockgen -source=task_scheduler.go -destination=./mock/task_scheduler.go
-
 const (
 	defaultCaption      = "TaskScheduler"
 	defaultReadyTimeout = 30 * time.Second

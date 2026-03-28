@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mondegor/go-sysmess/mrmodel"
 	"github.com/mondegor/go-sysmess/mrstatus/itemstatus"
 	"github.com/mondegor/go-sysmess/mrtype"
 
@@ -25,6 +26,7 @@ type (
 		PathParamString(r *http.Request, name string) string
 		RawParamString(r *http.Request, key string) *string // returns nil if the param not found
 		FilterString(r *http.Request, key string) string
+		FilterStringList(r *http.Request, key string) []string
 	}
 
 	// ParserValidate - парсер данных запроса для преобразования их в go структуру.
@@ -71,16 +73,16 @@ type (
 
 	// ParserFile - парсер данных запроса для преобразования их в файловую структуру.
 	ParserFile interface {
-		FormFile(r *http.Request, key string) (mrtype.File, error)
-		FormFileContent(r *http.Request, key string) (mrtype.FileContent, error)
-		FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, error)
+		FormFile(r *http.Request, key string) (mrmodel.File, error)
+		FormFileContent(r *http.Request, key string) (mrmodel.FileContent, error)
+		FormFiles(r *http.Request, key string) ([]mrmodel.FileHeader, error)
 	}
 
 	// ParserImage - парсер данных запроса для преобразования их в файловую структуру изображения.
 	ParserImage interface {
-		FormImage(r *http.Request, key string) (mrtype.Image, error)
-		FormImageContent(r *http.Request, key string) (mrtype.ImageContent, error)
-		FormImages(r *http.Request, key string) ([]mrtype.ImageHeader, error)
+		FormImage(r *http.Request, key string) (mrmodel.Image, error)
+		FormImageContent(r *http.Request, key string) (mrmodel.ImageContent, error)
+		FormImages(r *http.Request, key string) ([]mrmodel.ImageHeader, error)
 	}
 
 	// ParserListSorter - парсер данных запроса для преобразования их в mrtype.SortParams.
@@ -91,6 +93,11 @@ type (
 	// ParserListPager - парсер данных запроса для преобразования их в mrtype.PageParams.
 	ParserListPager interface {
 		PageParams(r *http.Request) mrtype.PageParams
+	}
+
+	// ParserListCursor - парсер данных запроса для преобразования их в mrtype.CursorParams.
+	ParserListCursor interface {
+		CursorParams(r *http.Request) mrtype.CursorParams
 	}
 
 	// ParserItemStatus - парсер данных запроса для преобразования их в []mrenum.ItemStatus.

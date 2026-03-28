@@ -6,7 +6,7 @@ import (
 
 	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/errors/helper"
-	"github.com/mondegor/go-sysmess/mrtype"
+	"github.com/mondegor/go-sysmess/mrmodel"
 )
 
 type (
@@ -27,8 +27,8 @@ type (
 	// FileResponseSender - отправляет ответ с данными в виде файла сформированные сервером.
 	FileResponseSender interface {
 		ResponseSender
-		SendFile(ctx context.Context, w http.ResponseWriter, file mrtype.File) error
-		SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrtype.File) error
+		SendFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error
+		SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error
 	}
 
 	// ErrorResponseSender - отправляет ответ со списком ошибок полученных в результате обработки запроса.
@@ -44,8 +44,8 @@ type (
 
 // NewHttpErrorStatusMapper - создаёт объект ErrorStatusMapper.
 // Только для: 4XX, 5XX.
-func NewHttpErrorStatusMapper(unexpectedStatus int, codeStatus ...any) ErrorStatusMapper {
-	if unexpectedStatus == 0 {
+func NewHttpErrorStatusMapper(unexpectedStatus int, codeStatus ...any) (ErrorStatusMapper, error) {
+	if unexpectedStatus <= 0 {
 		unexpectedStatus = http.StatusInternalServerError
 	}
 
@@ -53,25 +53,22 @@ func NewHttpErrorStatusMapper(unexpectedStatus int, codeStatus ...any) ErrorStat
 		[]any{
 			errors.ErrHttpClientUnauthorized.Code(), http.StatusUnauthorized,
 			errors.ErrHttpAccessForbidden.Code(), http.StatusForbidden,
+			errors.ErrAccessForbidden.Code(), http.StatusForbidden,
 			errors.ErrHttpResourceNotFound.Code(), http.StatusNotFound,
-			errors.ErrUseCaseEntityNotFound.Code(), http.StatusNotFound,
-			errors.ErrUseCaseEntityVersionConflict.Code(), http.StatusConflict,
+			errors.ErrRecordNotFound.Code(), http.StatusNotFound,
+			errors.ErrRecordVersionConflict.Code(), http.StatusConflict,
 			errors.ErrHttpRequestParseData.Code(), http.StatusUnprocessableEntity,
 			errors.ErrHttpTooManyRequests.Code(), http.StatusTooManyRequests,
+			errors.ErrNotImplemented.Code(), http.StatusNotImplemented,
 		},
 		codeStatus...,
 	)
 
-	s, err := helper.NewErrorStatusMapper(
+	return helper.NewErrorStatusMapper(
 		http.StatusBadRequest,
 		http.StatusServiceUnavailable,
 		http.StatusInternalServerError,
 		unexpectedStatus,
 		codeStatus,
 	)
-	if err != nil {
-		panic(err)
-	}
-
-	return s
 }

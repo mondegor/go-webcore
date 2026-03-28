@@ -6,7 +6,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/mondegor/go-sysmess/errors"
-	"github.com/mondegor/go-sysmess/errors/kind"
+	"github.com/mondegor/go-sysmess/errors/runtime/hint"
 )
 
 // go get -u github.com/getsentry/sentry-go
@@ -23,25 +23,14 @@ type (
 		client       *sentry.Client
 		flushTimeout time.Duration
 	}
-
-	runtimeError interface {
-		error
-
-		Kind() kind.Enum
-		// Attrs() []any
-		Hint() any
-	}
-
-	errorHint interface {
-		ErrorID() string
-		StackTraceIterator() func() (index int, name, file string, line int)
-	}
 )
 
 // New - создаёт объект Adapter.
 func New(dsn string, opts ...Option) (*Adapter, error) {
 	o := options{
-		flushTimeout: defaultFlushTimeout,
+		adapter: &Adapter{
+			flushTimeout: defaultFlushTimeout,
+		},
 	}
 
 	for _, opt := range opts {
@@ -55,10 +44,9 @@ func New(dsn string, opts ...Option) (*Adapter, error) {
 		return nil, errors.ErrSystemStorageConnectionFailed.Wrap(err, "source", connectionName)
 	}
 
-	return &Adapter{
-		client:       client,
-		flushTimeout: o.flushTimeout,
-	}, nil
+	o.adapter.client = client
+
+	return o.adapter, nil
 }
 
 // Cli - comment method.
@@ -70,9 +58,10 @@ func (a *Adapter) Cli() *sentry.Client {
 func (a *Adapter) CaptureError(_ context.Context, err error) (eventID string) {
 	sentry.CurrentHub().WithScope(
 		func(scope *sentry.Scope) {
+			errorHint := hint.Extract(err)
+
 			// TODO: добавить отправку атрибутов из ctx с помощью scope.SetExtras()
-			e, ok := err.(runtimeError) //nolint:errorlint
-			if !ok {                    // если это не runtime ошибка
+			if errorHint.ErrorID() == "" { // если это незнакомая ошибка
 				if id := a.client.CaptureException(err, nil, scope); id != nil {
 					eventID = string(*id)
 				}
@@ -81,15 +70,13 @@ func (a *Adapter) CaptureError(_ context.Context, err error) (eventID string) {
 			}
 
 			// TODO: добавить отправку аргументов и атрибутов ошибки из ctx с помощью scope.SetExtras()
-			scope.SetTag(errorKindTagName, e.Kind().String())
+			scope.SetTag(errorKindTagName, errorHint.ErrorKind().String())
 
 			event := sentry.NewEvent()
 			event.Level = sentry.LevelError
 
-			if bag, ok := e.Hint().(errorHint); ok {
-				// TODO: stack = strings.Join(stacktrace.ToStrings(bag.StackTraceIterator()), " | ") // TODO: disable function name of stack on prod
-				event.EventID = sentry.EventID(bag.ErrorID())
-			}
+			// TODO: stack := strings.Join(stacktrace.ToStrings(errorHint.StackTraceIterator()), " | ") // TODO: disable function name of stack on prod
+			event.EventID = sentry.EventID(errorHint.ErrorID())
 
 			if id := a.client.CaptureEvent(event, nil, scope); id != nil {
 				eventID = string(*id)

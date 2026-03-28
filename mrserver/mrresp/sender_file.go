@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrtype"
+	"github.com/mondegor/go-sysmess/mrmodel"
 )
 
 type (
@@ -28,20 +28,20 @@ func NewFileSender(base *Sender, logger mrlog.Logger) *FileSender {
 }
 
 // SendFile - отправляет указанный файл, в случае неудачи возвращает ошибку.
-func (rs *FileSender) SendFile(ctx context.Context, w http.ResponseWriter, file mrtype.File) error {
+func (rs *FileSender) SendFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error {
 	return rs.sendFile(ctx, w, file, false)
 }
 
 // SendAttachmentFile - отправляет указанный файл в виде вложения для сохранения локально, в случае неудачи возвращает ошибку.
-func (rs *FileSender) SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrtype.File) error {
+func (rs *FileSender) SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error {
 	return rs.sendFile(ctx, w, file, true)
 }
 
-func (rs *FileSender) sendFile(ctx context.Context, w http.ResponseWriter, file mrtype.File, isAttachment bool) error {
+func (rs *FileSender) sendFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File, isAttachment bool) error {
 	w.Header().Set("Content-Type", file.FileInfo.ContentType)
 
 	if file.FileInfo.Size > 0 {
-		w.Header().Set("Content-Length", strconv.FormatUint(file.FileInfo.Size, 10))
+		w.Header().Set("Content-Length", strconv.FormatInt(file.FileInfo.Size, 10))
 	}
 
 	if isAttachment {

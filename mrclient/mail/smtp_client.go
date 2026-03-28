@@ -99,7 +99,7 @@ func (c *SMTPClient) SendMail(ctx context.Context, from string, to []string, hea
 	)
 
 	if err := smtp.SendMail(c.address, c.auth, from, to, buf.Bytes()); err != nil {
-		return errors.ErrInternalUseCaseOperationFailed.WithError(err, "sending mail failed")
+		return errors.ErrInternalServiceOperationFailed.WithError(err, "sending mail failed")
 	}
 
 	return nil

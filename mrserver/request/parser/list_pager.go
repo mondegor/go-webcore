@@ -1,3 +1,4 @@
+//nolint:dupl
 package parser
 
 import (
@@ -14,16 +15,16 @@ type (
 		logger             mrlog.Logger
 		paramNamePageIndex string
 		paramNamePageSize  string
-		pageSizeMax        uint64
-		pageSizeDefault    uint64
+		pageSizeMax        int
+		pageSizeDefault    int
 	}
 
 	// ListPagerOptions - опции для создания ListPager.
 	ListPagerOptions struct {
 		ParamNamePageIndex string
 		ParamNamePageSize  string
-		PageSizeMax        uint64
-		PageSizeDefault    uint64
+		PageSizeMax        int
+		PageSizeDefault    int
 	}
 )
 

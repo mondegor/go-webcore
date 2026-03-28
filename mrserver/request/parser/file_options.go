@@ -12,14 +12,14 @@ type (
 )
 
 // WithFileMinSize - устанавливает опцию minSize для File (bytes).
-func WithFileMinSize(value uint64) FileOption {
+func WithFileMinSize(value int64) FileOption {
 	return func(o *fileOptions) {
 		o.file.minSize = value
 	}
 }
 
 // WithFileMaxSize - устанавливает опцию maxSize для File (bytes).
-func WithFileMaxSize(value uint64) FileOption {
+func WithFileMaxSize(value int64) FileOption {
 	return func(o *fileOptions) {
 		o.file.maxSize = value
 	}

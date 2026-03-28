@@ -24,8 +24,9 @@ const (
 )
 
 type (
-	// MessageCollector - многопоточный сервис сбора сообщений на основе внешней очереди и обработчика.
-	MessageCollector struct {
+	// MessageCollector - многопоточный сервис сбора сообщений на основе
+	// внешней очереди и обработчика (PUSH модель).
+	MessageCollector[T any] struct {
 		caption        string
 		readyTimeout   time.Duration
 		flushPeriod    time.Duration
@@ -33,14 +34,14 @@ type (
 		batchSize      int
 		workersCount   int
 
-		handler      mrworker.MessageBatchHandler
+		handler      mrworker.MessageBatchHandler[T]
 		errorHandler errors.Handler
 		logger       mrlog.Logger
 		traceManager mrtrace.ContextManager
 
 		wg            sync.WaitGroup
 		isSendStopped atomic.Bool
-		messageQueue  chan []byte
+		messageQueue  chan T
 		workersQueue  chan func(ctx context.Context)
 		done          chan struct{}
 	}
@@ -52,15 +53,15 @@ var (
 )
 
 // NewMessageCollector - создаёт объект MessageCollector.
-func NewMessageCollector(
-	handler mrworker.MessageBatchHandler,
+func NewMessageCollector[T any](
+	handler mrworker.MessageBatchHandler[T],
 	errorHandler errors.Handler,
 	logger mrlog.Logger,
 	traceManager mrtrace.ContextManager,
-	opts ...Option,
-) *MessageCollector {
-	o := options{
-		collector: &MessageCollector{
+	opts ...Option[T],
+) *MessageCollector[T] {
+	o := options[T]{
+		collector: &MessageCollector[T]{
 			caption:        defaultCaption,
 			readyTimeout:   defaultReadyTimeout,
 			flushPeriod:    defaultFlushPeriod,
@@ -72,7 +73,7 @@ func NewMessageCollector(
 			traceManager: traceManager,
 
 			wg:           sync.WaitGroup{},
-			messageQueue: make(chan []byte),
+			messageQueue: make(chan T),
 			workersQueue: make(chan func(ctx context.Context)),
 			done:         make(chan struct{}),
 		},
@@ -98,12 +99,12 @@ func NewMessageCollector(
 }
 
 // Caption - возвращает название сервиса обработки сообщений.
-func (p *MessageCollector) Caption() string {
+func (p *MessageCollector[T]) Caption() string {
 	return p.caption
 }
 
 // ReadyTimeout - возвращает максимальное время, за которое должен быть запущен сервис.
-func (p *MessageCollector) ReadyTimeout() time.Duration {
+func (p *MessageCollector[T]) ReadyTimeout() time.Duration {
 	return p.readyTimeout
 }
 
@@ -111,7 +112,7 @@ func (p *MessageCollector) ReadyTimeout() time.Duration {
 // Отмена внешнего контекста приведёт к аварийному завершению процесса,
 // для корректной остановки следует использовать Shutdown.
 // Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
-func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
+func (p *MessageCollector[T]) Start(ctx context.Context, ready func()) error {
 	p.wg.Add(1)
 	defer p.wg.Done()
 
@@ -133,27 +134,41 @@ func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
 		ticker.Stop()
 		close(p.workersQueue)
 		<-workersStopped
+		close(p.messageQueue) // ??????????????
 	}()
 
-	messageBatch := make([][]byte, 0, p.batchSize)
+	messageBatch := make([]T, 0, p.batchSize)
 
 	if ready != nil {
 		ready()
 	}
 
 	for {
-		isSendStopped := false
-
 		select {
 		case <-p.done:
-			isSendStopped = true // т.к. в этом месте гарантированно канал закрыт, то и приём данных уже отключён
+			for {
+				// в этом месте приёма новых данных уже нет,
+				// но в очереди ещё могут оставаться данные, которые нужно обработать
+				select {
+				case message := <-p.messageQueue:
+					messageBatch = append(messageBatch, message)
+
+					if len(messageBatch) < p.batchSize {
+						continue
+					}
+				default:
+				}
+
+				break
+			}
 		case <-ctx.Done():
 			p.logger.Debug(ctx, "The message collector detected context 'Done'", "error", ctx.Err())
 
 			// предварительно завершается приём данных
 			p.isSendStopped.Store(true)
 
-			// принудительная очистка очереди
+			// принудительная очистка очереди,
+			// т.к. контекст отменён и данные уже не получится обработать
 			for {
 				select {
 				case <-p.messageQueue:
@@ -161,25 +176,18 @@ func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
 					return nil
 				}
 			}
-		case <-ticker.C:
-		}
+		case message := <-p.messageQueue:
+			messageBatch = append(messageBatch, message)
 
-		for {
-			select {
-			case message := <-p.messageQueue:
-				messageBatch = append(messageBatch, message)
-
-				if len(messageBatch) < p.batchSize {
-					continue
-				}
-			default:
+			if len(messageBatch) < p.batchSize {
+				continue
 			}
-
-			break
+		case <-ticker.C:
+			p.logger.Debug(ctx, "The message collector ticker.C")
 		}
 
 		if len(messageBatch) == 0 {
-			if isSendStopped {
+			if p.isSendStopped.Load() {
 				return nil // если данных нет и их приём остановлен, то процесс завершается
 			}
 
@@ -192,13 +200,13 @@ func (p *MessageCollector) Start(ctx context.Context, ready func()) error {
 		case <-workersStopped:
 			return errInternalWorkersAreStopped.New("collector_name", p.caption)
 		case p.workersQueue <- p.workerFunc(messageBatch):
-			messageBatch = messageBatch[:0]
+			messageBatch = make([]T, 0, p.batchSize)
 		}
 	}
 }
 
 // PushMessage - отправляет сообщение в очередь для дальнейшей её обработки.
-func (p *MessageCollector) PushMessage(ctx context.Context, message []byte) error {
+func (p *MessageCollector[T]) PushMessage(ctx context.Context, message T) error {
 	if p.isSendStopped.Load() {
 		return errInternalMessageReceptionStopped.New("collector_name", p.caption)
 	}
@@ -213,7 +221,7 @@ func (p *MessageCollector) PushMessage(ctx context.Context, message []byte) erro
 
 // Shutdown - корректная остановка сервиса обработки сообщений.
 // При повторном вызове метода произойдёт panic.
-func (p *MessageCollector) Shutdown(ctx context.Context) error {
+func (p *MessageCollector[T]) Shutdown(ctx context.Context) error {
 	p.logger.Debug(ctx, "Shutting down the message collector...")
 	p.isSendStopped.Store(true) // завершается приём данных
 	close(p.done)
@@ -224,7 +232,7 @@ func (p *MessageCollector) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func (p *MessageCollector) startWorkers(ctx context.Context, wg *sync.WaitGroup) {
+func (p *MessageCollector[T]) startWorkers(ctx context.Context, wg *sync.WaitGroup) {
 	for i := 0; i < p.workersCount; i++ {
 		wg.Add(1)
 
@@ -255,10 +263,12 @@ func (p *MessageCollector) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 	}
 }
 
-func (p *MessageCollector) workerFunc(messages [][]byte) func(ctx context.Context) {
+func (p *MessageCollector[T]) workerFunc(messages []T) func(ctx context.Context) {
 	return func(ctx context.Context) {
 		handlerCtx, cancel := context.WithTimeout(p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID), p.handlerTimeout)
 		defer cancel()
+
+		p.logger.Debug(ctx, "workerFunc", "message_batch", len(messages), "message[0]", messages[0])
 
 		if err := p.handler.Execute(handlerCtx, messages); err != nil {
 			p.errorHandler.Handle(ctx, err)

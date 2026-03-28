@@ -56,7 +56,7 @@ func (c *BotClient) SendToChat(ctx context.Context, chatKey, message string) err
 	msg.ParseMode = "Markdown"
 
 	if _, err = c.botAPI.Send(msg); err != nil {
-		return errors.ErrInternalUseCaseOperationFailed.WithError(err, "sending telegram botAPI failed")
+		return errors.ErrInternalServiceOperationFailed.WithError(err, "sending telegram botAPI failed")
 	}
 
 	return nil

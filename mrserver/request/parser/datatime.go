@@ -22,7 +22,7 @@ func NewDateTime(logger mrlog.Logger) *DateTime {
 	}
 }
 
-// FilterDateTime - возвращает дата и время поступившие из внешнего запроса.
+// FilterDateTime - возвращает дату и время поступившие из внешнего запроса.
 // Если ключ key не найден или возникнет ошибка, то возвращается пустая структура.
 func (p *DateTime) FilterDateTime(r *http.Request, key string) time.Time {
 	value, err := parse.DateTime(r.URL.Query().Get(key), false)

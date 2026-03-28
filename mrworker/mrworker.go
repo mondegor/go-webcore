@@ -5,25 +5,23 @@ import (
 	"time"
 )
 
-//go:generate mockgen -source=mrworker.go -destination=./mock/mrworker.go
-
 type (
 	// MessageConsumer - получатель сообщений с возможностью подтверждения их получения.
-	MessageConsumer interface {
-		ReadMessages(ctx context.Context, limit int) (messages []any, err error)
-		CancelMessages(ctx context.Context, messages []any) error
-		CommitMessage(ctx context.Context, message any, preCommit func(ctx context.Context) error) error
-		RejectMessage(ctx context.Context, message any, causeErr error) error
+	MessageConsumer[T any] interface {
+		ReadMessages(ctx context.Context, limit int) (messages []T, err error)
+		CancelMessages(ctx context.Context, messages []T) error
+		CommitMessage(ctx context.Context, message T, preCommit func(ctx context.Context) error) error
+		RejectMessage(ctx context.Context, message T, causeErr error) error
 	}
 
 	// MessageHandler - обработчик сообщений с закреплением результата.
-	MessageHandler interface {
-		Execute(ctx context.Context, message any) (commit func(ctx context.Context) error, err error)
+	MessageHandler[T any] interface {
+		Execute(ctx context.Context, message T) (commit func(ctx context.Context) error, err error)
 	}
 
 	// MessageBatchHandler - обработчик списка сообщений.
-	MessageBatchHandler interface {
-		Execute(ctx context.Context, messages [][]byte) error
+	MessageBatchHandler[T any] interface {
+		Execute(ctx context.Context, messages []T) error
 	}
 
 	// Task - задача исполняемая планировщиком задач.

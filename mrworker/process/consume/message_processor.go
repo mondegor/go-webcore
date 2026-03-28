@@ -25,8 +25,9 @@ const (
 )
 
 type (
-	// MessageProcessor - многопоточный сервис обработки сообщений на основе консьюмера и обработчика.
-	MessageProcessor struct {
+	// MessageProcessor - многопоточный сервис обработки сообщений
+	// на основе консьюмера и обработчика (PULL модель).
+	MessageProcessor[T any] struct {
 		caption        string
 		readyTimeout   time.Duration
 		readPeriod     time.Duration
@@ -34,8 +35,8 @@ type (
 		queueSize      int
 		workersCount   int
 
-		consumer     mrworker.MessageConsumer
-		handler      mrworker.MessageHandler
+		consumer     mrworker.MessageConsumer[T]
+		handler      mrworker.MessageHandler[T]
 		errorHandler errors.Handler
 		logger       mrlog.Logger
 		traceManager mrtrace.ContextManager
@@ -50,16 +51,16 @@ type (
 var errInternalWorkersAreStopped = errors.NewInternalProto("the message processor workers has been stopped")
 
 // NewMessageProcessor - создаёт объект MessageProcessor.
-func NewMessageProcessor(
-	consumer mrworker.MessageConsumer,
-	handler mrworker.MessageHandler,
+func NewMessageProcessor[T any](
+	consumer mrworker.MessageConsumer[T],
+	handler mrworker.MessageHandler[T],
 	errorHandler errors.Handler,
 	logger mrlog.Logger,
 	traceManager mrtrace.ContextManager,
-	opts ...Option,
-) *MessageProcessor {
-	o := options{
-		processor: &MessageProcessor{
+	opts ...Option[T],
+) *MessageProcessor[T] {
+	o := options[T]{
+		processor: &MessageProcessor[T]{
 			caption:        defaultCaption,
 			readyTimeout:   defaultReadyTimeout,
 			readPeriod:     defaultReadPeriod,
@@ -106,12 +107,12 @@ func NewMessageProcessor(
 }
 
 // Caption - возвращает название сервиса обработки сообщений.
-func (p *MessageProcessor) Caption() string {
+func (p *MessageProcessor[T]) Caption() string {
 	return p.caption
 }
 
 // ReadyTimeout - возвращает максимальное время, за которое должен быть запущен сервис.
-func (p *MessageProcessor) ReadyTimeout() time.Duration {
+func (p *MessageProcessor[T]) ReadyTimeout() time.Duration {
 	return p.readyTimeout
 }
 
@@ -119,7 +120,7 @@ func (p *MessageProcessor) ReadyTimeout() time.Duration {
 // Отмена внешнего контекста приведёт к аварийному завершению процесса,
 // для корректной остановки следует использовать Shutdown.
 // Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
-func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
+func (p *MessageProcessor[T]) Start(ctx context.Context, ready func()) error {
 	p.wg.Add(1)
 	defer p.wg.Done()
 
@@ -193,7 +194,7 @@ func (p *MessageProcessor) Start(ctx context.Context, ready func()) error {
 
 // Shutdown - корректная остановка сервиса обработки сообщений.
 // При повторном вызове метода произойдёт panic.
-func (p *MessageProcessor) Shutdown(ctx context.Context) error {
+func (p *MessageProcessor[T]) Shutdown(ctx context.Context) error {
 	p.logger.Debug(ctx, "Shutting down the message processor...")
 	close(p.done)
 
@@ -203,7 +204,7 @@ func (p *MessageProcessor) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup) {
+func (p *MessageProcessor[T]) startWorkers(ctx context.Context, wg *sync.WaitGroup) {
 	for i := 0; i < p.workersCount; i++ {
 		wg.Add(1)
 
@@ -234,7 +235,7 @@ func (p *MessageProcessor) startWorkers(ctx context.Context, wg *sync.WaitGroup)
 	}
 }
 
-func (p *MessageProcessor) workerFunc(message any) func(ctx context.Context) {
+func (p *MessageProcessor[T]) workerFunc(message T) func(ctx context.Context) {
 	return func(ctx context.Context) {
 		ctx = p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID)
 

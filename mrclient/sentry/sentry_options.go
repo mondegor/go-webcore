@@ -11,8 +11,8 @@ type (
 	Option func(o *options)
 
 	options struct {
-		sentryOpts   sentry.ClientOptions
-		flushTimeout time.Duration
+		adapter    *Adapter
+		sentryOpts sentry.ClientOptions
 	}
 )
 
@@ -47,6 +47,6 @@ func WithTracesSampleRate(value float64) Option {
 // WithFlushTimeout - устанавливает опцию flushTimeout для Adapter.
 func WithFlushTimeout(value time.Duration) Option {
 	return func(o *options) {
-		o.flushTimeout = value
+		o.adapter.flushTimeout = value
 	}
 }

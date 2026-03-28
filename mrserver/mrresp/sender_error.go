@@ -19,12 +19,13 @@ import (
 type (
 	// ErrorSender - формирует и отправляет клиенту ответ об ошибке.
 	ErrorSender struct {
-		encoder      mrserver.ResponseEncoder
-		errorHandler errors.Handler
-		logger       mrlog.Logger
-		parserLocale parserLocale
-		statusMapper mrserver.ErrorStatusMapper
-		isDebug      bool
+		encoder        mrserver.ResponseEncoder
+		errorHandler   errors.Handler
+		extractErrorID func(err error) string
+		logger         mrlog.Logger
+		parserLocale   parserLocale
+		statusMapper   mrserver.ErrorStatusMapper
+		debugInfo      func(err error) string
 	}
 
 	parserLocale interface {
@@ -36,18 +37,20 @@ type (
 func NewErrorSender(
 	encoder mrserver.ResponseEncoder,
 	errorHandler errors.Handler,
+	extractErrorID func(err error) string,
 	logger mrlog.Logger,
 	parserLocale parserLocale,
 	statusMapper mrserver.ErrorStatusMapper,
-	isDebug bool,
+	debugInfo func(err error) string,
 ) *ErrorSender {
 	return &ErrorSender{
-		encoder:      encoder,
-		errorHandler: errorHandler,
-		logger:       logger,
-		parserLocale: parserLocale,
-		statusMapper: statusMapper,
-		isDebug:      isDebug,
+		encoder:        encoder,
+		errorHandler:   errorHandler,
+		extractErrorID: extractErrorID,
+		logger:         logger,
+		parserLocale:   parserLocale,
+		statusMapper:   statusMapper,
+		debugInfo:      debugInfo,
 	}
 }
 
@@ -121,7 +124,11 @@ InternalErrorSection:
 		sendResponse(
 			status,
 			[]ErrorAttribute{
-				NewErrorAttribute(rs.parserLocale.Localizer(r), "", err, rs.isDebug),
+				NewErrorAttribute(
+					"",
+					rs.parserLocale.Localizer(r).TranslateError(err),
+					rs.debugInfo(err),
+				),
 			},
 		)
 
@@ -159,7 +166,12 @@ func (rs *ErrorSender) getErrorListResponse(r *http.Request, errorList ...errors
 	attrs := make([]ErrorAttribute, len(errorList))
 
 	for i, customError := range errorList {
-		attrs[i] = NewErrorAttribute(lz, customError.CustomCode(), customError.Unwrap(), rs.isDebug)
+		err := customError.Unwrap()
+		attrs[i] = NewErrorAttribute(
+			customError.CustomCode(),
+			lz.TranslateError(err),
+			rs.debugInfo(err),
+		)
 	}
 
 	return attrs
@@ -169,8 +181,8 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, err error) Error
 	errorMessage := model.ParseErrorMessage(rs.parserLocale.Localizer(r).TranslateError(err))
 	errorTraceID := mrtracectx.RequestID(r.Context())
 
-	if e, ok := err.(interface{ ID() string }); ok && e.ID() != "" {
-		errorTraceID = e.ID()
+	if id := rs.extractErrorID(err); id != "" {
+		errorTraceID = id
 	}
 
 	response := ErrorDetailsResponse{
@@ -181,12 +193,12 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, err error) Error
 		ErrorTraceID: errorTraceID,
 	}
 
-	if rs.isDebug {
+	if debugInfo := rs.debugInfo(err); debugInfo != "" {
 		if response.Details != "" {
 			response.Details += "\n"
 		}
 
-		response.Details += "DebugInfo: " + err.Error()
+		response.Details += "DebugInfo: " + debugInfo
 	}
 
 	return response

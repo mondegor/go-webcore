@@ -1,9 +1,5 @@
 package mrresp
 
-import (
-	"github.com/mondegor/go-webcore/mrcore"
-)
-
 const (
 	// ErrorAttributeIDByDefault - название пользовательской ошибки по умолчанию.
 	ErrorAttributeIDByDefault = "FailedToProcessError"
@@ -31,18 +27,15 @@ type (
 )
 
 // NewErrorAttribute - создаёт объект ErrorAttribute.
-func NewErrorAttribute(lz mrcore.Localizer, code string, err error, withDebugInfo bool) ErrorAttribute {
+func NewErrorAttribute(code, value, debugInfo string) ErrorAttribute {
 	if code == "" {
 		code = ErrorAttributeIDByDefault
 	}
 
 	attr := ErrorAttribute{
-		ID:    code,
-		Value: lz.TranslateError(err),
-	}
-
-	if withDebugInfo {
-		attr.DebugInfo = err.Error()
+		ID:        code,
+		Value:     value,
+		DebugInfo: debugInfo,
 	}
 
 	return attr

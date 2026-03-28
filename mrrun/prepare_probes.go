@@ -70,6 +70,6 @@ func WithAppReadyProbe(app *AppHealth) func(ctx context.Context) error {
 			return nil
 		}
 
-		return errors.ErrSystemUseCaseTemporarilyUnavailable.WithDetails("app is not ready")
+		return errors.ErrSystemServiceTemporarilyUnavailable.WithDetails("app is not ready")
 	}
 }

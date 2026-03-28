@@ -11,14 +11,14 @@ type (
 )
 
 // WithImageMaxWidth - устанавливает опцию maxWidth для Image (pixels).
-func WithImageMaxWidth(value uint64) ImageOption {
+func WithImageMaxWidth(value int32) ImageOption {
 	return func(o *imageOptions) {
 		o.image.maxWidth = value
 	}
 }
 
 // WithImageMaxHeight - устанавливает опцию maxHeight для Image (pixels).
-func WithImageMaxHeight(value uint64) ImageOption {
+func WithImageMaxHeight(value int32) ImageOption {
 	return func(o *imageOptions) {
 		o.image.maxHeight = value
 	}

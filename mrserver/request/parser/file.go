@@ -8,7 +8,7 @@ import (
 
 	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrtype"
+	"github.com/mondegor/go-sysmess/mrmodel"
 	"github.com/mondegor/go-sysmess/util/mime"
 
 	"github.com/mondegor/go-webcore/mrdebug"
@@ -26,9 +26,9 @@ const (
 type (
 	// File - парсер файлов.
 	File struct {
-		minSize                 uint64 // bytes
-		maxSize                 uint64 // bytes
-		maxTotalSize            uint64 // bytes
+		minSize                 int64 // bytes
+		maxSize                 int64 // bytes
+		maxTotalSize            int64 // bytes
 		maxFiles                int
 		checkRequestContentType bool
 		allowedMimeTypes        *mime.TypeList
@@ -69,7 +69,7 @@ func NewFile(logger mrlog.Logger, opts ...FileOption) *File {
 		o.file.maxTotalSize = o.file.maxSize
 
 		if o.file.maxFiles > 0 {
-			o.file.maxTotalSize *= uint64(o.file.maxFiles) //nolint:gosec
+			o.file.maxTotalSize *= int64(o.file.maxFiles)
 		}
 	}
 
@@ -78,26 +78,26 @@ func NewFile(logger mrlog.Logger, opts ...FileOption) *File {
 
 // FormFile - возвращает информацию о файле со ссылкой для чтения файла из MultipartForm.
 // WARNING: you don't forget to call result.Body.Close().
-func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
+func (p *File) FormFile(r *http.Request, key string) (mrmodel.File, error) {
 	hdr, err := p.formFile(r, p.logger, key)
 	if err != nil {
-		return mrtype.File{}, err
+		return mrmodel.File{}, err
 	}
 
 	if err = p.checkFile(hdr); err != nil {
-		return mrtype.File{}, err
+		return mrmodel.File{}, err
 	}
 
 	file, err := hdr.Open()
 	if err != nil {
-		return mrtype.File{}, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
+		return mrmodel.File{}, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
 	}
 
-	return mrtype.File{
-		FileInfo: mrtype.FileInfo{
+	return mrmodel.File{
+		FileInfo: mrmodel.FileInfo{
 			ContentType:  p.detectedContentType(hdr),
 			OriginalName: hdr.Filename,
-			Size:         uint64(hdr.Size), //nolint:gosec
+			Size:         hdr.Size,
 		},
 		Body: file,
 	}, nil
@@ -105,10 +105,10 @@ func (p *File) FormFile(r *http.Request, key string) (mrtype.File, error) {
 
 // FormFileContent - возвращает информацию о файле и сам файл из MultipartForm.
 // WARNING: only for short files.
-func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent, error) {
+func (p *File) FormFileContent(r *http.Request, key string) (mrmodel.FileContent, error) {
 	file, err := p.FormFile(r, key)
 	if err != nil {
-		return mrtype.FileContent{}, err
+		return mrmodel.FileContent{}, err
 	}
 
 	defer file.Body.Close()
@@ -116,17 +116,17 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrtype.FileContent,
 	var buf bytes.Buffer
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
-		return mrtype.FileContent{}, errors.WrapInternalError(err, "reading file.Body failed")
+		return mrmodel.FileContent{}, errors.WrapInternalError(err, "reading file.Body failed")
 	}
 
-	return mrtype.FileContent{
+	return mrmodel.FileContent{
 		FileInfo: file.FileInfo,
 		Body:     buf.Bytes(),
 	}, nil
 }
 
 // FormFiles - возвращает массив заголовков на файлы из MultipartForm.
-func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, error) {
+func (p *File) FormFiles(r *http.Request, key string) ([]mrmodel.FileHeader, error) {
 	fds, err := p.formFiles(r, p.logger, key, 0)
 	if err != nil {
 		return nil, err
@@ -146,7 +146,7 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 		return nil, err
 	}
 
-	files := make([]mrtype.FileHeader, 0, countFiles)
+	files := make([]mrmodel.FileHeader, 0, countFiles)
 
 	for i := 0; i < countFiles; i++ {
 		if err = p.checkFile(fds[i]); err != nil {
@@ -155,11 +155,11 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrtype.FileHeader, erro
 
 		files = append(
 			files,
-			mrtype.FileHeader{
-				FileInfo: mrtype.FileInfo{
+			mrmodel.FileHeader{
+				FileInfo: mrmodel.FileInfo{
 					ContentType:  p.detectedContentType(fds[i]),
 					OriginalName: fds[i].Filename,
-					Size:         uint64(fds[i].Size), //nolint:gosec
+					Size:         fds[i].Size,
 				},
 				Header: fds[i],
 			},
@@ -174,11 +174,11 @@ func (p *File) checkFile(hdr *multipart.FileHeader) error {
 		return errors.ErrValidateFileSize
 	}
 
-	if uint64(hdr.Size) < p.minSize {
+	if hdr.Size < p.minSize {
 		return errors.ErrValidateFileSizeMin.New(p.minSize)
 	}
 
-	if p.maxSize > 0 && uint64(hdr.Size) > p.maxSize {
+	if p.maxSize > 0 && hdr.Size > p.maxSize {
 		return errors.ErrValidateFileSizeMax.New(p.maxSize)
 	}
 
@@ -206,14 +206,14 @@ func (p *File) checkFile(hdr *multipart.FileHeader) error {
 
 func (p *File) checkTotalSize(fds []*multipart.FileHeader, countFiles int) error {
 	if p.maxTotalSize > 0 {
-		var currentSize uint64
+		var currentSize int64
 
 		for i := 0; i < countFiles; i++ {
 			if fds[i].Size < 0 {
 				continue // игнорируются отрицательный размер файла, ошибка произойдёт в checkFile()
 			}
 
-			currentSize += uint64(fds[i].Size) //nolint:gosec
+			currentSize += fds[i].Size
 		}
 
 		if currentSize > p.maxTotalSize {

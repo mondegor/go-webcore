@@ -32,7 +32,7 @@ func (p *String) PathParamString(r *http.Request, name string) string {
 	return p.pathFunc(r, name)
 }
 
-// RawParamString - возвращает именованная строка содержащаяся в URL пути.
+// RawParamString - возвращает именованную строку содержащуюся в URL пути.
 // Если ключ name не найден, то возвращается nil значение.
 func (p *String) RawParamString(r *http.Request, name string) *string {
 	if !r.URL.Query().Has(name) {
@@ -44,7 +44,7 @@ func (p *String) RawParamString(r *http.Request, name string) *string {
 	return &value
 }
 
-// FilterString - возвращает строка поступившая из внешнего запроса.
+// FilterString - возвращает строку поступившая из внешнего запроса.
 // Если ключ key не найден или возникнет ошибка, то возвращается пустое значение.
 func (p *String) FilterString(r *http.Request, key string) string {
 	value, err := parse.String(r.URL.Query().Get(key), false)
@@ -55,4 +55,17 @@ func (p *String) FilterString(r *http.Request, key string) string {
 	}
 
 	return value
+}
+
+// FilterStringList - возвращает строку поступившую из внешнего запроса.
+// Если ключ key не найден или возникнет ошибка, то возвращается nil значение.
+func (p *String) FilterStringList(r *http.Request, key string) []string {
+	items, err := parse.StringList(r.URL.Query().Get(key))
+	if err != nil {
+		p.logger.Warn(r.Context(), "FilterStringList", "key", key, "error", err)
+
+		return nil
+	}
+
+	return items
 }

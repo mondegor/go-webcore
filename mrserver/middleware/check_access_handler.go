@@ -36,7 +36,7 @@ func CheckAccessHandler(
 
 			currentUser, err := userProvider.UserByToken(ctx, accessToken)
 			if err != nil {
-				// if errors.Is(err, errors.ErrUserUseCaseAccessForbidden) {
+				// if errors.Is(err, errors.ErrAccessForbidden) {
 				// 	return errors.ErrHttpAccessForbidden
 				// }
 				return err
@@ -61,7 +61,7 @@ func CheckAccessHandler(
 			r.Header.Set(mrserver.HeaderKeyUserIDSlashGroup, uuid.UUID(currentUser.ID()).String()+"/"+currentUser.Group()) // userId/realm/kind
 
 			if err = next(w, r); err != nil {
-				// if errors.Is(err, errors.ErrUserUseCaseAccessForbidden) {
+				// if errors.Is(err, errors.ErrAccessForbidden) {
 				// 	return errors.ErrHttpAccessForbidden
 				// }
 				// если ошибка обработчика не связана с доступом к ресурсу
