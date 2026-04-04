@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/mondegor/go-sysmess/errors"
@@ -12,27 +13,37 @@ import (
 	"github.com/mondegor/go-sysmess/util/xio"
 )
 
+const (
+	processCacheTTL = 15 * time.Second
+)
+
 type (
 	// SystemInfoConfig - информация о запущенной системе.
 	SystemInfoConfig struct {
-		Name        string
-		Version     string
-		Environment string
-		IsDebug     bool
-		LogLevel    string
-		StartedAt   time.Time
-		Processes   func(ctx context.Context) map[string]string
+		Name          string
+		Version       string
+		Environment   string
+		IsDebug       bool
+		LogLevel      string
+		StartedAt     time.Time
+		ProcessesFunc func(ctx context.Context) []SystemInfoProcess
+	}
+
+	// SystemInfoProcess - информация о запущенном процессе.
+	SystemInfoProcess struct {
+		Caption string `json:"name"`
+		Status  string `json:"status"`
 	}
 
 	systemInfoResponse struct {
-		Name        string            `json:"name"`
-		Version     string            `json:"version"`
-		Environment string            `json:"environment"`
-		HostName    string            `json:"hostName"`
-		IsDebug     bool              `json:"isDebug"`
-		LogLevel    string            `json:"logLevel"`
-		StartedAt   string            `json:"startedAt"`
-		Processes   map[string]string `json:"processes"`
+		Name        string              `json:"name"`
+		Version     string              `json:"version"`
+		Environment string              `json:"environment"`
+		HostName    string              `json:"host_name"`
+		IsDebug     bool                `json:"is_debug"`
+		LogLevel    string              `json:"log_level"`
+		StartedAt   string              `json:"started_at"`
+		Processes   []SystemInfoProcess `json:"processes"`
 	}
 )
 
@@ -53,12 +64,14 @@ func HandlerGetSystemInfoAsJSON(logger mrlog.Logger, cfg SystemInfoConfig) (http
 		StartedAt:   cfg.StartedAt.Format(time.RFC3339Nano),
 	}
 
+	processCache := newCachedProcesses(cfg.ProcessesFunc)
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		status := http.StatusOK
 		ctx := r.Context()
 
 		response := staticResponse
-		response.Processes = cfg.Processes(ctx)
+		response.Processes = processCache.get(ctx)
 
 		bytes, err := json.Marshal(response)
 		if err != nil {
@@ -72,4 +85,31 @@ func HandlerGetSystemInfoAsJSON(logger mrlog.Logger, cfg SystemInfoConfig) (http
 		w.WriteHeader(status)
 		xio.Write(r.Context(), logger, w, bytes)
 	}, nil
+}
+
+type (
+	cachedProcesses struct {
+		mu         sync.Mutex
+		fn         func(ctx context.Context) []SystemInfoProcess
+		cachedData []SystemInfoProcess
+		expiresAt  time.Time
+	}
+)
+
+func newCachedProcesses(fn func(ctx context.Context) []SystemInfoProcess) *cachedProcesses {
+	return &cachedProcesses{
+		fn: fn,
+	}
+}
+
+func (c *cachedProcesses) get(ctx context.Context) []SystemInfoProcess {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if time.Now().After(c.expiresAt) || c.cachedData == nil {
+		c.cachedData = c.fn(ctx)
+		c.expiresAt = time.Now().Add(processCacheTTL)
+	}
+
+	return c.cachedData
 }

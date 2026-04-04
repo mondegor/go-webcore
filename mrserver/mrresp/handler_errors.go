@@ -40,15 +40,16 @@ func HandlerGetFatalErrorAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	)
 }
 
-// HandlerErrorResponse - возвращает обработчик для формирования ошибки согласно RFC 7807 (Problem Details for HTTP APIs).
-func HandlerErrorResponse(logger mrlog.Logger, status int, title, details string) http.HandlerFunc {
+// HandlerErrorResponse - возвращает обработчик для формирования ошибки согласно RFC 9457 (Problem Details for HTTP APIs).
+func HandlerErrorResponse(logger mrlog.Logger, status int, title, detail string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bytes, err := json.Marshal(
 			ErrorDetailsResponse{
-				Title:   title,
-				Details: details,
-				Request: r.URL.Path,
-				Time:    time.Now().UTC().Format(time.RFC3339),
+				Title:    title,
+				Status:   status,
+				Detail:   detail,
+				Instance: r.Method + " " + r.URL.Path, // TODO: добавить helper xhttp.RequestInstance(r)
+				Time:     time.Now().UTC().Format(time.RFC3339),
 			},
 		)
 		if err != nil {

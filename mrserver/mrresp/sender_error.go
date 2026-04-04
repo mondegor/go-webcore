@@ -25,7 +25,7 @@ type (
 		logger         mrlog.Logger
 		parserLocale   parserLocale
 		statusMapper   mrserver.ErrorStatusMapper
-		debugInfo      func(err error) string
+		debugFunc      func(value any) string
 	}
 
 	parserLocale interface {
@@ -41,7 +41,7 @@ func NewErrorSender(
 	logger mrlog.Logger,
 	parserLocale parserLocale,
 	statusMapper mrserver.ErrorStatusMapper,
-	debugInfo func(err error) string,
+	debugFunc func(value any) string,
 ) *ErrorSender {
 	return &ErrorSender{
 		encoder:        encoder,
@@ -50,7 +50,7 @@ func NewErrorSender(
 		logger:         logger,
 		parserLocale:   parserLocale,
 		statusMapper:   statusMapper,
-		debugInfo:      debugInfo,
+		debugFunc:      debugFunc,
 	}
 }
 
@@ -68,17 +68,24 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 	}
 
 	if customError, ok := err.(errors.CustomError); ok { //nolint:errorlint
-		if !customError.IsKindUser() {
-			err = customError.Unwrap() // здесь возвращается ошибка с причиной невалидности
+		err = customError.Unwrap() // здесь возвращается ошибка с причиной невалидности
 
-			goto InternalErrorSection
+		if !customError.IsKindUser() {
+			goto GeneralErrorSection
 		}
 
-		rs.errorHandler.Handle(ctx, customError.Unwrap()) // логируется пользовательская ошибка
+		rs.errorHandler.Handle(ctx, err) // логируется пользовательская ошибка
 
 		sendResponse(
 			http.StatusBadRequest,
-			rs.getErrorListResponse(r, customError),
+			NewError400Response(
+				r,
+				ErrorAttribute{
+					Code:      customError.CustomCode(),
+					Detail:    rs.parserLocale.Localizer(r).TranslateError(err),
+					DebugInfo: rs.debugFunc(err),
+				},
+			),
 		)
 
 		return // OK, пользовательская ошибка обработана
@@ -99,18 +106,21 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 		}
 
 		if hasInvalidError {
-			goto InternalErrorSection
+			goto GeneralErrorSection
 		}
 
 		sendResponse(
 			http.StatusBadRequest,
-			rs.getErrorListResponse(r, customErrors...),
+			NewError400Response(
+				r,
+				rs.customErrorsToErrorAttrs(r, customErrors)...,
+			),
 		)
 
 		return // OK, список пользовательских ошибок обработан
 	}
 
-InternalErrorSection:
+GeneralErrorSection:
 	// в эту секцию поступают следующие виды ошибок:
 	// 1. runtime ошибки;
 	// 2. остальные ошибки у которых нет метода Kind() (требуется найти место их возникновения и правильно обработать);
@@ -118,18 +128,23 @@ InternalErrorSection:
 
 	status := rs.statusMapper.ErrorStatus(err)
 
-	// TODO: подумать, нужно ли извлекать Code() из err для NewErrorAttribute
-
 	if status == http.StatusBadRequest {
+		errorCode := ErrorAttributeCodeByDefault
+
+		if e, ok := err.(interface{ Code() string }); ok && e.Code() != "" {
+			errorCode = e.Code()
+		}
+
 		sendResponse(
 			status,
-			[]ErrorAttribute{
-				NewErrorAttribute(
-					"",
-					rs.parserLocale.Localizer(r).TranslateError(err),
-					rs.debugInfo(err),
-				),
-			},
+			NewError400Response(
+				r,
+				ErrorAttribute{
+					Code:      errorCode,
+					Detail:    rs.parserLocale.Localizer(r).TranslateError(err),
+					DebugInfo: rs.debugFunc(err),
+				},
+			),
 		)
 
 		return
@@ -137,7 +152,7 @@ InternalErrorSection:
 
 	sendResponse(
 		status,
-		rs.getErrorDetailsResponse(r, err),
+		rs.getErrorDetailsResponse(r, status, err),
 	)
 }
 
@@ -161,23 +176,23 @@ func (rs *ErrorSender) sendStructResponse(
 	xio.Write(ctx, rs.logger, w, bytes)
 }
 
-func (rs *ErrorSender) getErrorListResponse(r *http.Request, errorList ...errors.CustomError) ErrorListResponse {
+func (rs *ErrorSender) customErrorsToErrorAttrs(r *http.Request, errorList []errors.CustomError) []ErrorAttribute {
 	lz := rs.parserLocale.Localizer(r)
 	attrs := make([]ErrorAttribute, len(errorList))
 
 	for i, customError := range errorList {
 		err := customError.Unwrap()
-		attrs[i] = NewErrorAttribute(
-			customError.CustomCode(),
-			lz.TranslateError(err),
-			rs.debugInfo(err),
-		)
+		attrs[i] = ErrorAttribute{
+			Code:      customError.CustomCode(),
+			Detail:    lz.TranslateError(err),
+			DebugInfo: rs.debugFunc(err),
+		}
 	}
 
 	return attrs
 }
 
-func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, err error) ErrorDetailsResponse {
+func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, status int, err error) ErrorDetailsResponse {
 	errorMessage := model.ParseErrorMessage(rs.parserLocale.Localizer(r).TranslateError(err))
 	errorTraceID := mrtracectx.RequestID(r.Context())
 
@@ -186,19 +201,14 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, err error) Error
 	}
 
 	response := ErrorDetailsResponse{
+		Type:         errorMessage.ProblemURL,
 		Title:        errorMessage.Reason,
-		Details:      errorMessage.Details,
-		Request:      r.Method + " " + r.URL.Path,
+		Status:       status,
+		Detail:       errorMessage.Details,
+		Instance:     r.Method + " " + r.URL.Path,
 		Time:         time.Now().UTC().Format(time.RFC3339),
 		ErrorTraceID: errorTraceID,
-	}
-
-	if debugInfo := rs.debugInfo(err); debugInfo != "" {
-		if response.Details != "" {
-			response.Details += "\n"
-		}
-
-		response.Details += "DebugInfo: " + debugInfo
+		DebugInfo:    rs.debugFunc(err),
 	}
 
 	return response
