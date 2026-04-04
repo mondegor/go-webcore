@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	// Locale - comment struct.
+	// Locale - определяет локаль и язык пользователя из HTTP-запроса.
 	Locale struct {
 		pool          *mrlocale.Pool
 		logger        mrlog.Logger

@@ -5,7 +5,7 @@ import (
 )
 
 type (
-	// Prometheus - comment struct.
+	// Prometheus - управляет реестром метрик Prometheus и коллекторами.
 	Prometheus struct {
 		registry *prometheus.Registry
 		list     []prometheus.Collector

@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	// JsonDecoder - comment struct.
+	// JsonDecoder - декодирует JSON-данные в Go-структуры.
 	JsonDecoder struct{}
 )
 

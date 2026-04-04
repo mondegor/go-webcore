@@ -10,7 +10,7 @@ const (
 )
 
 type (
-	// JsonEncoder - comment struct.
+	// JsonEncoder - кодирует Go-структуры в JSON-формат.
 	JsonEncoder struct{}
 )
 

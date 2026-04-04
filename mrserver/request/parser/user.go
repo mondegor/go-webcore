@@ -12,7 +12,7 @@ import (
 )
 
 type (
-	// User - comment struct.
+	// User - извлекает информацию о пользователе из HTTP-запроса.
 	User struct {
 		logger mrlog.Logger
 	}

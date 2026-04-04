@@ -28,6 +28,7 @@ type (
 		file      *File
 	}
 
+	// imageMeta - метаданные изображения (ширина и высота).
 	imageMeta struct {
 		width  int32
 		height int32

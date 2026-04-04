@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	// CacheableResponseWriter - comment struct.
+	// CacheableResponseWriter - записывает ответ для возможности кэширования.
 	CacheableResponseWriter struct {
 		http.ResponseWriter
 		statusCode int

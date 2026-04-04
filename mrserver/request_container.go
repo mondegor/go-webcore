@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	// RequestContainer - comment struct.
+	// RequestContainer - хранит коллекцию обработчиков статистики запросов.
 	RequestContainer struct {
 		list []RequestStat
 	}

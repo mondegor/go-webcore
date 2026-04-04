@@ -18,7 +18,7 @@ const (
 )
 
 type (
-	// Adapter - comment struct.
+	// Adapter - отправляет ошибки и события в систему мониторинга Sentry.
 	Adapter struct {
 		client       *sentry.Client
 		flushTimeout time.Duration

@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	// RequestMetrics - comment struct.
+	// RequestMetrics - собирает и отправляет метрики HTTP-запросов.
 	RequestMetrics struct {
 		metrics requestMetrics
 	}

@@ -35,6 +35,7 @@ type (
 		Status  string `json:"status"`
 	}
 
+	// systemInfoResponse - внутренний формат ответа с информацией о системе.
 	systemInfoResponse struct {
 		Name        string              `json:"name"`
 		Version     string              `json:"version"`
@@ -88,6 +89,7 @@ func HandlerGetSystemInfoAsJSON(logger mrlog.Logger, cfg SystemInfoConfig) (http
 }
 
 type (
+	// cachedProcesses - кэшированный список процессов с TTL.
 	cachedProcesses struct {
 		mu         sync.Mutex
 		fn         func(ctx context.Context) []SystemInfoProcess

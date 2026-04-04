@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	// RequestLogger - comment struct.
+	// RequestLogger - записывает информацию о HTTP-запросах в лог.
 	RequestLogger struct {
 		logger  mrlog.Logger
 		enabled bool

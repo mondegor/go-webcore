@@ -10,6 +10,8 @@ type (
 		UserByToken(ctx context.Context, value string) (User, error)
 	}
 
+	// oneUserProvider - провайдер пользователя возвращающий
+	// всегда одного и того же пользователя.
 	oneUserProvider struct {
 		user User
 	}

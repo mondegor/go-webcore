@@ -13,8 +13,8 @@ const (
 	botClientName = "TelegramBotClient"
 )
 
-// BotClient - адаптер для отправки сообщений через telegram.
 type (
+	// BotClient - адаптер для отправки сообщений через telegram.
 	BotClient struct {
 		botAPI *tgclient.BotAPI
 		tracer mrtrace.Tracer

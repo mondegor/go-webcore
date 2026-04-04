@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	// RequestTracer - comment struct.
+	// RequestTracer - выполняет трассировку HTTP-запросов для отладки и мониторинга.
 	RequestTracer struct {
 		tracer mrtrace.Tracer
 	}

@@ -3,7 +3,8 @@ package mraccess
 type (
 	// TODO: возможно не нужен интерфейс для сущности User.
 
-	// User - пользователь с привязанными к нему привилегиями и разрешениями.
+	// User - интерфейс представляющий пользователя
+	// с привязанными к нему привилегиями и разрешениями.
 	User interface {
 		ID() [16]byte
 		Group() string
@@ -11,6 +12,7 @@ type (
 		RightsChecker
 	}
 
+	// entryUser - внутренняя реализация интерфейса User.
 	entryUser struct {
 		id       [16]byte
 		group    string

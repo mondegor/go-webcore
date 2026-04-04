@@ -17,7 +17,7 @@ import (
 // go get -u github.com/go-chi/chi/v5
 
 type (
-	// RouterAdapter - comment struct.
+	// RouterAdapter - адаптирует маршрутизатор chi для работы с HTTP-контроллерами.
 	RouterAdapter struct {
 		router             *chi.Mux
 		generalHandler     http.Handler

@@ -6,11 +6,11 @@ import (
 )
 
 type (
-	// PermsProvider - comment struct.
+	// PermsProvider - управляет ролями, привилегиями и разрешениями из файлового хранилища.
 	PermsProvider struct {
-		roles       map[string]uint16   // map to rolesIDs
-		privileges  map[string][]uint16 // map to roles
-		permissions map[string][]uint16 // map to roles
+		roles       map[string]uint16   // map role names to role IDs
+		privileges  map[string][]uint16 // map privilege names to role IDs
+		permissions map[string][]uint16 // map permission names to role IDs
 	}
 
 	permsProvider struct {

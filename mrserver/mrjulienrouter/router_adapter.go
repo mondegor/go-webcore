@@ -20,7 +20,7 @@ const (
 )
 
 type (
-	// RouterAdapter - comment struct.
+	// RouterAdapter - адаптирует маршрутизатор julienschmidt/httprouter для работы с HTTP-контроллерами.
 	RouterAdapter struct {
 		router             *httprouter.Router
 		generalHandler     http.Handler

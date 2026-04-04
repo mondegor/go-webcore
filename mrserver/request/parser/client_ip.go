@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	// ClientIP - comment struct.
+	// ClientIP - определяет реальный и прокси IP-адрес клиента.
 	ClientIP struct {
 		headers []string
 		logger  mrlog.Logger
