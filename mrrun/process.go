@@ -15,7 +15,8 @@ type (
 		Shutdown(ctx context.Context) error
 	}
 
-	// ProcessRunner - запускатель процессов.
+	// ProcessRunner - управляет запуском и выполнением процессов,
+	// а также обеспечивая прерывание этих процессов.
 	ProcessRunner interface {
 		Add(execute func() error, interrupt func(error))
 		Run() error

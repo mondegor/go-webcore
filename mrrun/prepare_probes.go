@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	// ProbeChecker - интерфейс проверки какой-либо пробы.
+	// ProbeChecker - определяет проверку работоспособности компонента (пробы).
 	ProbeChecker interface {
 		Caption() string
 		Check(ctx context.Context) error

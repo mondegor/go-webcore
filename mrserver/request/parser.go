@@ -16,12 +16,12 @@ import (
 )
 
 type (
-	// ParserDecode - преобразователь данных в указанную go структуру.
+	// ParserDecode - преобразует данные запроса в Go-структуру.
 	ParserDecode interface {
 		ParseToStruct(ctx context.Context, content io.Reader, structPointer any) error
 	}
 
-	// ParserString - парсер данных запроса для преобразования их в string.
+	// ParserString - извлекает строковые данные из запроса (параметры пути, query-параметры, фильтры).
 	ParserString interface {
 		PathParamString(r *http.Request, name string) string
 		RawParamString(r *http.Request, key string) *string // returns nil if the param not found
@@ -29,100 +29,100 @@ type (
 		FilterStringList(r *http.Request, key string) []string
 	}
 
-	// ParserValidate - парсер данных запроса для преобразования их в go структуру.
+	// ParserValidate - валидирует данные запроса, преобразованные в Go-структуру.
 	ParserValidate interface {
 		Validate(r *http.Request, structPointer any) error
 		ValidateContent(ctx context.Context, content []byte, structPointer any) error
 	}
 
-	// ParserInt64 - парсер данных запроса для преобразования их в int64.
+	// ParserInt64 - извлекает целочисленные значения int64 из запроса.
 	ParserInt64 interface {
 		FilterInt64(r *http.Request, key string) int64
 		FilterRangeInt64(r *http.Request, key string) mrtype.RangeInt64
 		FilterInt64List(r *http.Request, key string) []int64
 	}
 
-	// ParserUint64 - парсер данных запроса для преобразования их в mrtype.Uint64.
+	// ParserUint64 - извлекает целочисленные значения uint64 из запроса.
 	ParserUint64 interface {
 		PathParamUint64(r *http.Request, name string) uint64
 		FilterUint64(r *http.Request, key string) uint64
 		FilterUint64List(r *http.Request, key string) []uint64
 	}
 
-	// ParserFloat64 - парсер данных запроса для преобразования их во float64.
+	// ParserFloat64 - извлекает значения с плавающей точкой float64 из запроса.
 	ParserFloat64 interface {
 		FilterFloat64(r *http.Request, key string) float64
 		FilterRangeFloat64(r *http.Request, key string) mrtype.RangeFloat64
 	}
 
-	// ParserBool - парсер данных запроса для преобразования их в *bool.
+	// ParserBool - извлекает логические значения (включая nullable *bool) из запроса.
 	ParserBool interface {
 		FilterNullableBool(r *http.Request, key string) *bool
 	}
 
-	// ParserDateTime - парсер данных запроса для преобразования их в time.Time.
+	// ParserDateTime - извлекает значения даты и времени time.Time из запроса.
 	ParserDateTime interface {
 		FilterDateTime(r *http.Request, key string) time.Time
 	}
 
-	// ParserUUID - парсер данных запроса для преобразования их в uuid.UUID.
+	// ParserUUID - извлекает UUID-значения из запроса (параметры пути и фильтры).
 	ParserUUID interface {
 		PathParamUUID(r *http.Request, name string) uuid.UUID
 		FilterUUID(r *http.Request, key string) uuid.UUID
 	}
 
-	// ParserFile - парсер данных запроса для преобразования их в файловую структуру.
+	// ParserFile - извлекает файлы и их метаданные из multipart-формы запроса.
 	ParserFile interface {
 		FormFile(r *http.Request, key string) (mrmodel.File, error)
 		FormFileContent(r *http.Request, key string) (mrmodel.FileContent, error)
 		FormFiles(r *http.Request, key string) ([]mrmodel.FileHeader, error)
 	}
 
-	// ParserImage - парсер данных запроса для преобразования их в файловую структуру изображения.
+	// ParserImage - извлекает файлы изображений и их метаданные из multipart-формы запроса.
 	ParserImage interface {
 		FormImage(r *http.Request, key string) (mrmodel.Image, error)
 		FormImageContent(r *http.Request, key string) (mrmodel.ImageContent, error)
 		FormImages(r *http.Request, key string) ([]mrmodel.ImageHeader, error)
 	}
 
-	// ParserListSorter - парсер данных запроса для преобразования их в mrtype.SortParams.
+	// ParserListSorter - извлекает параметры сортировки из запроса.
 	ParserListSorter interface {
 		SortParams(r *http.Request, sorter mrtype.ListSorter) mrtype.SortParams
 	}
 
-	// ParserListPager - парсер данных запроса для преобразования их в mrtype.PageParams.
+	// ParserListPager - извлекает параметры пагинации (page/limit) из запроса.
 	ParserListPager interface {
 		PageParams(r *http.Request) mrtype.PageParams
 	}
 
-	// ParserListCursor - парсер данных запроса для преобразования их в mrtype.CursorParams.
+	// ParserListCursor - извлекает параметры курсорной пагинации из запроса.
 	ParserListCursor interface {
 		CursorParams(r *http.Request) mrtype.CursorParams
 	}
 
-	// ParserItemStatus - парсер данных запроса для преобразования их в []mrenum.ItemStatus.
+	// ParserItemStatus - извлекает список статусов элементов из запроса.
 	ParserItemStatus interface {
 		FilterStatusList(r *http.Request, key string) []itemstatus.Enum
 	}
 
-	// ParserEnumList - парсер данных запроса для преобразования их в []mrenum.ItemStatus.
+	// ParserEnumList - извлекает список перечислений заданного типа из запроса.
 	ParserEnumList[T ~uint8] interface {
 		FilterEnumList(r *http.Request, key string) []T
 	}
 
-	// ParserClientIP - comment interface.
+	// ParserClientIP - парсер для получения IP-адреса клиента из запроса.
 	ParserClientIP interface {
 		RealIP(r *http.Request) net.IP
 		DetailedIP(r *http.Request) mrtype.DetailedIP
 	}
 
-	// ParserLocale - comment interface.
+	// ParserLocale - парсер для определения локали и языка из запроса.
 	ParserLocale interface {
 		Language(r *http.Request) string
 		Localizer(r *http.Request) mrcore.Localizer
 	}
 
-	// ParserUser - comment interface.
+	// ParserUser - парсер для получения информации о пользователе из запроса.
 	ParserUser interface {
 		UserID(r *http.Request) uuid.UUID
 		UserAndGroup(r *http.Request) (userID uuid.UUID, group string)

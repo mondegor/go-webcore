@@ -6,7 +6,7 @@ import (
 )
 
 type (
-	// MessageConsumer - получатель сообщений с возможностью подтверждения их получения.
+	// MessageConsumer - предоставляет методы для чтения, подтверждения и отклонения сообщений из очереди.
 	MessageConsumer[T any] interface {
 		ReadMessages(ctx context.Context, limit int) (messages []T, err error)
 		CancelMessages(ctx context.Context, messages []T) error
@@ -14,17 +14,19 @@ type (
 		RejectMessage(ctx context.Context, message T, causeErr error) error
 	}
 
-	// MessageHandler - обработчик сообщений с закреплением результата.
+	// MessageHandler - обрабатывает отдельное сообщение
+	// с предоставлением функции фиксации результата.
 	MessageHandler[T any] interface {
 		Execute(ctx context.Context, message T) (commit func(ctx context.Context) error, err error)
 	}
 
-	// MessageBatchHandler - обработчик списка сообщений.
+	// MessageBatchHandler - обрабатывает пакет сообщений за один вызов.
 	MessageBatchHandler[T any] interface {
 		Execute(ctx context.Context, messages []T) error
 	}
 
-	// Task - задача исполняемая планировщиком задач.
+	// Task - определяет задачу для выполнения планировщиком
+	// с настройками периода, таймаута и сигнала.
 	Task interface {
 		Caption() string
 		Startup() bool
@@ -34,7 +36,7 @@ type (
 		Job
 	}
 
-	// Job - некоторая работа, которая должна быть выполнена.
+	// Job - определяет единицу работы, которая должна быть выполнена.
 	Job interface {
 		Do(ctx context.Context) error
 	}

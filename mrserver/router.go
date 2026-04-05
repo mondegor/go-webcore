@@ -10,7 +10,8 @@ const (
 )
 
 type (
-	// HttpRouter - роутинг запросов с их регистрацией и запуском.
+	// HttpRouter - обеспечивает регистрацию middleware,
+	// контроллеров и маршрутизацию HTTP-запросов.
 	HttpRouter interface {
 		RegisterMiddleware(handlers ...func(next http.Handler) http.Handler)
 		Register(controllers ...HttpController)
@@ -18,7 +19,7 @@ type (
 		ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
-	// HttpController - http контроллер со списком его обработчиков.
+	// HttpController - определяет контроллер с набором HTTP-обработчиков.
 	HttpController interface {
 		Handlers() []HttpHandler
 	}

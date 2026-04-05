@@ -12,6 +12,7 @@ type (
 		metrics requestMetrics
 	}
 
+	// requestMetrics - внутренний интерфейс для отправки метрик в систему мониторинга.
 	requestMetrics interface {
 		SetStatusWithTime(method, location, status string, duration time.Duration)
 		IncrementRequestSize(method, location string, size int)

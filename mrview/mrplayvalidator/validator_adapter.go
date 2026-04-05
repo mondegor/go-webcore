@@ -15,8 +15,10 @@ import (
 // go get -u github.com/go-playground/validator/v10
 
 const (
-	validatorErrorPrefix = "Validator_"
-	validatorErrorID     = "ValidateError"
+	validatorErrorPrefix           = "Validator_"
+	validatorErrorPostfix          = ": {Name}, {Type}, {Value}"
+	validatorErrorPostfixWithParam = validatorErrorPostfix + ", {Param}"
+	validatorErrorID               = "ValidateError"
 )
 
 type (
@@ -148,11 +150,15 @@ func (v *ValidatorAdapter) createUserError(ctx context.Context, fieldName string
 }
 
 func createUserProtoError(tag string, withParam bool) errors.UserProtoError {
-	message := validatorErrorPrefix + tag + ": {Name}, {Type}, {Value}" // 1={Name}, 2={Type}, 3={Value}
-
 	if withParam {
-		message += ", {Param}" // 4={Param}
+		return errors.NewUserProto(
+			validatorErrorID,
+			validatorErrorPrefix+tag+validatorErrorPostfixWithParam,
+		)
 	}
 
-	return errors.NewUserProto(validatorErrorID, message)
+	return errors.NewUserProto(
+		validatorErrorID,
+		validatorErrorPrefix+tag+validatorErrorPostfix,
+	)
 }

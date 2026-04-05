@@ -5,7 +5,8 @@ import (
 )
 
 type (
-	// UserProvider - интерфейс источника пользователей.
+	// UserProvider - предоставляет метод для получения пользователя
+	// по токену авторизации.
 	UserProvider interface {
 		UserByToken(ctx context.Context, value string) (User, error)
 	}

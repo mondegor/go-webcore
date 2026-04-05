@@ -1,7 +1,8 @@
 package mridempotency
 
 type (
-	// Responser - интерфейс возвращения результата провайдером идемпотентности.
+	// Responser - определяет интерфейс для возврата сохранённого ответа
+	// из хранилища идемпотентности.
 	Responser interface {
 		Content() []byte
 		StatusCode() int

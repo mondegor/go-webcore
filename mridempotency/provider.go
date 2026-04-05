@@ -5,7 +5,8 @@ import (
 )
 
 type (
-	// Provider - провайдер предоставляющий методы, для поддержки идемпотентности запроса.
+	// Provider - обеспечивает поддержку идемпотентности запросов,
+	// предоставляя методы для валидации, блокировки, сохранения и получения ответов.
 	Provider interface {
 		Validate(key string) error
 		Lock(ctx context.Context, key string) (unlock func(), err error)

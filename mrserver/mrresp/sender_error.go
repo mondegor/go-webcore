@@ -28,6 +28,7 @@ type (
 		debugFunc      func(value any) string
 	}
 
+	// parserLocale - внутренний интерфейс для получения локализатора из запроса.
 	parserLocale interface {
 		Localizer(r *http.Request) mrcore.Localizer
 	}

@@ -10,33 +10,35 @@ import (
 )
 
 type (
-	// ResponseEncoder - формирует ответ сервера из go структуры в необходимом формате.
+	// ResponseEncoder - формирует ответ сервера из Go-структуры в нужном формате (JSON, XML и т.д.).
 	ResponseEncoder interface {
 		ContentType() string
 		ContentTypeProblem() string
 		Marshal(structure any) ([]byte, error)
 	}
 
-	// ResponseSender - отправляет ответ с данными сформированные сервером.
+	// ResponseSender - отправляет ответ клиенту с данными или без них.
 	ResponseSender interface {
 		Send(w http.ResponseWriter, status int, structure any) error
 		SendBytes(w http.ResponseWriter, status int, body []byte) error
 		SendNoContent(w http.ResponseWriter) error
 	}
 
-	// FileResponseSender - отправляет ответ с данными в виде файла сформированные сервером.
+	// FileResponseSender - отправляет ответ клиенту
+	// с прикреплённым файлом для скачивания или просмотра.
 	FileResponseSender interface {
 		ResponseSender
+
 		SendFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error
 		SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error
 	}
 
-	// ErrorResponseSender - отправляет ответ со списком ошибок полученных в результате обработки запроса.
+	// ErrorResponseSender - отправляет ответ клиенту с информацией об ошибке.
 	ErrorResponseSender interface {
 		SendError(w http.ResponseWriter, r *http.Request, err error)
 	}
 
-	// ErrorStatusMapper - возвращает http статус на основе указанной ошибки.
+	// ErrorStatusMapper - определяет HTTP-статус ответа на основе типа ошибки.
 	ErrorStatusMapper interface {
 		ErrorStatus(err error) int
 	}

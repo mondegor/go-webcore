@@ -25,6 +25,7 @@ type (
 		durationLimit time.Duration
 	}
 
+	// handler - внутренний интерфейс для пакетной обработки элементов.
 	handler interface {
 		Execute(ctx context.Context, limit int) (count int, err error)
 	}
