@@ -8,7 +8,7 @@ import (
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
-// URLPathParam - comment func.
+// URLPathParam - извлекает параметр из URL-пути с использованием маршрутизации julienschmidt/httprouter.
 func URLPathParam(r *http.Request, name string) string {
 	if params, ok := r.Context().Value(httprouter.ParamsKey).(httprouter.Params); ok {
 		if name == mrserver.VarRestOfURL {

@@ -21,7 +21,7 @@ func NewRequestTracer(tracer mrtrace.Tracer) *RequestTracer {
 	}
 }
 
-// Enabled - comment method.
+// Enabled - сообщает, включена ли трассировка запросов.
 func (rs *RequestTracer) Enabled() bool {
 	return rs.tracer != mrtrace.NopTracer()
 }

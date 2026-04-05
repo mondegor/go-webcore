@@ -33,12 +33,12 @@ func NewLocale(
 	}
 }
 
-// Language - comment method.
+// Language - возвращает код языка из HTTP запроса.
 func (p *Locale) Language(r *http.Request) string {
 	return p.locale(r).Language()
 }
 
-// Localizer - comment method.
+// Localizer - возвращает локализатор для HTTP запроса.
 func (p *Locale) Localizer(r *http.Request) mrcore.Localizer {
 	return p.locale(r)
 }

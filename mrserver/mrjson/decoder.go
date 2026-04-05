@@ -18,7 +18,7 @@ func NewDecoder() *JsonDecoder {
 	return &JsonDecoder{}
 }
 
-// ParseToStruct - comment method.
+// ParseToStruct - декодирует JSON из reader в Go структуру с проверкой на неизвестные поля.
 func (p *JsonDecoder) ParseToStruct(_ context.Context, content io.Reader, structPointer any) error {
 	dec := json.NewDecoder(content)
 	dec.DisallowUnknownFields()

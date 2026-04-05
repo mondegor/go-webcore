@@ -22,7 +22,7 @@ func NewCacheableResponseWriter(w http.ResponseWriter) *CacheableResponseWriter 
 	}
 }
 
-// WriteHeader - comment method.
+// WriteHeader - записывает код статуса HTTP ответа.
 func (w *CacheableResponseWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)

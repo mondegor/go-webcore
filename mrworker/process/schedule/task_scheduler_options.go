@@ -23,7 +23,7 @@ func WithCaption(value string) Option {
 	}
 }
 
-// WithCaptionPrefix - устанавливает опцию caption для TaskScheduler.
+// WithCaptionPrefix - устанавливает префикс для названия TaskScheduler.
 func WithCaptionPrefix(value string) Option {
 	return func(o *options) {
 		o.captionPrefix = value

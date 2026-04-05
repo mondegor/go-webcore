@@ -25,7 +25,7 @@ func NewUser(logger mrlog.Logger) *User {
 	}
 }
 
-// UserID - comment method.
+// UserID - извлекает ID пользователя из HTTP запроса.
 func (p *User) UserID(r *http.Request) uuid.UUID {
 	val, _, _ := strings.Cut(r.Header.Get(mrserver.HeaderKeyUserIDSlashGroup), "/") // отбрасывается группа пользователя
 	if val == "" {
@@ -35,7 +35,7 @@ func (p *User) UserID(r *http.Request) uuid.UUID {
 	return p.userID(r.Context(), val)
 }
 
-// UserAndGroup - comment method.
+// UserAndGroup - извлекает ID пользователя и группу из HTTP запроса.
 func (p *User) UserAndGroup(r *http.Request) (userID uuid.UUID, group string) {
 	val, group, ok := strings.Cut(r.Header.Get(mrserver.HeaderKeyUserIDSlashGroup), "/")
 	if !ok && val == "" {

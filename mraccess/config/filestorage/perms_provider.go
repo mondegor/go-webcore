@@ -72,7 +72,7 @@ func NewPermsProvider(dirPath string, roles []string, opts ...Option) (*PermsPro
 	return p, nil
 }
 
-// RoleIDsByNames - comment method.
+// RoleIDsByNames - возвращает ID ролей по их названиям.
 func (p *PermsProvider) RoleIDsByNames(roles []string) []uint16 {
 	if len(roles) == 0 {
 		return nil
@@ -96,19 +96,19 @@ func (p *PermsProvider) HasPrivilege(name string) bool {
 	return ok
 }
 
-// RoleIDsByPrivilege - comment method.
+// RoleIDsByPrivilege - возвращает ID ролей, обладающих указанной привилегией.
 func (p *PermsProvider) RoleIDsByPrivilege(name string) []uint16 {
 	return p.privileges[name]
 }
 
-// HasPermission - comment method.
+// HasPermission - сообщает о наличии указанного разрешения.
 func (p *PermsProvider) HasPermission(name string) bool {
 	_, ok := p.permissions[name]
 
 	return ok
 }
 
-// RoleIDsByPermission - comment method.
+// RoleIDsByPermission - возвращает ID ролей, обладающих указанным разрешением.
 func (p *PermsProvider) RoleIDsByPermission(name string) []uint16 {
 	return p.permissions[name]
 }

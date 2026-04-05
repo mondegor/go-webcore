@@ -9,7 +9,7 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
-// MultipartForm - comment func.
+// MultipartForm - выводит в журнал отладочную информацию о multipart-форме.
 func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.Form) {
 	if !mrlog.DebugEnabled(logger) {
 		return
@@ -40,7 +40,7 @@ func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.For
 	}
 }
 
-// MultipartFileHeader - comment func.
+// MultipartFileHeader - выводит в журнал отладочную информацию о заголовке multipart-файла.
 func MultipartFileHeader(ctx context.Context, logger mrlog.Logger, hdr *multipart.FileHeader) {
 	if !mrlog.DebugEnabled(logger) {
 		return

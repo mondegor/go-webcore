@@ -51,7 +51,7 @@ func New(
 	}
 }
 
-// RegisterMiddleware - comment method.
+// RegisterMiddleware - регистрирует middleware обработчики в роутере.
 func (rt *RouterAdapter) RegisterMiddleware(handlers ...func(next http.Handler) http.Handler) {
 	// recursion call: handler1(handler2(handler3(router())))
 	for i := len(handlers) - 1; i >= 0; i-- {
@@ -67,7 +67,7 @@ func (rt *RouterAdapter) RegisterMiddleware(handlers ...func(next http.Handler) 
 	}
 }
 
-// Register - comment method.
+// Register - регистрирует HTTP контроллеры в роутере.
 func (rt *RouterAdapter) Register(controllers ...mrserver.HttpController) {
 	for i := range controllers {
 		for _, handler := range controllers[i].Handlers() {
@@ -76,7 +76,7 @@ func (rt *RouterAdapter) Register(controllers ...mrserver.HttpController) {
 	}
 }
 
-// HandlerFunc - comment method.
+// HandlerFunc - регистрирует функцию-обработчик для указанного HTTP метода и пути.
 func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFunc) {
 	convertedPath := rt.convertURL(path)
 
@@ -88,7 +88,7 @@ func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFu
 	rt.router.Method(method, convertedPath, handler)
 }
 
-// ServeHTTP - comment method.
+// ServeHTTP - обрабатывает HTTP запрос, делегируя его общему обработчику.
 func (rt *RouterAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rt.generalHandler.ServeHTTP(w, r)
 }

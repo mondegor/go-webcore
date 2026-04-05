@@ -22,7 +22,7 @@ type (
 	}
 )
 
-// Middleware - comment func.
+// Middleware - создаёт HTTP-middleware для обработки CORS-запросов.
 func Middleware(opts Options) func(next http.Handler) http.Handler {
 	options := cors.Options{
 		AllowedOrigins:   opts.AllowedOrigins,

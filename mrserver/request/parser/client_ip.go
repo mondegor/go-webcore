@@ -35,7 +35,7 @@ func NewClientIP(
 	}
 }
 
-// RealIP - comment method.
+// RealIP - возвращает реальный IP адрес клиента из RemoteAddr.
 func (p *ClientIP) RealIP(r *http.Request) net.IP {
 	ip, err := parse.IP(r.RemoteAddr, true)
 	if err != nil {
@@ -47,7 +47,7 @@ func (p *ClientIP) RealIP(r *http.Request) net.IP {
 	return ip
 }
 
-// DetailedIP - comment method.
+// DetailedIP - возвращает детальную информацию об IP (реальный и прокси).
 func (p *ClientIP) DetailedIP(r *http.Request) mrtype.DetailedIP {
 	realIP := p.RealIP(r)
 

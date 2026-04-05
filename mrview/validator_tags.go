@@ -14,7 +14,7 @@ var (
 	regexpTripleSize        = regexp.MustCompile(`^[0-9]+x[0-9]+x[0-9]+$`)
 )
 
-// NewValidateAND - comment func.
+// NewValidateAND - создаёт составной валидатор, требующий выполнения всех условий.
 func NewValidateAND(values ...func(value string) bool) func(value string) bool {
 	if len(values) == 0 {
 		return func(_ string) bool {
@@ -33,7 +33,7 @@ func NewValidateAND(values ...func(value string) bool) func(value string) bool {
 	}
 }
 
-// NewValidateOR - comment func.
+// NewValidateOR - создаёт составной валидатор, требующий выполнения хотя бы одного условия.
 func NewValidateOR(values ...func(value string) bool) func(value string) bool {
 	return func(value string) bool {
 		for _, fn := range values {
@@ -46,7 +46,7 @@ func NewValidateOR(values ...func(value string) bool) func(value string) bool {
 	}
 }
 
-// NewValidateInArray - comment func.
+// NewValidateInArray - создаёт валидатор, проверяющий наличие значения в массиве.
 func NewValidateInArray(items []string) func(value string) bool {
 	return func(value string) bool {
 		for _, item := range items {
@@ -59,37 +59,37 @@ func NewValidateInArray(items []string) func(value string) bool {
 	}
 }
 
-// ValidateAnyNotSpaceSymbol - comment func.
+// ValidateAnyNotSpaceSymbol - возвращает, не содержит ли значение пробельных символов.
 func ValidateAnyNotSpaceSymbol(value string) bool {
 	return regexpAnyNotSpaceSymbol.MatchString(value)
 }
 
-// ValidateVariable - comment func.
+// ValidateVariable - проверяет, что значение является допустимым идентификатором.
 func ValidateVariable(value string) bool {
 	return regexpVariable.MatchString(value)
 }
 
-// ValidateName - comment func.
+// ValidateName - проверяет, что значение является допустимым именем.
 func ValidateName(value string) bool {
 	return regexpName.MatchString(value)
 }
 
-// ValidateRewriteName - comment func.
+// ValidateRewriteName - проверяет, что значение является допустимым человеко-понятным именем.
 func ValidateRewriteName(value string) bool {
 	return regexpRewriteName.MatchString(value)
 }
 
-// ValidatePassword - comment func.
+// ValidatePassword - проверяет, что значение содержит допустимые символы для пароля.
 func ValidatePassword(value string) bool {
 	return regexpPassword.MatchString(value)
 }
 
-// ValidateDoubleSize - comment func.
+// ValidateDoubleSize - проверяет, что значение соответствует формату двойного размера (ШxВ).
 func ValidateDoubleSize(value string) bool {
 	return regexpDoubleSize.MatchString(value)
 }
 
-// ValidateTripleSize - comment func.
+// ValidateTripleSize - проверяет, что значение соответствует формату тройного размера (ШxВxГ).
 func ValidateTripleSize(value string) bool {
 	return regexpTripleSize.MatchString(value)
 }

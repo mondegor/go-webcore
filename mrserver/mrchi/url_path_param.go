@@ -8,7 +8,7 @@ import (
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
-// URLPathParam - comment func.
+// URLPathParam - извлекает параметр из URL-пути с использованием маршрутизации chi.
 func URLPathParam(r *http.Request, name string) string {
 	if ctx, ok := r.Context().Value(chi.RouteCtxKey).(*chi.Context); ok {
 		if name == mrserver.VarRestOfURL {

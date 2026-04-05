@@ -49,12 +49,12 @@ func New(dsn string, opts ...Option) (*Adapter, error) {
 	return o.adapter, nil
 }
 
-// Cli - comment method.
+// Cli - возвращает клиент Sentry для прямого доступа.
 func (a *Adapter) Cli() *sentry.Client {
 	return a.client
 }
 
-// CaptureError - comment method.
+// CaptureError - отправляет ошибку в Sentry для мониторинга.
 func (a *Adapter) CaptureError(_ context.Context, err error) (eventID string) {
 	sentry.CurrentHub().WithScope(
 		func(scope *sentry.Scope) {
@@ -87,7 +87,7 @@ func (a *Adapter) CaptureError(_ context.Context, err error) (eventID string) {
 	return eventID
 }
 
-// Close - comment method.
+// Close - закрывает соединение с Sentry, предварительно отправив все ожидающие события.
 func (a *Adapter) Close() error {
 	if a.client == nil {
 		return errors.ErrInternalStorageConnectionIsNotOpened.New("source", connectionName)

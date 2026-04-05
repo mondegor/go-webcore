@@ -55,7 +55,7 @@ func main() {
 	}
 }
 
-// ValidateLogin - comment func.
+// ValidateLogin - проверяет, что логин соответствует допустимому формату.
 func ValidateLogin(value string) bool {
 	return regexpLogin.MatchString(value)
 }

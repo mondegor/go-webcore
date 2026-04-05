@@ -26,12 +26,12 @@ func NewRequestMetrics(metrics requestMetrics) *RequestMetrics {
 	}
 }
 
-// Enabled - comment method.
+// Enabled - возвращает true, так как сбор метрик всегда включен.
 func (rs *RequestMetrics) Enabled() bool {
 	return true
 }
 
-// Emit - comment method.
+// Emit - собирает и отправляет метрики HTTP запроса.
 func (rs *RequestMetrics) Emit(r *http.Request, _ []byte, size int, _ []byte, responseSize int, duration time.Duration, status int) {
 	method := r.Method
 	path := r.URL.Path // TODO: из пути обрезать ID и другие параметры

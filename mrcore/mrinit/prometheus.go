@@ -19,17 +19,17 @@ func NewPrometheus() *Prometheus {
 	}
 }
 
-// Registry - comment method.
+// Registry - возвращает реестр метрик Prometheus.
 func (rl *Prometheus) Registry() *prometheus.Registry {
 	return rl.registry
 }
 
-// Add - comment method.
+// Add - добавляет коллектор в список для последующей регистрации.
 func (rl *Prometheus) Add(collector ...prometheus.Collector) {
 	rl.list = append(rl.list, collector...)
 }
 
-// Register - comment method.
+// Register - регистрирует все добавленные коллекторы в реестре Prometheus.
 func (rl *Prometheus) Register() error {
 	for _, collector := range rl.list {
 		if err := rl.registry.Register(collector); err != nil {

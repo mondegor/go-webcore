@@ -24,7 +24,7 @@ type (
 	}
 )
 
-// NewHealthProbe - создаёт объект AppRunner.
+// NewHealthProbe - создаёт объект HealthProbe для отслеживания работоспособности процесса.
 func NewHealthProbe(logger mrlog.Logger, caption string, check func(ctx context.Context) error, timeout time.Duration) *HealthProbe {
 	if timeout == 0 {
 		timeout = defaultTimeout

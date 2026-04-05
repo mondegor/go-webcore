@@ -15,7 +15,7 @@ type (
 	}
 )
 
-// Error - comment method.
+// Error - возвращает строковое представление ошибки NopService.
 func (e *nopServiceError) Error() string {
 	if e.err != nil {
 		return fmt.Sprintf("NopService '%s' has error: %s", e.name, e.err.Error())

@@ -12,7 +12,7 @@ type (
 	}
 )
 
-// NewAppHealth - создаёт объект AppRunner.
+// NewAppHealth - создаёт объект AppHealth для отслеживания работоспособности приложения.
 func NewAppHealth() *AppHealth {
 	return &AppHealth{}
 }
@@ -23,7 +23,7 @@ func (a *AppHealth) StartupCompleted() {
 	a.isReady.Store(true)
 }
 
-// IsStarted - возвращает запущено ли приложение.
+// IsStarted - сообщает, запущено ли приложение.
 func (a *AppHealth) IsStarted() bool {
 	return a.isStarted.Load()
 }

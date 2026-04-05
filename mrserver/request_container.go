@@ -44,7 +44,7 @@ func NewRequestContainer(list ...RequestStat) *RequestContainer {
 	}
 }
 
-// Enabled - comment method.
+// Enabled - сообщает, если есть хотя бы один активный обработчик статистики.
 func (rs *RequestContainer) Enabled() bool {
 	return len(rs.list) > 0
 }

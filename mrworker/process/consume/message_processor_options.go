@@ -23,7 +23,7 @@ func WithCaption[T any](value string) Option[T] {
 	}
 }
 
-// WithCaptionPrefix - устанавливает опцию caption для JobWrapper.
+// WithCaptionPrefix - устанавливает префикс для названия MessageProcessor.
 func WithCaptionPrefix[T any](value string) Option[T] {
 	return func(o *options[T]) {
 		o.captionPrefix = value
@@ -74,7 +74,7 @@ func WithWorkersCount[T any](value int) Option[T] {
 	}
 }
 
-// WithSignalExecuteHandler - comment func.
+// WithSignalExecuteHandler - устанавливает канал сигнала для исполнения обработчика.
 func WithSignalExecuteHandler[T any](ch <-chan struct{}) Option[T] {
 	return func(o *options[T]) {
 		o.processor.signalExecute = ch

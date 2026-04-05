@@ -30,7 +30,7 @@ func NewConsumerWithTimeout[T any](
 	}
 }
 
-// ReadMessages - comment method.
+// ReadMessages - читает сообщения с таймаутом на операцию чтения.
 func (t *ConsumerWithTimeout[T]) ReadMessages(ctx context.Context, limit int) (messages []T, err error) {
 	ctx, cancel := context.WithTimeout(ctx, t.readTimeout)
 	defer cancel()
@@ -43,7 +43,7 @@ func (t *ConsumerWithTimeout[T]) ReadMessages(ctx context.Context, limit int) (m
 	return messages, nil
 }
 
-// CancelMessages - comment method.
+// CancelMessages - отменяет не обработанные сообщения с таймаутом на запись.
 func (t *ConsumerWithTimeout[T]) CancelMessages(ctx context.Context, messages []T) error {
 	ctx, cancel := context.WithTimeout(ctx, t.writeTimeout)
 	defer cancel()
@@ -53,7 +53,7 @@ func (t *ConsumerWithTimeout[T]) CancelMessages(ctx context.Context, messages []
 	)
 }
 
-// CommitMessage - comment method.
+// CommitMessage - подтверждает обработку сообщения с таймаутом на запись.
 func (t *ConsumerWithTimeout[T]) CommitMessage(ctx context.Context, message T, preCommit func(ctx context.Context) error) error {
 	ctx, cancel := context.WithTimeout(ctx, t.writeTimeout)
 	defer cancel()
@@ -63,7 +63,7 @@ func (t *ConsumerWithTimeout[T]) CommitMessage(ctx context.Context, message T, p
 	)
 }
 
-// RejectMessage - comment method.
+// RejectMessage - отклоняет сообщение с указанием причины и таймаутом на запись.
 func (t *ConsumerWithTimeout[T]) RejectMessage(ctx context.Context, message T, causeErr error) error {
 	ctx, cancel := context.WithTimeout(ctx, t.writeTimeout)
 	defer cancel()

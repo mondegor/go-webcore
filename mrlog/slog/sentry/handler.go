@@ -19,12 +19,12 @@ func NewWrapper(handler slog.Handler) *Wrapper {
 	}
 }
 
-// Enabled - comment func.
+// Enabled - проверяет, включён ли обработчик для заданного уровня логирования.
 func (w *Wrapper) Enabled(ctx context.Context, level slog.Level) bool {
 	return w.handler.Enabled(ctx, level)
 }
 
-// Handle - comment func.
+// Handle - обрабатывает запись журнала.
 func (w *Wrapper) Handle(ctx context.Context, record slog.Record) error {
 	record.Attrs(func(_ slog.Attr) bool {
 		// if attr.Value.Kind() == slog.KindAny {
@@ -38,12 +38,12 @@ func (w *Wrapper) Handle(ctx context.Context, record slog.Record) error {
 	return w.handler.Handle(ctx, record)
 }
 
-// WithAttrs - comment func.
+// WithAttrs - возвращает новый обработчик с добавлением указанных атрибутов.
 func (w *Wrapper) WithAttrs(attrs []slog.Attr) slog.Handler {
 	return w.handler.WithAttrs(attrs)
 }
 
-// WithGroup - comment func.
+// WithGroup - возвращает новый обработчик с указанной группой атрибутов.
 func (w *Wrapper) WithGroup(name string) slog.Handler {
 	return w.handler.WithGroup(name)
 }
