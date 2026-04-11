@@ -15,24 +15,42 @@ import (
 )
 
 const (
-	defaultCaption        = "MessageCollector"
-	defaultReadyTimeout   = 30 * time.Second
-	defaultFlushPeriod    = 60 * time.Second
+	// defaultCaption - название сервиса по умолчанию.
+	defaultCaption = "MessageCollector"
+
+	// defaultReadyTimeout - таймаут готовности сервиса по умолчанию.
+	defaultReadyTimeout = 30 * time.Second
+
+	// defaultHandlerTimeout - таймаут выполнения обработчика пакета.
 	defaultHandlerTimeout = 30 * time.Second
-	defaultBatchSize      = 100
-	defaultWorkersCount   = 1
+
+	// defaultBatchSize - размер пакета по умолчанию.
+	defaultBatchSize = 100
+
+	// defaultWorkersCount - количество воркеров-обработчиков по умолчанию.
+	defaultWorkersCount = 1
 )
 
+// defaultFlushPeriodStrategy - период принудительной отправки накопленного пакета.
+var defaultFlushPeriodStrategy = mrworker.NewStaticPeriod(60 * time.Second) //nolint:gochecknoglobals
+
 type (
-	// MessageCollector - многопоточный сервис сбора сообщений на основе
-	// внешней очереди и обработчика (PUSH модель).
+	// MessageCollector - многопоточный сервис сбора и пакетной обработки сообщений (PUSH-модель).
+	//
+	// Принцип работы:
+	//  1. Внешний код отправляет сообщения через PushMessage();
+	//  2. Сообщения накапливаются во внутренней очереди;
+	//  3. При достижении batchSize или flushPeriodStrategy пакет отправляется обработчику;
+	//  4. Обработка выполняется в отдельных воркерах;
+	//
+	// Тип T - тип обрабатываемых сообщений.
 	MessageCollector[T any] struct {
-		caption        string
-		readyTimeout   time.Duration
-		flushPeriod    time.Duration
-		handlerTimeout time.Duration
-		batchSize      int
-		workersCount   int
+		caption             string
+		readyTimeout        time.Duration
+		flushPeriodStrategy mrworker.PeriodStrategy
+		handlerTimeout      time.Duration
+		batchSize           int
+		workersCount        int
 
 		handler      mrworker.MessageBatchHandler[T]
 		errorHandler errors.Handler
@@ -52,7 +70,7 @@ var (
 	errInternalMessageReceptionStopped = errors.NewInternalProto("message reception in the message collector has been stopped")
 )
 
-// NewMessageCollector - создаёт объект MessageCollector.
+// NewMessageCollector - создаёт сервис пакетной обработки сообщений (PUSH-модель).
 func NewMessageCollector[T any](
 	handler mrworker.MessageBatchHandler[T],
 	errorHandler errors.Handler,
@@ -62,10 +80,10 @@ func NewMessageCollector[T any](
 ) *MessageCollector[T] {
 	o := options[T]{
 		collector: &MessageCollector[T]{
-			caption:        defaultCaption,
-			readyTimeout:   defaultReadyTimeout,
-			flushPeriod:    defaultFlushPeriod,
-			handlerTimeout: defaultHandlerTimeout,
+			caption:             defaultCaption,
+			readyTimeout:        defaultReadyTimeout,
+			flushPeriodStrategy: defaultFlushPeriodStrategy,
+			handlerTimeout:      defaultHandlerTimeout,
 
 			handler:      handler,
 			errorHandler: errorHandler,
@@ -109,9 +127,18 @@ func (p *MessageCollector[T]) ReadyTimeout() time.Duration {
 }
 
 // Start - запуск сервиса обработки сообщений.
-// Отмена внешнего контекста приведёт к аварийному завершению процесса,
-// для корректной остановки следует использовать Shutdown.
-// Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
+//
+// Процесс работы:
+//  1. Запускает N воркеров для обработки сообщений;
+//  2. Накопляет сообщения из messageQueue до batchSize;
+//  3. Отправляет пакет в workersQueue для обработки;
+//  4. flushPeriodStrategy отвечает за период отправки накопленных сообщений (не достигших batchSize);
+//  5. При отмене контекста очищает очередь и завершается;
+//
+// Важно:
+//   - Отмена внешнего контекста приведёт к аварийному завершению (очистка очереди);
+//   - Для корректной остановки используйте Shutdown;
+//   - Повторный запуск того же объекта не поддерживается.
 func (p *MessageCollector[T]) Start(ctx context.Context, ready func()) error {
 	p.wg.Add(1)
 	defer p.wg.Done()
@@ -121,7 +148,7 @@ func (p *MessageCollector[T]) Start(ctx context.Context, ready func()) error {
 
 	wgWorkers := sync.WaitGroup{}
 	workersStopped := make(chan struct{})
-	ticker := time.NewTicker(p.flushPeriod)
+	ticker := time.NewTicker(p.flushPeriodStrategy.Period())
 
 	p.startWorkers(ctx, &wgWorkers)
 
@@ -186,6 +213,8 @@ func (p *MessageCollector[T]) Start(ctx context.Context, ready func()) error {
 			p.logger.Debug(ctx, "The message collector ticker.C")
 		}
 
+		ticker.Reset(p.flushPeriodStrategy.Period())
+
 		if len(messageBatch) == 0 {
 			if p.isSendStopped.Load() {
 				return nil // если данных нет и их приём остановлен, то процесс завершается
@@ -205,7 +234,8 @@ func (p *MessageCollector[T]) Start(ctx context.Context, ready func()) error {
 	}
 }
 
-// PushMessage - отправляет сообщение в очередь для дальнейшей её обработки.
+// PushMessage - отправляет сообщение в очередь для обработки.
+// Блокируется до освобождения места в очереди или отмены контекста.
 func (p *MessageCollector[T]) PushMessage(ctx context.Context, message T) error {
 	if p.isSendStopped.Load() {
 		return errInternalMessageReceptionStopped.New("collector_name", p.caption)
@@ -220,7 +250,9 @@ func (p *MessageCollector[T]) PushMessage(ctx context.Context, message T) error 
 }
 
 // Shutdown - корректная остановка сервиса обработки сообщений.
-// При повторном вызове метода произойдёт panic.
+// Останавливает приём новых сообщений и ожидает завершения всех операций.
+//
+// Важно: при повторном вызове произойдёт panic (закрытие закрытого канала done).
 func (p *MessageCollector[T]) Shutdown(ctx context.Context) error {
 	p.logger.Debug(ctx, "Shutting down the message collector...")
 	p.isSendStopped.Store(true) // завершается приём данных

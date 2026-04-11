@@ -11,12 +11,22 @@ import (
 )
 
 const (
+	// traceRequestBodyMaxLen - максимальная длина тела запроса для трассировки.
 	// :TODO: вынести в настройки.
-	traceRequestBodyMaxLen  = 2048
+	traceRequestBodyMaxLen = 2048
+
+	// traceResponseBodyMaxLen - максимальная длина тела ответа для трассировки.
+	// :TODO: вынести в настройки.
 	traceResponseBodyMaxLen = 2048
 )
 
-// ObserverHandler - промежуточный обработчик, который собирает статистику запросов.
+// ObserverHandler - middleware для сбора статистики и трассировки HTTP-запросов.
+//
+// Логика работы:
+//  1. Записывает время начала запроса;
+//  2. Оборачивает запрос и ответ в observing-обёртки (RequestReader, ResponseWriter);
+//  3. Вызывает следующий обработчик;
+//  4. После завершения отправляет статистику через observer.Emit().
 func ObserverHandler(
 	logger mrlog.Logger,
 	observer mrserver.RequestStat,

@@ -15,8 +15,8 @@ const (
 type (
 	// roleConfig - структура конфигурации роли из YAML файла.
 	roleConfig struct {
-		Privileges  []string `yaml:"privileges"`
-		Permissions []string `yaml:"permissions"`
+		Privileges  []string `yaml:"allowed_privileges"`
+		Permissions []string `yaml:"allowed_permissions"`
 	}
 )
 

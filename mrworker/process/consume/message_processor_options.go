@@ -2,6 +2,8 @@ package consume
 
 import (
 	"time"
+
+	"github.com/mondegor/go-webcore/mrworker"
 )
 
 type (
@@ -16,36 +18,45 @@ type (
 	}
 )
 
-// WithCaption - устанавливает опцию caption для MessageProcessor.
+// WithCaption - устанавливает название сервиса.
+// Переопределяет значение по умолчанию ("MessageProcessor").
 func WithCaption[T any](value string) Option[T] {
 	return func(o *options[T]) {
 		o.processor.caption = value
 	}
 }
 
-// WithCaptionPrefix - устанавливает префикс для названия MessageProcessor.
+// WithCaptionPrefix - устанавливает префикс для названия сервиса.
+// Префикс будет добавлен перед текущим названием.
 func WithCaptionPrefix[T any](value string) Option[T] {
 	return func(o *options[T]) {
 		o.captionPrefix = value
 	}
 }
 
-// WithReadyTimeout - устанавливает опцию readyTimeout для MessageProcessor.
+// WithReadyTimeout - устанавливает максимальное время запуска сервиса.
 func WithReadyTimeout[T any](value time.Duration) Option[T] {
 	return func(o *options[T]) {
 		o.processor.readyTimeout = value
 	}
 }
 
-// WithReadPeriod - устанавливает опцию периода чтения данных консьюмером, когда он в состоянии простоя.
+// WithReadPeriod - устанавливает период опроса очереди в состоянии простоя.
 func WithReadPeriod[T any](value time.Duration) Option[T] {
 	return func(o *options[T]) {
-		o.processor.readPeriod = value
+		o.processor.readPeriodStrategy = mrworker.NewStaticPeriod(value)
 	}
 }
 
-// WithConsumerTimeout - устанавливает опцию таймаута на время отмены чтения данных
-// консьюмером при неожиданном завершении работы воркеров.
+// WithReadPeriodStrategy - устанавливает период опроса очереди в состоянии простоя.
+func WithReadPeriodStrategy[T any](value mrworker.PeriodStrategy) Option[T] {
+	return func(o *options[T]) {
+		o.processor.readPeriodStrategy = value
+	}
+}
+
+// WithConsumerTimeout - устанавливает таймауты на операции консьюмера.
+// Если хотя бы одно значение > 0, консьюмер автоматически оборачивается в ConsumerWithTimeout.
 func WithConsumerTimeout[T any](read, write time.Duration) Option[T] {
 	return func(o *options[T]) {
 		o.consumerReadTimeout = read
@@ -53,28 +64,29 @@ func WithConsumerTimeout[T any](read, write time.Duration) Option[T] {
 	}
 }
 
-// WithHandlerTimeout - устанавливает опцию handlerTimeout выполнения обработчика сообщения.
+// WithHandlerTimeout - устанавливает таймаут выполнения обработчика сообщения.
 func WithHandlerTimeout[T any](value time.Duration) Option[T] {
 	return func(o *options[T]) {
 		o.processor.handlerTimeout = value
 	}
 }
 
-// WithQueueSize - устанавливает опцию размера очереди обработки сообщений.
+// WithQueueSize - устанавливает максимальное количество сообщений для одной выборки.
 func WithQueueSize[T any](value int) Option[T] {
 	return func(o *options[T]) {
 		o.processor.queueSize = value
 	}
 }
 
-// WithWorkersCount - устанавливает опцию количества воркеров обрабатывающих сообщения.
+// WithWorkersCount - устанавливает количество параллельных воркеров-обработчиков.
+// Каждый воркер обрабатывает одно сообщение в отдельной горутине.
 func WithWorkersCount[T any](value int) Option[T] {
 	return func(o *options[T]) {
 		o.processor.workersCount = value
 	}
 }
 
-// WithSignalExecuteHandler - устанавливает канал сигнала для исполнения обработчика.
+// WithSignalExecuteHandler - устанавливает канал для немедленного опроса очереди.
 func WithSignalExecuteHandler[T any](ch <-chan struct{}) Option[T] {
 	return func(o *options[T]) {
 		o.processor.signalExecute = ch

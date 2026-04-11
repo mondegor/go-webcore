@@ -25,7 +25,8 @@ const (
 )
 
 type (
-	// Adapter - Адаптер http сервера.
+	// Adapter - адаптер HTTP-сервера, реализующий интерфейс mrrun.Process.
+	// Обеспечивает запуск, корректную остановку и мониторинг состояния сервера.
 	Adapter struct {
 		caption         string
 		srv             *http.Server
@@ -34,7 +35,7 @@ type (
 	}
 )
 
-// New - создаёт объект Adapter.
+// New - создаёт HTTP-сервер с указанным обработчиком запросов.
 func New(handler http.Handler, opts ...Option) *Adapter {
 	o := options{
 		server: &Adapter{
@@ -60,17 +61,26 @@ func New(handler http.Handler, opts ...Option) *Adapter {
 	return o.server
 }
 
-// Caption - возвращает название http сервера.
+// Caption - возвращает название HTTP-сервера.
 func (s *Adapter) Caption() string {
 	return s.caption
 }
 
-// ReadyTimeout - возвращает максимальное время, за которое должен быть запущен сервис.
+// ReadyTimeout - возвращает максимальное время запуска сервера.
 func (s *Adapter) ReadyTimeout() time.Duration {
 	return serverReadyTimeout
 }
 
-// Start - запуск http сервера.
+// Start - запуск HTTP-сервера для приёма запросов.
+//
+// Процесс работы:
+//  1. Вызывает ready() для сигнала о готовности;
+//  2. Запускает ListenAndServe() для прослушивания соединений;
+//  3. Блокируется до получения ошибки или вызова Shutdown;
+//
+// Важно:
+//   - Отмена внешнего контекста НЕ останавливает сервер (нужно вызывать Shutdown);
+//   - Повторный запуск того же объекта не поддерживается;
 func (s *Adapter) Start(ctx context.Context, ready func()) error {
 	s.log(ctx, "Starting the server with address: "+s.srv.Addr)
 
@@ -87,7 +97,11 @@ func (s *Adapter) Start(ctx context.Context, ready func()) error {
 	return nil
 }
 
-// Shutdown - корректная остановка http сервера.
+// Shutdown - корректная остановка HTTP-сервера (graceful shutdown).
+// Завершает обработку текущих запросов и прекращает приём новых.
+//
+// Использует shutdownTimeout для ожидания завершения активных соединений.
+// Если таймаут истёк, активные соединения будут принудительно закрыты.
 func (s *Adapter) Shutdown(ctx context.Context) error {
 	s.log(ctx, "Shutting down the server...")
 

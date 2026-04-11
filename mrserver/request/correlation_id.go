@@ -19,8 +19,9 @@ var (
 	errHeaderContainsIncorrectValue = fmt.Errorf("header %s contains incorrect value", mrserver.HeaderKeyCorrelationID)
 )
 
-// CorrelationID - возвращает значение заголовка CorrelationID.
-// Если заголовка нет или он пустой, то вернётся пустое значение.
+// CorrelationID - извлекает и валидирует CorrelationID из HTTP-запроса.
+// Используется для отслеживания цепочки запросов через несколько сервисов.
+// Извлекается из заголовка X-Correlation-ID (или аналогичного).
 func CorrelationID(r *http.Request) (string, error) {
 	value := strings.TrimSpace(r.Header.Get(mrserver.HeaderKeyCorrelationID))
 

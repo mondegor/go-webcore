@@ -7,10 +7,21 @@ import (
 type (
 	// Provider - обеспечивает поддержку идемпотентности запросов,
 	// предоставляя методы для валидации, блокировки, сохранения и получения ответов.
+	//
+	// Идемпотентность гарантирует, что повторные запросы с одинаковым ключом
+	// не приведут к дублированию операций, а вернут ранее сохранённый результат.
 	Provider interface {
+		// Validate - проверяет корректность ключа идемпотентности.
 		Validate(key string) error
+
+		// Lock - захватывает блокировку по ключу для предотвращения параллельной обработки.
+		// Возвращает функцию разблокировки (unlock), которую нужно вызвать после завершения обработки.
 		Lock(ctx context.Context, key string) (unlock func(), err error)
+
+		// Get - извлекает ранее сохранённый ответ по ключу идемпотентности.
 		Get(ctx context.Context, key string) (Responser, error)
-		Store(ctx context.Context, key string, response Responser) error
+
+		// Save - сохраняет ответ по ключу идемпотентности для последующего извлечения.
+		Save(ctx context.Context, key string, response Responser) error
 	}
 )

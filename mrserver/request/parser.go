@@ -17,11 +17,17 @@ import (
 
 type (
 	// ParserDecode - преобразует данные запроса в Go-структуру.
+	// Используется для парсинга тела HTTP-запроса (например: JSON) в структуру.
 	ParserDecode interface {
 		ParseToStruct(ctx context.Context, content io.Reader, structPointer any) error
 	}
 
-	// ParserString - извлекает строковые данные из запроса (параметры пути, query-параметры, фильтры).
+	// ParserString - извлекает строковые данные из HTTP-запроса.
+	//
+	// Поддерживает извлечение из:
+	//  - PathParamString - параметры пути (например: /users/{id});
+	//  - RawParamString - query-параметры (например: ?name=value);
+	//  - FilterString/FilterStringList - фильтры из query-параметров.
 	ParserString interface {
 		PathParamString(r *http.Request, name string) string
 		RawParamString(r *http.Request, key string) *string // returns nil if the param not found
@@ -30,12 +36,14 @@ type (
 	}
 
 	// ParserValidate - валидирует данные запроса, преобразованные в Go-структуру.
+	// Использует теги валидации в структуре (например: `validate:"required"`).
 	ParserValidate interface {
 		Validate(r *http.Request, structPointer any) error
 		ValidateContent(ctx context.Context, content []byte, structPointer any) error
 	}
 
-	// ParserInt64 - извлекает целочисленные значения int64 из запроса.
+	// ParserInt64 - извлекает целочисленные значения int64 из query-параметров.
+	// Поддерживает: одиночные значения, диапазоны (-min/-max), списки.
 	ParserInt64 interface {
 		FilterInt64(r *http.Request, key string) int64
 		FilterRangeInt64(r *http.Request, key string) mrtype.RangeInt64
@@ -43,29 +51,30 @@ type (
 	}
 
 	// ParserUint64 - извлекает целочисленные значения uint64 из запроса.
+	// Поддерживает извлечение из URL-пути и query-параметров.
 	ParserUint64 interface {
 		PathParamUint64(r *http.Request, name string) uint64
 		FilterUint64(r *http.Request, key string) uint64
 		FilterUint64List(r *http.Request, key string) []uint64
 	}
 
-	// ParserFloat64 - извлекает значения с плавающей точкой float64 из запроса.
+	// ParserFloat64 - извлекает значения с плавающей точкой float64 из query-параметров.
 	ParserFloat64 interface {
 		FilterFloat64(r *http.Request, key string) float64
 		FilterRangeFloat64(r *http.Request, key string) mrtype.RangeFloat64
 	}
 
-	// ParserBool - извлекает логические значения (включая nullable *bool) из запроса.
+	// ParserBool - извлекает логические значения из query-параметров.
 	ParserBool interface {
 		FilterNullableBool(r *http.Request, key string) *bool
 	}
 
-	// ParserDateTime - извлекает значения даты и времени time.Time из запроса.
+	// ParserDateTime - извлекает значения даты и времени time.Time из query-параметров.
 	ParserDateTime interface {
 		FilterDateTime(r *http.Request, key string) time.Time
 	}
 
-	// ParserUUID - извлекает UUID-значения из запроса (параметры пути и фильтры).
+	// ParserUUID - извлекает UUID-значения из запроса.
 	ParserUUID interface {
 		PathParamUUID(r *http.Request, name string) uuid.UUID
 		FilterUUID(r *http.Request, key string) uuid.UUID
@@ -85,12 +94,12 @@ type (
 		FormImages(r *http.Request, key string) ([]mrmodel.ImageHeader, error)
 	}
 
-	// ParserListSorter - извлекает параметры сортировки из запроса.
+	// ParserListSorter - извлекает параметры сортировки из query-параметров запроса.
 	ParserListSorter interface {
 		SortParams(r *http.Request, sorter mrtype.ListSorter) mrtype.SortParams
 	}
 
-	// ParserListPager - извлекает параметры пагинации (page/limit) из запроса.
+	// ParserListPager - извлекает параметры постраничной пагинации из запроса.
 	ParserListPager interface {
 		PageParams(r *http.Request) mrtype.PageParams
 	}
@@ -100,12 +109,12 @@ type (
 		CursorParams(r *http.Request) mrtype.CursorParams
 	}
 
-	// ParserItemStatus - извлекает список статусов элементов из запроса.
+	// ParserItemStatus - извлекает список статусов элементов из query-параметра.
 	ParserItemStatus interface {
 		FilterStatusList(r *http.Request, key string) []itemstatus.Enum
 	}
 
-	// ParserEnumList - извлекает список перечислений заданного типа из запроса.
+	// ParserEnumList - извлекает список перечислений заданного типа из query-параметра.
 	ParserEnumList[T ~uint8] interface {
 		FilterEnumList(r *http.Request, key string) []T
 	}
@@ -117,12 +126,14 @@ type (
 	}
 
 	// ParserLocale - парсер для определения локали и языка из запроса.
+	// Определяет язык из query-параметра или заголовка Accept-Language.
 	ParserLocale interface {
 		Language(r *http.Request) string
 		Localizer(r *http.Request) mrcore.Localizer
 	}
 
 	// ParserUser - парсер для получения информации о пользователе из запроса.
+	// Извлекает данные из заголовка X-User-Id/Group, установленного middleware.
 	ParserUser interface {
 		UserID(r *http.Request) uuid.UUID
 		UserAndGroup(r *http.Request) (userID uuid.UUID, group string)

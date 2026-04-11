@@ -18,28 +18,32 @@ type (
 	}
 )
 
-// WithContentType - устанавливает опцию contentType для Message.
+// WithContentType - устанавливает тип содержимого письма (contentType).
+// Например: "text/plain" для обычного текста или "text/html" для HTML.
 func WithContentType(value string) MessageOption {
 	return func(o *messageOptions) {
 		o.contentType = value
 	}
 }
 
-// WithSubject - устанавливает тему сообщения.
+// WithSubject - устанавливает тему письма (subject).
+// Если не указана, будет использована тема по умолчанию.
 func WithSubject(value string) MessageOption {
 	return func(o *messageOptions) {
 		o.subject = value
 	}
 }
 
-// WithUseExtendEmailFormat - устанавливает опцию, позволяющую использовать расширенный формат электронного адреса.
+// WithUseExtendEmailFormat - разрешает или запрещает использование расширенного формата email.
+// В расширенном формате email может содержать имя получателя, например: "Иван Иванов <ivan@example.com>".
 func WithUseExtendEmailFormat(value bool) MessageOption {
 	return func(o *messageOptions) {
 		o.useExtendEmailFormat = value
 	}
 }
 
-// WithCC - устанавливает список получателей копии письма разделённых через ",".
+// WithCC - устанавливает список получателей копии письма (carbon copy).
+// Параметр value должен содержать email-адреса, разделённые запятыми.
 func WithCC(value string) MessageOption {
 	return func(o *messageOptions) {
 		list, err := o.parser.ParseList(value)
@@ -53,7 +57,8 @@ func WithCC(value string) MessageOption {
 	}
 }
 
-// WithReplyTo - устанавливает электронный адрес по умолчанию при ответе на письмо.
+// WithReplyTo - устанавливает email для ответов на письмо (Reply-To).
+// Если не указан, ответы будут отправляться на адрес отправителя по умолчанию.
 func WithReplyTo(value string) MessageOption {
 	return func(o *messageOptions) {
 		email, err := o.parser.Parse(value)
@@ -67,7 +72,8 @@ func WithReplyTo(value string) MessageOption {
 	}
 }
 
-// WithReturnEmail - устанавливает опцию обратного электронного адреса (служебный).
+// WithReturnEmail - устанавливает обратный email для возврата письма (Return-Path).
+// Используется почтовыми серверами для обработки недоставленных писем.
 func WithReturnEmail(value string) MessageOption {
 	return func(o *messageOptions) {
 		email, err := o.parser.Parse(value)

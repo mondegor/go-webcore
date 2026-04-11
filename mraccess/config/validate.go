@@ -6,12 +6,14 @@ import (
 )
 
 const (
-	// PublicPrivilege - привилегия публичного доступа.
+	// PublicPrivilege - привилегия публичного доступа, не требующая аутентификации.
 	PublicPrivilege = "public"
 )
 
-// ValidateActionGroups - валидация групп обработчиков.
-func ValidateActionGroups(actionGroups []ActionGroup, allPrivileges []string) error {
+// ValidateActionGroups - выполняет валидацию конфигурации групп обработчиков.
+// Проверяет уникальность имён и путей групп, а также наличие привилегий групп обработчиков
+// в предоставленном списке allPrivileges.
+func ValidateActionGroups(actionGroups []ActionGroup, allowedPrivileges []string) error {
 	uniqNames := make(map[string]bool, len(actionGroups))
 	uniqPaths := make(map[string]bool, len(actionGroups))
 
@@ -27,10 +29,12 @@ func ValidateActionGroups(actionGroups []ActionGroup, allPrivileges []string) er
 		uniqNames[group.Name] = true
 		uniqPaths[group.BasePath] = true
 
-		if group.Privilege != PublicPrivilege {
-			if !slices.Contains(allPrivileges, group.Privilege) {
-				return fmt.Errorf("privilege is not found in privileges for actionGroup (name='%s', group='%s')", group.Privilege, group.Name)
-			}
+		if group.Privilege == PublicPrivilege {
+			continue
+		}
+
+		if !slices.Contains(allowedPrivileges, group.Privilege) {
+			return fmt.Errorf("privilege is not found in privileges for actionGroup (name='%s', group='%s')", group.Privilege, group.Name)
 		}
 	}
 

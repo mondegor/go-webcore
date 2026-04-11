@@ -25,11 +25,16 @@ type (
 	}
 )
 
-// ErrInternalParsingAddressFailed - parsing address failed.
+// ErrInternalParsingAddressFailed - ошибка при неудачном разборе email-адреса.
 var ErrInternalParsingAddressFailed = errors.NewInternalProto("parsing address failed")
 
-// NewMessage - создаёт объект Message.
-// Где from - электронный адрес отправителя, to - электронный адрес получателя.
+// NewMessage - создаёт и настраивает объект Message для отправки электронного письма.
+// Параметры:
+//   - from - email отправителя;
+//   - to - email основного получателя;
+//
+// Опциональные параметры opts позволяют настроить тему, тип контента, копии и другие заголовки.
+// Возвращает ошибку ErrInternalParsingAddressFailed при некорректном формате email.
 func NewMessage(from, to string, opts ...MessageOption) (*Message, error) {
 	emailParser := mail.AddressParser{}
 
@@ -96,17 +101,19 @@ func NewMessage(from, to string, opts ...MessageOption) (*Message, error) {
 	}, nil
 }
 
-// Header - метаинформация о сообщении в MIME формате.
+// Header - возвращает MIME-заголовки сообщения.
+// Содержит метаданные письма: тему, отправителя, получателя, тип контента и т.д.
 func (d *Message) Header() textproto.MIMEHeader {
 	return d.header
 }
 
-// From - отправитель сообщения.
+// From - возвращает email-адрес отправителя письма.
 func (d *Message) From() string {
 	return d.from
 }
 
-// To - получатели сообщения.
+// To - возвращает список email-адресов получателей письма.
+// Включает основного получателя и всех получателей копии (CC).
 func (d *Message) To() []string {
 	return d.to
 }

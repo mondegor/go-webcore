@@ -12,7 +12,14 @@ import (
 	"github.com/mondegor/go-webcore/mrserver/request"
 )
 
-// CheckAccessHandler - промежуточный обработчик проверки доступа к секции и конечному обработчику.
+// CheckAccessHandler - middleware для проверки доступа пользователя к конечному обработчику запроса.
+//
+// Логика работы:
+//  1. Извлекает access token из запроса;
+//  2. Получает данные пользователя через userProvider;
+//  3. Проверяет привилегию (Privilege) и разрешение (Permission) пользователя;
+//  4. Устанавливает заголовки: Accept-Language (из профиля пользователя), UserID/Group;
+//  5. Вызывает следующий обработчик в цепочке.
 func CheckAccessHandler(
 	logger mrlog.Logger,
 	action mraccess.Action,

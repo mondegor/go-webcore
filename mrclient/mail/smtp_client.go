@@ -24,7 +24,13 @@ type (
 	}
 )
 
-// NewSMTPClient - создаёт объект SMTPClient.
+// NewSMTPClient - создаёт и настраивает SMTP-клиент для отправки электронных писем.
+// Параметры:
+//   - host - SMTP-сервер;
+//   - port - порт сервера;
+//   - username и password - учётные данные для аутентификации;
+//
+// Параметр tracer используется для трассировки операций отправки писем.
 func NewSMTPClient(
 	host, port, username, password string,
 	tracer mrtrace.Tracer,
@@ -36,8 +42,16 @@ func NewSMTPClient(
 	}
 }
 
-// SendMail - отправляет электронное письмо указанному адресату.
-// Где from - электронный адрес отправителя, to - электронные адреса получателей.
+// SendMail - отправляет электронное письмо через SMTP-сервер.
+// Параметры:
+//   - from - email отправителя;
+//   - to - список email получателей;
+//   - header - MIME-заголовки письма;
+//   - body - тело письма.
+//
+// Автоматически добавляет заголовки From, To и Subject, если они отсутствуют в header.
+// Возвращает ошибку ErrInternalIncorrectInputData, если from или to пусты.
+// Возвращает ошибку ErrInternalServiceOperationFailed при сбое отправки письма.
 func (c *SMTPClient) SendMail(ctx context.Context, from string, to []string, header textproto.MIMEHeader, body string) error {
 	if from == "" {
 		return errors.ErrInternalIncorrectInputData.WithDetails("from address is empty")

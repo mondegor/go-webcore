@@ -9,7 +9,7 @@ import (
 )
 
 type (
-	// Sender - формирует и отправляет клиенту успешный ответ.
+	// Sender - формирует и отправляет клиенту успешные HTTP-ответы.
 	Sender struct {
 		encoder mrserver.ResponseEncoder
 	}
@@ -22,7 +22,12 @@ func NewSender(encoder mrserver.ResponseEncoder) *Sender {
 	}
 }
 
-// Send - отправляет клиенту ответ с данными в виде структуры с одним из статусов: 2XX, 3XX.
+// Send - отправляет клиенту ответ с сериализованными данными.
+//
+// Параметры:
+//   - w - HTTP-ответ для записи;
+//   - status - HTTP-код ответа (должен быть 2XX или 3XX);
+//   - structure - данные для сериализации и отправки.
 func (rs *Sender) Send(w http.ResponseWriter, status int, structure any) error {
 	bytes, err := rs.encoder.Marshal(structure)
 	if err != nil {
@@ -32,12 +37,12 @@ func (rs *Sender) Send(w http.ResponseWriter, status int, structure any) error {
 	return rs.sendResponse(w, status, rs.encoder.ContentType(), bytes)
 }
 
-// SendBytes - отправляет клиенту ответ у указанным массивом байт с одним из статусов: 2XX, 3XX.
+// SendBytes - отправляет клиенту ответ в виде заранее подготовленных байтов.
 func (rs *Sender) SendBytes(w http.ResponseWriter, status int, body []byte) error {
 	return rs.sendResponse(w, status, rs.encoder.ContentType(), body)
 }
 
-// SendNoContent - отправляет клиенту ответ без данных со статусом 204.
+// SendNoContent - отправляет ответ без содержимого со статусом 204 No Content.
 func (rs *Sender) SendNoContent(w http.ResponseWriter) error {
 	w.WriteHeader(http.StatusNoContent)
 

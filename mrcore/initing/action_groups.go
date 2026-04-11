@@ -7,7 +7,7 @@ import (
 	"github.com/mondegor/go-webcore/mraccess/config"
 )
 
-// InitActionGroups - создаёт объект mraccess.ActionGroup с указанными настройками.
+// InitActionGroups - создаёт и инициализирует группу действий (ActionGroup) из конфигурации.
 func InitActionGroups(logger mrlog.Logger, groups []config.ActionGroup) (name2group map[string]*mraccess.ActionGroup) {
 	name2group = make(map[string]*mraccess.ActionGroup, len(groups))
 

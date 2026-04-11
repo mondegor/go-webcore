@@ -15,7 +15,11 @@ const (
 )
 
 type (
-	// HealthProbe - обёртка для проверки работоспособности какого либо процесса.
+	// HealthProbe - обёртка для проверки работоспособности процесса (сервиса).
+	// Выполняет указанную функцию проверки с таймаутом и защитой от паник.
+	//
+	// Используется в healthcheck-эндпоинтах для мониторинга состояния
+	// зависимостей приложения (базы данных, кэши, внешние сервисы и т.д.).
 	HealthProbe struct {
 		caption string                          // название проверяемого процесса
 		check   func(ctx context.Context) error // функция проверки работоспособности процесса
@@ -24,9 +28,10 @@ type (
 	}
 )
 
-// NewHealthProbe - создаёт объект HealthProbe для отслеживания работоспособности процесса.
+// NewHealthProbe - создаёт пробу для отслеживания работоспособности процесса.
+// Если timeout равен 0, используется defaultTimeout (5 секунд).
 func NewHealthProbe(logger mrlog.Logger, caption string, check func(ctx context.Context) error, timeout time.Duration) *HealthProbe {
-	if timeout == 0 {
+	if timeout <= 0 {
 		timeout = defaultTimeout
 	}
 
@@ -38,12 +43,20 @@ func NewHealthProbe(logger mrlog.Logger, caption string, check func(ctx context.
 	}
 }
 
-// Caption - возвращает название пробы.
+// Caption - возвращает название пробы для идентификации в логах.
 func (p *HealthProbe) Caption() string {
 	return p.caption
 }
 
-// Check - метод вызова проверки пробы.
+// Check - выполняет проверку работоспособности процесса с защитой от паник.
+//
+// Особенности работы:
+//  1. Создаёт контекст с таймаутом (p.timeout);
+//  2. Выполняет функцию check в recover-обёртке;
+//  3. При панике логирует ошибку со стеком и возвращает ошибку;
+//  4. При истечении таймаута контекст автоматически отменяется;
+//
+// Возвращает ошибку от check-функции или ошибку при панике.
 func (p *HealthProbe) Check(ctx context.Context) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer func() {

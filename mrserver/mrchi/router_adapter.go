@@ -17,7 +17,14 @@ import (
 // go get -u github.com/go-chi/chi/v5
 
 type (
-	// RouterAdapter - адаптирует маршрутизатор chi для работы с HTTP-контроллерами.
+	// RouterAdapter - адаптер маршрутизатора chi для работы с HTTP-контроллерами.
+	// Реализует интерфейс http.Handler для интеграции с HTTP-сервером.
+	//
+	// Предоставляет:
+	//  - Регистрацию middleware в цепочку обработки;
+	//  - Регистрацию HTTP-контроллеров с их обработчиками;
+	//  - Преобразование URL-шаблонов из mrserver формата в chi формат;
+	//  - Настройку обработчиков 404 Not Found и 405 Method Not Allowed.
 	RouterAdapter struct {
 		router             *chi.Mux
 		generalHandler     http.Handler
@@ -26,7 +33,7 @@ type (
 	}
 )
 
-// New - создаёт объект RouterAdapter.
+// New - создаёт адаптер маршрутизатора chi.
 func New(
 	logger mrlog.Logger,
 	adapterFunc func(next mrserver.HttpHandlerFunc) http.HandlerFunc,
@@ -51,7 +58,9 @@ func New(
 	}
 }
 
-// RegisterMiddleware - регистрирует middleware обработчики в роутере.
+// RegisterMiddleware - регистрирует middleware обработчики в цепочке роутера.
+// Middleware применяются в обратном порядке (последний в списке - первый в цепочке),
+// что гарантирует корректный порядок выполнения: handler1(handler2(handler3(router))).
 func (rt *RouterAdapter) RegisterMiddleware(handlers ...func(next http.Handler) http.Handler) {
 	// recursion call: handler1(handler2(handler3(router())))
 	for i := len(handlers) - 1; i >= 0; i-- {
@@ -67,7 +76,9 @@ func (rt *RouterAdapter) RegisterMiddleware(handlers ...func(next http.Handler) 
 	}
 }
 
-// Register - регистрирует HTTP контроллеры в роутере.
+// Register - регистрирует HTTP-контроллеры в маршрутизаторе.
+// Для каждого контроллера извлекает все обработчики через controllers[i].Handlers()
+// и регистрирует их в chi router с указанным HTTP методом и путём.
 func (rt *RouterAdapter) Register(controllers ...mrserver.HttpController) {
 	for i := range controllers {
 		for _, handler := range controllers[i].Handlers() {
@@ -77,6 +88,9 @@ func (rt *RouterAdapter) Register(controllers ...mrserver.HttpController) {
 }
 
 // HandlerFunc - регистрирует функцию-обработчик для указанного HTTP метода и пути.
+//
+// Автоматически преобразует URL-шаблоны из формата mrserver в формат chi:
+//   - mrserver.VarRestOfURL заменяется на "*" (wildcard в chi)
 func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFunc) {
 	convertedPath := rt.convertURL(path)
 
@@ -88,7 +102,7 @@ func (rt *RouterAdapter) HandlerFunc(method, path string, handler http.HandlerFu
 	rt.router.Method(method, convertedPath, handler)
 }
 
-// ServeHTTP - обрабатывает HTTP запрос, делегируя его общему обработчику.
+// ServeHTTP - обрабатывает HTTP-запрос, делегируя его общему обработчику.
 func (rt *RouterAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rt.generalHandler.ServeHTTP(w, r)
 }

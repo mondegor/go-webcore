@@ -13,8 +13,10 @@ import (
 
 type (
 	// FileSender - формирует и отправляет клиенту ответ с указанным файлом.
+	// Наследует базовый Sender для отправки обычных ответов.
 	FileSender struct {
 		*Sender
+
 		logger mrlog.Logger
 	}
 )
@@ -27,12 +29,16 @@ func NewFileSender(base *Sender, logger mrlog.Logger) *FileSender {
 	}
 }
 
-// SendFile - отправляет указанный файл, в случае неудачи возвращает ошибку.
+// SendFile - отправляет файл для отображения в браузере (inline).
+// Content-Type устанавливается из FileInfo.ContentType файла.
+// Content-Length устанавливается если известен размер файла.
 func (rs *FileSender) SendFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error {
 	return rs.sendFile(ctx, w, file, false)
 }
 
-// SendAttachmentFile - отправляет указанный файл в виде вложения для сохранения локально, в случае неудачи возвращает ошибку.
+// SendAttachmentFile - отправляет файл как вложение для скачивания (attachment).
+// Устанавливает заголовок Content-Disposition: attachment с именем файла.
+// Устанавливает Cache-control: private для предотвращения кэширования прокси.
 func (rs *FileSender) SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error {
 	return rs.sendFile(ctx, w, file, true)
 }

@@ -9,7 +9,9 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
-// MultipartForm - выводит в журнал отладочную информацию о multipart-форме.
+// MultipartForm - логирует отладочную информацию о multipart-форме запроса.
+// Выводит все поля формы (form.Value) и информацию о загруженных файлах (form.File).
+// Функция безопасна для nil формы и проверяет включён ли debug-режим перед логированием.
 func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.Form) {
 	if !mrlog.DebugEnabled(logger) {
 		return
@@ -40,7 +42,9 @@ func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.For
 	}
 }
 
-// MultipartFileHeader - выводит в журнал отладочную информацию о заголовке multipart-файла.
+// MultipartFileHeader - логирует отладочную информацию о заголовке загруженного файла.
+// Выводит имя файла, размер и HTTP-заголовки.
+// Функция безопасна для nil заголовка и проверяет включён ли debug-режим перед логированием.
 func MultipartFileHeader(ctx context.Context, logger mrlog.Logger, hdr *multipart.FileHeader) {
 	if !mrlog.DebugEnabled(logger) {
 		return

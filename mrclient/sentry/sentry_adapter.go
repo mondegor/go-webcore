@@ -25,7 +25,8 @@ type (
 	}
 )
 
-// New - создаёт объект Adapter.
+// New - создаёт и настраивает объект Adapter для работы с Sentry.
+// Возвращает ошибку типа ErrSystemStorageConnectionFailed при неудачном подключении.
 func New(dsn string, opts ...Option) (*Adapter, error) {
 	o := options{
 		adapter: &Adapter{
@@ -49,12 +50,16 @@ func New(dsn string, opts ...Option) (*Adapter, error) {
 	return o.adapter, nil
 }
 
-// Cli - возвращает клиент Sentry для прямого доступа.
+// Cli - возвращает внутренний клиент Sentry для прямого доступа к расширенным функциям.
 func (a *Adapter) Cli() *sentry.Client {
 	return a.client
 }
 
-// CaptureError - отправляет ошибку в Sentry для мониторинга.
+// CaptureError - отправляет ошибку в Sentry для мониторинга и логирования.
+// Извлекает метаданные ошибки (ErrorID, ErrorKind, StackTrace) с помощью hint.Extract.
+// Если ошибка незнакомая (ErrorID пустой), отправляет как исключение.
+// Если ошибка знакомая (ErrorID установлен), отправляет как событие с тегами.
+// Возвращает идентификатор события (eventID) в Sentry или пустую строку при ошибке.
 func (a *Adapter) CaptureError(_ context.Context, err error) (eventID string) {
 	sentry.CurrentHub().WithScope(
 		func(scope *sentry.Scope) {
@@ -88,6 +93,8 @@ func (a *Adapter) CaptureError(_ context.Context, err error) (eventID string) {
 }
 
 // Close - закрывает соединение с Sentry, предварительно отправив все ожидающие события.
+// После закрытия объект Adapter становится непригодным для дальнейшего использования.
+// Возвращает ошибку типа ErrInternalStorageConnectionIsNotOpened, если клиент не был инициализирован.
 func (a *Adapter) Close() error {
 	if a.client == nil {
 		return errors.ErrInternalStorageConnectionIsNotOpened.New("source", connectionName)

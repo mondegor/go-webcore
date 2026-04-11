@@ -16,25 +16,27 @@ const (
 )
 
 type (
-	// Provider - заглушка реализующая интерфейс идемпотентности запроса.
+	// Provider - заглушка (no-op) реализующая интерфейс Provider идемпотентности.
+	// Все методы всегда возвращают успешный результат, не выполняя реальной работы.
+	// Используется для тестирования, отладки или когда идемпотентность не требуется.
 	Provider struct {
 		tracer mrtrace.Tracer
 	}
 )
 
-// New - создаёт объект Provider.
+// New - создаёт no-op провайдер идемпотентности для тестирования и отладки.
 func New(tracer mrtrace.Tracer) *Provider {
 	return &Provider{
 		tracer: tracer,
 	}
 }
 
-// Validate - эмулирует успешную валидацию данных.
+// Validate - всегда возвращает nil, эмулируя успешную валидацию любого ключа.
 func (l *Provider) Validate(_ string) error {
 	return nil
 }
 
-// Lock - эмулирует блокировку указанного ключа идемпотентности и возвращает функцию разблокировки.
+// Lock - эмулирует блокировку ключа идемпотентности без реальной синхронизации.
 func (l *Provider) Lock(ctx context.Context, key string) (unlock func(), err error) {
 	l.traceCmd(ctx, "Lock:"+defaultExpiry.String(), key)
 
@@ -43,16 +45,16 @@ func (l *Provider) Lock(ctx context.Context, key string) (unlock func(), err err
 	}, nil
 }
 
-// Get - всегда возвращает пустой ответ.
+// Get - всегда возвращает пустой ответ (nopresponser.New).
 func (l *Provider) Get(ctx context.Context, key string) (mridempotency.Responser, error) {
 	l.traceCmd(ctx, "Get:"+key, key)
 
 	return nopresponser.New(), nil
 }
 
-// Store - эмулирует сохранение результата по указанному ключу.
-func (l *Provider) Store(ctx context.Context, key string, result mridempotency.Responser) error {
-	l.traceCmd(ctx, "Store:"+key, key)
+// Save - эмулирует сохранение ответа без реальной записи в хранилище.
+func (l *Provider) Save(ctx context.Context, key string, result mridempotency.Responser) error {
+	l.traceCmd(ctx, "Save:"+key, key)
 
 	l.tracer.Trace(
 		ctx,

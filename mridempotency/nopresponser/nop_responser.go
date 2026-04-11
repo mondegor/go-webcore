@@ -3,22 +3,23 @@ package nopresponser
 import "net/http"
 
 type (
-	// Responser - заглушка реализующая интерфейс возвращения
-	// результата провайдером идемпотентности.
+	// Responser - заглушка (no-op) реализующая интерфейс Responser идемпотентности.
+	// Всегда возвращает пустое содержимое и HTTP-код 200 OK.
+	// Используется вместе с nopprovider.Provider для тестирования и отладки.
 	Responser struct{}
 )
 
-// New - создаёт объект Responser.
+// New - создаёт no-op ответчик для использования с nopprovider.Provider.
 func New() *Responser {
 	return &Responser{}
 }
 
-// StatusCode - возвращает код ответа 200.
+// StatusCode - всегда возвращает HTTP-код ответа 200 (OK).
 func (r Responser) StatusCode() int {
 	return http.StatusOK
 }
 
-// Content - возвращает пустое содержание.
+// Content - всегда возвращает nil (пустое тело ответа).
 func (r Responser) Content() []byte {
 	return nil
 }

@@ -10,7 +10,10 @@ import (
 	"github.com/mondegor/go-webcore/mrserver/request"
 )
 
-// CheckAccessTokenHandler - промежуточный обработчик запрещает доступ к обработчику авторизованному пользователю.
+// CheckAccessTokenHandler - middleware, запрещающий доступ авторизованным пользователям.
+// Используется для эндпоинтов, доступных только неавторизованным пользователям
+// (например: регистрация, вход в систему). Если запрос содержит access token,
+// доступ будет запрещён.
 func CheckAccessTokenHandler(logger mrlog.Logger, handlerName string) func(next mrserver.HttpHandlerFunc) mrserver.HttpHandlerFunc {
 	return func(next mrserver.HttpHandlerFunc) mrserver.HttpHandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) error {
@@ -19,6 +22,9 @@ func CheckAccessTokenHandler(logger mrlog.Logger, handlerName string) func(next 
 			if accessToken := request.AccessToken(r); accessToken != "" {
 				return errors.ErrHttpAccessForbidden
 			}
+
+			// гарантируется, чтобы пользователь не был авторизованным
+			r.Header.Del(mrserver.HeaderKeyUserIDSlashGroup)
 
 			return next(w, r)
 		}

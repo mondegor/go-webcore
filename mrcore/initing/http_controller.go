@@ -3,17 +3,22 @@ package initing
 import "github.com/mondegor/go-webcore/mrserver"
 
 type (
-	// httpController - предназначен для реализации интерфейса http контроллера.
 	httpController []mrserver.HttpHandler
 )
 
-// Handlers - реализует интерфейс http контроллера.
+// Handlers - возвращает список HTTP-обработчиков контроллера.
+// Реализует интерфейс mrserver.HttpController.
 func (c httpController) Handlers() []mrserver.HttpHandler {
 	return c
 }
 
-// PrepareHttpController - модифицирует обработчики контроллера, применяя к каждому
-// из них переданные функции обработки, и возвращает новый контроллер с этими обработчиками.
+// PrepareHttpController - применяет цепочку преобразований к обработчикам контроллера.
+// Параметры:
+//   - c - исходный контроллер с обработчиками;
+//   - operations - функции преобразования, применяемые последовательно к каждому обработчику;
+//
+// Возвращает новый контроллер с модифицированными обработчиками.
+// Если operations пуст, возвращает исходный контроллер без изменений.
 func PrepareHttpController(c mrserver.HttpController, operations ...PrepareHandlerFunc) mrserver.HttpController {
 	if len(operations) == 0 {
 		return c

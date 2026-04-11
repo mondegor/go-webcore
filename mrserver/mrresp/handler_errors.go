@@ -10,7 +10,8 @@ import (
 	"github.com/mondegor/go-sysmess/util/xio"
 )
 
-// HandlerGetNotFoundAsJSON - возвращает обработчик для формирования 404 ошибки.
+// HandlerGetNotFoundAsJSON - создаёт обработчик для ответов 404 Not Found.
+// Формирует ответ в формате RFC 9457 (Problem Details).
 func HandlerGetNotFoundAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return HandlerErrorResponse(
 		logger,
@@ -20,7 +21,8 @@ func HandlerGetNotFoundAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	)
 }
 
-// HandlerGetMethodNotAllowedAsJSON - возвращает обработчик для формирования 405 ошибки.
+// HandlerGetMethodNotAllowedAsJSON - создаёт обработчик для ответов 405 Method Not Allowed.
+// Формирует ответ в формате RFC 9457 (Problem Details).
 func HandlerGetMethodNotAllowedAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return HandlerErrorResponse(
 		logger,
@@ -30,7 +32,8 @@ func HandlerGetMethodNotAllowedAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	)
 }
 
-// HandlerGetFatalErrorAsJSON - возвращает обработчик для формирования 500 ошибки.
+// HandlerGetFatalErrorAsJSON - создаёт обработчик для ответов 500 Internal Server Error.
+// Формирует ответ в формате RFC 9457 (Problem Details).
 func HandlerGetFatalErrorAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return HandlerErrorResponse(
 		logger,
@@ -40,7 +43,9 @@ func HandlerGetFatalErrorAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	)
 }
 
-// HandlerErrorResponse - возвращает обработчик для формирования ошибки согласно RFC 9457 (Problem Details for HTTP APIs).
+// HandlerErrorResponse - создаёт универсальный обработчик для ответов с ошибкой.
+// Формирует ответ в формате RFC 9457 (Problem Details for HTTP APIs).
+// Instance и Time заполняются автоматически из запроса.
 func HandlerErrorResponse(logger mrlog.Logger, status int, title, detail string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bytes, err := json.Marshal(

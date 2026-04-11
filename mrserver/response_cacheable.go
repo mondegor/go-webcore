@@ -6,7 +6,10 @@ import (
 )
 
 type (
-	// CacheableResponseWriter - записывает ответ для возможности кэширования.
+	// CacheableResponseWriter - декоратор http.ResponseWriter для перехвата ответа.
+	// Используется для кэширования HTTP-ответов (например: в middleware идемпотентности).
+	// Записывает ответ одновременно в оригинальный ResponseWriter и во внутренний буфер,
+	// позволяя впоследствии получить полную копию ответа для сохранения в кэш.
 	CacheableResponseWriter struct {
 		http.ResponseWriter
 		statusCode int
@@ -14,7 +17,7 @@ type (
 	}
 )
 
-// NewCacheableResponseWriter - создаёт объект CacheableResponseWriter.
+// NewCacheableResponseWriter - создаёт декоратор для перехвата HTTP-ответа.
 func NewCacheableResponseWriter(w http.ResponseWriter) *CacheableResponseWriter {
 	return &CacheableResponseWriter{
 		ResponseWriter: w,
@@ -22,13 +25,13 @@ func NewCacheableResponseWriter(w http.ResponseWriter) *CacheableResponseWriter 
 	}
 }
 
-// WriteHeader - записывает код статуса HTTP ответа.
+// WriteHeader - перехватывает и записывает HTTP-код ответа.
 func (w *CacheableResponseWriter) WriteHeader(statusCode int) {
 	w.statusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
-// Write - записывает переданные данные.
+// Write - записывает данные в ответ и сохраняет копию во внутренний буфер.
 func (w *CacheableResponseWriter) Write(buf []byte) (int, error) {
 	n, err := w.ResponseWriter.Write(buf)
 	if err != nil {
@@ -42,12 +45,12 @@ func (w *CacheableResponseWriter) Write(buf []byte) (int, error) {
 	return n, nil
 }
 
-// StatusCode - возвращает текущий код ответа.
+// StatusCode - возвращает установленный HTTP-код ответа.
 func (w *CacheableResponseWriter) StatusCode() int {
 	return w.statusCode
 }
 
-// Content - возвращает копию переданных данных.
+// Content - возвращает полную копию записанных данных ответа.
 func (w *CacheableResponseWriter) Content() []byte {
 	return w.body.Bytes()
 }

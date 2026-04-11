@@ -11,7 +11,19 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
-// RecoverHandler - промежуточный обработчик для перехвата panic.
+// RecoverHandler - middleware для перехвата и обработки panic в HTTP-обработчиках.
+//
+// Логика работы:
+//  1. Оборачивает вызов next.ServeHTTP в recover-блок;
+//  2. При панике:
+//     - http.ErrAbortHandler не перехватывается (поведение стандартного http.Server);
+//     - В debug-режиме stackTrace выводится в stderr;
+//     - В production-режиме паника логируется через logger с полным стеком;
+//     - Вызывается fatalFunc для отправки клиенту ответа об ошибке.
+//
+// Важно:
+//   - В production-режиме клиент не получает деталей о панике;
+//   - fatalFunc может быть nil, тогда отправляется только 500 статус.
 func RecoverHandler(logger mrlog.Logger, isDebug bool, fatalFunc http.HandlerFunc) func(next http.Handler) http.Handler {
 	if fatalFunc == nil {
 		fatalFunc = func(w http.ResponseWriter, _ *http.Request) {

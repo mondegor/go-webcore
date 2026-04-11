@@ -17,7 +17,7 @@ type (
 	}
 )
 
-// WithHostPort - устанавливает хост (IP) и порт на которых будет работать http сервер.
+// WithHostPort - устанавливает адрес (хост и порт) для прослушивания HTTP-сервером.
 func WithHostPort(host, port string) Option {
 	return func(o *options) {
 		if port != "" {
@@ -28,14 +28,15 @@ func WithHostPort(host, port string) Option {
 	}
 }
 
-// WithLogger - устанавливает логгер для логирования работы сервера.
+// WithLogger - устанавливает логгер для записи событий запуска и остановки сервера.
 func WithLogger(value mrlog.Logger) Option {
 	return func(o *options) {
 		o.server.logger = value
 	}
 }
 
-// WithBaseContext - устанавливает контекст, который будет использоваться в каждом запросе.
+// WithBaseContext - устанавливает базовый контекст для всех HTTP-запросов.
+// Контекст будет использоваться как родительский для каждого входящего запроса.
 func WithBaseContext(ctx context.Context) Option {
 	return func(o *options) {
 		o.server.srv.BaseContext = func(_ net.Listener) context.Context {
@@ -45,28 +46,29 @@ func WithBaseContext(ctx context.Context) Option {
 }
 
 // WithCaption - устанавливает название сервера.
+// Переопределяет значение по умолчанию ("MainHttpServer").
 func WithCaption(value string) Option {
 	return func(o *options) {
 		o.server.caption = value
 	}
 }
 
-// WithReadTimeout - устанавливает таймаут при чтении заголовка и тела запроса.
+// WithReadTimeout - устанавливает максимальное время чтения заголовка и тела запроса.
 func WithReadTimeout(value time.Duration) Option {
 	return func(o *options) {
 		o.server.srv.ReadTimeout = value
 	}
 }
 
-// WithWriteTimeout - устанавливает таймаут на формирование ответа сервера.
+// WithWriteTimeout - устанавливает максимальное время формирования ответа.
 func WithWriteTimeout(value time.Duration) Option {
 	return func(o *options) {
 		o.server.srv.WriteTimeout = value
 	}
 }
 
-// WithShutdownTimeout - устанавливает таймаут для корректного
-// завершения активных соединений при остановке сервера.
+// WithShutdownTimeout - устанавливает таймаут корректной остановки сервера.
+// Если таймаут истёк, активные соединения будут принудительно закрыты.
 func WithShutdownTimeout(value time.Duration) Option {
 	return func(o *options) {
 		o.server.shutdownTimeout = value

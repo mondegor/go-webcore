@@ -10,22 +10,22 @@ import (
 )
 
 type (
-	// ResponseEncoder - формирует ответ сервера из Go-структуры в нужном формате (JSON, XML и т.д.).
+	// ResponseEncoder - интерфейс кодировщика ответов сервера.
+	// Преобразует Go-структуры в байтовый формат ответа (JSON, XML и т.д.).
 	ResponseEncoder interface {
 		ContentType() string
 		ContentTypeProblem() string
 		Marshal(structure any) ([]byte, error)
 	}
 
-	// ResponseSender - отправляет ответ клиенту с данными или без них.
+	// ResponseSender - интерфейс отправки успешных ответов клиенту.
 	ResponseSender interface {
 		Send(w http.ResponseWriter, status int, structure any) error
 		SendBytes(w http.ResponseWriter, status int, body []byte) error
 		SendNoContent(w http.ResponseWriter) error
 	}
 
-	// FileResponseSender - отправляет ответ клиенту
-	// с прикреплённым файлом для скачивания или просмотра.
+	// FileResponseSender - интерфейс отправки файлов клиенту.
 	FileResponseSender interface {
 		ResponseSender
 
@@ -33,19 +33,35 @@ type (
 		SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error
 	}
 
-	// ErrorResponseSender - отправляет ответ клиенту с информацией об ошибке.
+	// ErrorResponseSender - интерфейс отправки клиенту ответов с информацией об ошибках.
 	ErrorResponseSender interface {
 		SendError(w http.ResponseWriter, r *http.Request, err error)
 	}
 
-	// ErrorStatusMapper - определяет HTTP-статус ответа на основе типа ошибки.
+	// ErrorStatusMapper - интерфейс маппера ошибок в HTTP-статусы.
 	ErrorStatusMapper interface {
 		ErrorStatus(err error) int
 	}
 )
 
-// NewHttpErrorStatusMapper - создаёт объект ErrorStatusMapper.
-// Только для: 4XX, 5XX.
+// NewHttpErrorStatusMapper - создаёт маппер ошибок в HTTP-статусы.
+//
+// Преднастроенные соответствия (могут быть переопределены через codeStatus):
+//   - ErrHttpClientUnauthorized -> 401 Unauthorized
+//   - ErrHttpAccessForbidden -> 403 Forbidden
+//   - ErrAccessForbidden -> 403 Forbidden
+//   - ErrHttpResourceNotFound -> 404 Not Found
+//   - ErrRecordNotFound -> 404 Not Found
+//   - ErrRecordVersionConflict -> 409 Conflict
+//   - ErrHttpRequestParseData -> 422 Unprocessable Entity
+//   - ErrHttpTooManyRequests -> 429 Too Many Requests
+//   - ErrNotImplemented -> 501 Not Implemented
+//
+// Параметры:
+//   - unexpectedStatus - HTTP-статус для непредвиденных ошибок (по умолчанию 500);
+//   - codeStatus - пары "код ошибки -> HTTP-статус" для переопределения или добавления маппинга;
+//
+// Возвращает только статусы 4xx и 5xx.
 func NewHttpErrorStatusMapper(unexpectedStatus int, codeStatus ...any) (ErrorStatusMapper, error) {
 	if unexpectedStatus <= 0 {
 		unexpectedStatus = http.StatusInternalServerError

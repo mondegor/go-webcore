@@ -14,30 +14,52 @@ import (
 )
 
 const (
+	// processCacheTTL - время жизни кэша списка процессов.
+	// Используется для снижения нагрузки при частых запросах информации о системе.
 	processCacheTTL = 15 * time.Second
 )
 
 type (
-	// SystemInfoConfig - информация о запущенной системе.
+	// SystemInfoConfig - конфигурация с информацией о запущенной системе.
 	SystemInfoConfig struct {
-		Name          string
-		Version       string
-		Environment   string
-		IsDebug       bool
-		LogLevel      string
-		StartedAt     time.Time
+		// Caption - название приложения в свободной форме.
+		Caption string
+
+		// Version - версия приложения.
+		Version string
+
+		// Environment - окружение (development, staging, production).
+		Environment string
+
+		// IsDebug - флаг режима отладки.
+		IsDebug bool
+
+		// LogLevel - текущий уровень логирования.
+		LogLevel string
+
+		// StartedAt - время запуска приложения.
+		StartedAt time.Time
+
+		// ProcessesFunc - функция получения списка текущих процессов.
+		// Может возвращать nil, если информация о процессах не требуется.
 		ProcessesFunc func(ctx context.Context) []SystemInfoProcess
 	}
 
-	// SystemInfoProcess - информация о запущенном процессе.
+	// SystemInfoProcess - информация об отдельном процессе.
+	// Используется в ответе эндпоинта /system/info.
 	SystemInfoProcess struct {
+		// Caption - название процесса в свободной форме.
 		Caption string `json:"name"`
-		Status  string `json:"status"`
-	}
 
+		// Status - состояние процесса (например: "running", "stopped").
+		Status string `json:"status"`
+	}
+)
+
+type (
 	// systemInfoResponse - внутренний формат ответа с информацией о системе.
 	systemInfoResponse struct {
-		Name        string              `json:"name"`
+		Caption     string              `json:"name"`
 		Version     string              `json:"version"`
 		Environment string              `json:"environment"`
 		HostName    string              `json:"host_name"`
@@ -48,7 +70,7 @@ type (
 	}
 )
 
-// HandlerGetSystemInfoAsJSON - возвращает обработчик для формирования информации о запущенной системе.
+// HandlerGetSystemInfoAsJSON - создаёт обработчик для формирования информации о запущенной системе.
 func HandlerGetSystemInfoAsJSON(logger mrlog.Logger, cfg SystemInfoConfig) (http.HandlerFunc, error) {
 	hostName, err := os.Hostname()
 	if err != nil {
@@ -56,7 +78,7 @@ func HandlerGetSystemInfoAsJSON(logger mrlog.Logger, cfg SystemInfoConfig) (http
 	}
 
 	staticResponse := systemInfoResponse{
-		Name:        cfg.Name,
+		Caption:     cfg.Caption,
 		Version:     cfg.Version,
 		Environment: cfg.Environment,
 		HostName:    hostName,

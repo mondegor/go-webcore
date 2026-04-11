@@ -9,16 +9,22 @@ import (
 )
 
 type (
-	// JsonDecoder - декодирует JSON-данные в Go-структуры.
+	// JsonDecoder - декодировщик JSON-данных в Go-структуры.
+	// Используется для парсинга тела входящих HTTP-запросов.
 	JsonDecoder struct{}
 )
 
-// NewDecoder - создаёт объект JsonDecoder.
+// NewDecoder - создаёт декодировщик JSON.
 func NewDecoder() *JsonDecoder {
 	return &JsonDecoder{}
 }
 
-// ParseToStruct - декодирует JSON из reader в Go структуру с проверкой на неизвестные поля.
+// ParseToStruct - декодирует JSON из reader в Go-структуру.
+//
+// Особенности:
+//   - Использует DisallowUnknownFields() - запросы с неизвестными полями будут отклонены;
+//   - Ошибки декодирования оборачиваются в ErrHttpRequestParseData для отправки клиенту;
+//   - structPointer - должен быть указателем на структуру.
 func (p *JsonDecoder) ParseToStruct(_ context.Context, content io.Reader, structPointer any) error {
 	dec := json.NewDecoder(content)
 	dec.DisallowUnknownFields()

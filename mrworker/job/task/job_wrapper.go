@@ -8,34 +8,42 @@ import (
 )
 
 const (
+	// defaultCaption - название задачи по умолчанию.
 	defaultCaption = "Task"
+
+	// defaultStartup - значение запуска задачи при старте по умолчанию.
 	defaultStartup = false
-	defaultPeriod  = 60 * time.Second
+
+	// defaultTimeout - таймаут выполнения задачи по умолчанию.
 	defaultTimeout = 30 * time.Second
 )
 
-// JobWrapper - обёртка реализующая интерфейс mrworker.Task, используемая
-// в планировщике задач, позволяющая вкладывать в себя конкретные работы.
+// defaultPeriod - периодичность запуска задачи по умолчанию.
+var defaultPeriod = mrworker.NewStaticPeriod(60 * time.Second) //nolint:gochecknoglobals
+
+// JobWrapper - обёртка, реализующая интерфейс mrworker.Task для использования
+// в планировщике задач (TaskScheduler). Позволяет адаптировать любой mrworker.Job
+// к требованиям планировщика, добавляя настройки периода, таймаута и сигналов.
 type (
 	JobWrapper struct {
-		caption  string
-		startup  bool
-		period   time.Duration
-		timeout  time.Duration
-		signalDo <-chan struct{}
-		job      mrworker.Job
+		caption        string
+		startup        bool
+		periodStrategy mrworker.PeriodStrategy
+		timeout        time.Duration
+		signalDo       <-chan struct{} // signalDo - канал для немедленного запуска задачи
+		job            mrworker.Job
 	}
 )
 
-// NewJobWrapper - создаёт объект JobWrapper.
+// NewJobWrapper - создаёт обёртку Task для указанной задачи.
 func NewJobWrapper(job mrworker.Job, opts ...Option) *JobWrapper {
 	o := options{
 		job: &JobWrapper{
-			caption: defaultCaption,
-			startup: defaultStartup,
-			period:  defaultPeriod,
-			timeout: defaultTimeout,
-			job:     job,
+			caption:        defaultCaption,
+			startup:        defaultStartup,
+			periodStrategy: defaultPeriod,
+			timeout:        defaultTimeout,
+			job:            job,
 		},
 	}
 
@@ -55,28 +63,27 @@ func (j *JobWrapper) Caption() string {
 	return j.caption
 }
 
-// Startup - необходимо ли стартовать задачу сразу же при инициализации планировщика.
+// Startup - сообщает, если задачу нужно выполнить сразу же при старте планировщика.
 func (j *JobWrapper) Startup() bool {
 	return j.startup
 }
 
 // Period - возвращает периодичность запуска задачи.
 func (j *JobWrapper) Period() time.Duration {
-	return j.period
+	return j.periodStrategy.Period()
 }
 
-// Timeout - возвращает таймаут выполнения задачи.
+// Timeout - возвращает максимальное время выполнения задачи.
 func (j *JobWrapper) Timeout() time.Duration {
 	return j.timeout
 }
 
-// SignalDo - возвращает сигнал, о том, что можно немедленно
-// запускать задачу не дожидаясь завершения Period.
+// SignalDo - возвращает канал для немедленного запуска задачи.
 func (j *JobWrapper) SignalDo() <-chan struct{} {
 	return j.signalDo
 }
 
-// Do - исполняет задачу.
+// Do - выполняет обёрнутую задачу.
 func (j *JobWrapper) Do(ctx context.Context) error {
 	return j.job.Do(ctx)
 }

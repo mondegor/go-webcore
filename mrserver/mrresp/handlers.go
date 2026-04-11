@@ -8,7 +8,9 @@ import (
 	"github.com/mondegor/go-sysmess/util/xio"
 )
 
-// HandlerGetStatusOkAsJSON - возвращает обработчик, который формирует ответ OK в JSON формате.
+// HandlerGetStatusOkAsJSON - создаёт обработчик для ответов 200 OK.
+// Возвращает JSON-ответ: {"status": "OK"}.
+// Используется для простых проверок работоспособности (liveness probe).
 func HandlerGetStatusOkAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -17,12 +19,13 @@ func HandlerGetStatusOkAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	}
 }
 
-// HandlerGetHealth - обработчик для использования в качестве проверки работоспособности сервиса.
-func HandlerGetHealth(isAvailable func(ctx context.Context) bool) http.HandlerFunc {
+// HandlerGetHealth - создаёт обработчик для проверки готовности сервиса (readiness probe).
+// Возвращает 200 OK если сервис готов, или 503 Service Unavailable если нет.
+func HandlerGetHealth(availableFunc func(ctx context.Context) bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		status := http.StatusOK
 
-		if !isAvailable(r.Context()) {
+		if !availableFunc(r.Context()) {
 			status = http.StatusServiceUnavailable
 		}
 

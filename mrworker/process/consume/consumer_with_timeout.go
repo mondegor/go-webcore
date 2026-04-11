@@ -10,7 +10,10 @@ import (
 )
 
 type (
-	// ConsumerWithTimeout - получатель сообщений с возможностью подтверждения их получения.
+	// ConsumerWithTimeout - обёртка над MessageConsumer с таймаутами на операции.
+	// Добавляет таймауты на чтение (readTimeout) и запись (writeTimeout) для всех операций.
+	//
+	// Используется для предотвращения бесконечного ожидания при операциях с очередью.
 	ConsumerWithTimeout[T any] struct {
 		base         mrworker.MessageConsumer[T]
 		readTimeout  time.Duration
@@ -18,7 +21,7 @@ type (
 	}
 )
 
-// NewConsumerWithTimeout - создаёт объект ConsumerWithTimeout.
+// NewConsumerWithTimeout - создаёт обёртку с таймаутами для консьюмера.
 func NewConsumerWithTimeout[T any](
 	base mrworker.MessageConsumer[T],
 	readTimeout, writeTimeout time.Duration,

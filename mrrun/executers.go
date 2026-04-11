@@ -10,11 +10,19 @@ import (
 )
 
 type (
-	// Executer - структура выполнения процесса с возможностью его
-	// остановки и отправки сообщения, о запуске этого процесса.
+	// Executer - обёртка для запуска и остановки процесса с поддержкой синхронизации.
+	// Содержит функции Execute (запуск) и Interrupt (остановка), а также
+	// канал Synchronizer для уведомления о готовности процесса.
+	//
+	// Используется внутри AppRunner для управления жизненным циклом процессов.
 	Executer struct {
-		Execute      func() error
-		Interrupt    func(error)
+		// Execute - функция запуска процесса (блокируется до завершения).
+		Execute func() error
+
+		// Interrupt - функция принудительной остановки процесса.
+		Interrupt func(error)
+
+		// Synchronizer - канал синхронизации для уведомления о готовности процесса.
 		Synchronizer ProcessSync // OPTIONAL
 	}
 )
@@ -26,7 +34,7 @@ func (r *AppRunner) contextWithProcessID(ctx context.Context, process Process) c
 	return ctx
 }
 
-// makeExecuter - возвращает функции запуска и остановки процесса.
+// makeExecuter - создаёт Executer для процесса без синхронизации.
 // Запуск этого процесса не зависит от других процессов.
 func (r *AppRunner) makeExecuter(ctx context.Context, process Process) Executer {
 	ctx = r.contextWithProcessID(ctx, process)
@@ -43,9 +51,15 @@ func (r *AppRunner) makeExecuter(ctx context.Context, process Process) Executer 
 	}
 }
 
-// makeNextExecuter - возвращает канал, по которому будет передано событие, что процесс запущен.
-// Также возвращает функции запуска и остановки этого процесса.
-// Запуск процесса будет осуществлён только при получении события по каналу chPrev (если канал указан).
+// makeNextExecuter - создаёт Executer для процесса с поддержкой синхронизации.
+// Запуск процесса ожидает сигнала готовности от предыдущего процесса (prev).
+//
+// Логика работы:
+//  1. Ожидает сигнала от prev.ready в пределах prev.readyTimeout;
+//  2. При истечении таймаута возвращает ошибку ErrSystemTimeoutPeriodHasExpired;
+//  3. При отмене контекста завершает процесс без ошибки (игнорирует ошибку контекста);
+//  4. После готовности вызывает process.Start() с сигналом ready;
+//  5. При Interrupt ожидает готовности процесса, затем вызывает Shutdown;
 func (r *AppRunner) makeNextExecuter(ctx context.Context, process Process, prev ProcessSync) Executer {
 	ctx = r.contextWithProcessID(ctx, process)
 

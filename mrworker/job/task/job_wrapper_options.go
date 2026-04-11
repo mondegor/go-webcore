@@ -1,6 +1,10 @@
 package task
 
-import "time"
+import (
+	"time"
+
+	"github.com/mondegor/go-webcore/mrworker"
+)
 
 type (
 	// Option - настройка объекта JobWrapper.
@@ -12,42 +16,51 @@ type (
 	}
 )
 
-// WithCaption - устанавливает опцию caption для JobWrapper.
+// WithCaption - устанавливает название задачи.
+// Переопределяет значение по умолчанию ("Task").
 func WithCaption(value string) Option {
 	return func(o *options) {
 		o.job.caption = value
 	}
 }
 
-// WithCaptionPrefix - устанавливает опцию caption для JobWrapper.
+// WithCaptionPrefix - устанавливает префикс для названия задачи.
+// Префикс будет добавлен перед текущим названием задачи.
 func WithCaptionPrefix(value string) Option {
 	return func(o *options) {
 		o.captionPrefix = value
 	}
 }
 
-// WithStartup - устанавливает опцию startup для JobWrapper.
+// WithStartup - устанавливает флаг запуска задачи при старте планировщика.
 func WithStartup(value bool) Option {
 	return func(o *options) {
 		o.job.startup = value
 	}
 }
 
-// WithPeriod - устанавливает опцию period для JobWrapper.
+// WithPeriod - устанавливает периодичность запуска задачи.
 func WithPeriod(value time.Duration) Option {
 	return func(o *options) {
-		o.job.period = value
+		o.job.periodStrategy = mrworker.NewStaticPeriod(value)
 	}
 }
 
-// WithTimeout - устанавливает опцию timeout для JobWrapper.
+// WithPeriodStrategy - устанавливает периодичность запуска задачи.
+func WithPeriodStrategy(value mrworker.PeriodStrategy) Option {
+	return func(o *options) {
+		o.job.periodStrategy = value
+	}
+}
+
+// WithTimeout - устанавливает максимальное время выполнения задачи.
 func WithTimeout(value time.Duration) Option {
 	return func(o *options) {
 		o.job.timeout = value
 	}
 }
 
-// WithSignalDo - устанавливает опцию signalDo для JobWrapper.
+// WithSignalDo - устанавливает канал для немедленного запуска задачи.
 func WithSignalDo(value <-chan struct{}) Option {
 	return func(o *options) {
 		o.job.signalDo = value

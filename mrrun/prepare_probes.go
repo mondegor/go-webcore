@@ -9,21 +9,25 @@ import (
 )
 
 type (
-	// ProbeChecker - определяет проверку работоспособности компонента (пробы).
+	// ProbeChecker - интерфейс проверки работоспособности компонента (пробы).
 	ProbeChecker interface {
 		Caption() string
 		Check(ctx context.Context) error
 	}
 
-	// FinishedProbe - проба, которая была проведена и содержит статус выполнения.
+	// FinishedProbe - результат выполнения пробы с её статусом.
+	// Содержит название пробы и HTTP-код результата.
 	FinishedProbe struct {
 		Caption string
 		Status  int
 	}
 )
 
-// PrepareProbesForCheck - возвращает функцию с заряженными пробами, для проверки работоспособности сервиса.
-// Если хотя бы одна проба не завершится успешно, то возвращаемая функция вернёт false.
+// PrepareProbesForCheck - создаёт функцию для проверки работоспособности всех проб.
+//
+// Возвращаемая функция выполняет последовательную проверку всех проб.
+// Возвращает true, если ВСЕ пробы завершились успешно.
+// Возвращает false, если хотя бы одна проба завершилась с ошибкой.
 func PrepareProbesForCheck(logger mrlog.Logger, probes ...ProbeChecker) func(ctx context.Context) bool {
 	return func(ctx context.Context) bool {
 		for _, probe := range probes {
@@ -38,8 +42,14 @@ func PrepareProbesForCheck(logger mrlog.Logger, probes ...ProbeChecker) func(ctx
 	}
 }
 
-// PrepareProbes - возвращает функцию с заряженными пробами, для проверки работоспособности сервиса.
-// Сама возвращаемая функция возвращает список проведённых проб с их статусами выполнения.
+// PrepareProbes - создаёт функцию для детальной проверки работоспособности всех проб.
+// В отличие от PrepareProbesForCheck, возвращает результаты всех проб,
+// а не просто общее состояние.
+//
+// Возвращаемая функция:
+//  1. Выполняет последовательную проверку всех проб;
+//  2. Для каждой пробы записывает статус: 200 (OK) или 422 (UnprocessableEntity);
+//  3. Возвращает срез FinishedProbe с результатами всех проверок;
 func PrepareProbes(logger mrlog.Logger, probes ...ProbeChecker) func(ctx context.Context) []FinishedProbe {
 	return func(ctx context.Context) []FinishedProbe {
 		info := make([]FinishedProbe, len(probes))
@@ -63,7 +73,11 @@ func PrepareProbes(logger mrlog.Logger, probes ...ProbeChecker) func(ctx context
 	}
 }
 
-// WithAppReadyProbe - возвращает пробу готовности приложения к приёму запросов.
+// WithAppReadyProbe - создаёт пробу готовности приложения к приёму запросов.
+// Проверяет состояние AppHealth через метод IsReady().
+//
+// Возвращает nil, если приложение готово.
+// Возвращает ошибку ErrSystemServiceTemporarilyUnavailable, если приложение не готово.
 func WithAppReadyProbe(app *AppHealth) func(ctx context.Context) error {
 	return func(_ context.Context) error {
 		if app.IsReady() {

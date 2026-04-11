@@ -11,14 +11,15 @@ type (
 	}
 )
 
-// WithCaption - устанавливает опцию caption для Process.
+// WithCaption - устанавливает название сервиса.
+// Переопределяет значение по умолчанию ("OnStartup").
 func WithCaption(value string) Option {
 	return func(o *options) {
 		o.process.caption = value
 	}
 }
 
-// WithReadyTimeout - устанавливает опцию readyTimeout для Process.
+// WithReadyTimeout - устанавливает максимальное время запуска сервиса.
 func WithReadyTimeout(value time.Duration) Option {
 	return func(o *options) {
 		o.process.readyTimeout = value

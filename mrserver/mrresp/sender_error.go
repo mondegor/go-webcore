@@ -18,6 +18,14 @@ import (
 
 type (
 	// ErrorSender - формирует и отправляет клиенту ответ об ошибке.
+	//
+	// Обрабатывает три типа ошибок:
+	//  1. CustomError (одиночная пользовательская ошибка) - 400 Bad Request с одним ErrorAttribute;
+	//  2. CustomListError (список пользовательских ошибок) - 400 Bad Request с несколькими ErrorAttribute;
+	//  3. Остальные ошибки (runtime, системные) - 4xx/5xx согласно ErrorStatusMapper;
+	//
+	// Пользовательские ошибки (KindUser) переводятся на язык клиента через Localizer.
+	// Системные ошибки формируются в формате RFC 9457 (Problem Details).
 	ErrorSender struct {
 		encoder        mrserver.ResponseEncoder
 		errorHandler   errors.Handler
@@ -27,7 +35,9 @@ type (
 		statusMapper   mrserver.ErrorStatusMapper
 		debugFunc      func(value any) string
 	}
+)
 
+type (
 	// parserLocale - внутренний интерфейс для получения локализатора из запроса.
 	parserLocale interface {
 		Localizer(r *http.Request) mrcore.Localizer
@@ -35,6 +45,15 @@ type (
 )
 
 // NewErrorSender - создаёт объект ErrorSender.
+//
+// Параметры:
+//   - encoder - кодировщик для сериализации ответов (например: JsonEncoder);
+//   - errorHandler - обработчик для логирования ошибок;
+//   - extractErrorID - функция извлечения идентификатора ошибки для трассировки;
+//   - logger - логгер для записи ошибок;
+//   - parserLocale - извлечение локализатора для перевода ошибок;
+//   - statusMapper - маппер для определения HTTP-кода ответа по ошибке;
+//   - debugFunc - функция получения отладочной информации (nil для production);
 func NewErrorSender(
 	encoder mrserver.ResponseEncoder,
 	errorHandler errors.Handler,
@@ -55,7 +74,7 @@ func NewErrorSender(
 	}
 }
 
-// SendError - отправляет клиенту ответ об ошибке с одним из статусов: 4XX, 5XX и её деталями.
+// SendError - анализирует ошибку и отправляет соответствующий HTTP-ответ клиенту.
 func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err error) {
 	ctx := r.Context()
 	sendResponse := func(status int, response any) {

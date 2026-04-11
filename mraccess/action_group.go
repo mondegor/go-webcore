@@ -10,13 +10,19 @@ type (
 	// ActionGroup - группа (секция) объединяющая несколько обработчиков.
 	// Включает базовый путь к этим обработчикам и обладает привилегией доступа к ним.
 	ActionGroup struct {
-		Name      string
+		// Name - уникальное имя группы действий.
+		Name string
+
+		// Privilege - привилегия, необходимая для доступа ко всем действиям в группе.
 		Privilege string
-		BasePath  mrpath.Builder
+
+		// BasePath - базовый путь для всех обработчиков в группе.
+		BasePath mrpath.Builder
 	}
 )
 
-// NewActionGroup - создаёт объект ActionGroup.
+// NewActionGroup - создаёт новую группу действий с указанным именем, привилегией и базовым путём.
+// Базовый путь автоматически нормализуется (добавляется ведущий слэш, убираются дубликаты).
 func NewActionGroup(
 	name string,
 	privilege string,

@@ -14,7 +14,7 @@ type (
 	}
 )
 
-// NewBool - создаёт объект Bool.
+// NewBool - создаёт парсер логических значений.
 func NewBool(
 	logger mrlog.Logger,
 ) *Bool {
@@ -23,8 +23,8 @@ func NewBool(
 	}
 }
 
-// FilterNullableBool - возвращает bool значение поступившее из внешнего запроса.
-// Если ключ key не найден или возникнет ошибка, то возвращается nil значение.
+// FilterNullableBool - извлекает nullable bool значение из query-параметра.
+// Поддерживает значения: "true", "false", "1", "0", "yes", "no" (регистронезависимо).
 func (p *Bool) FilterNullableBool(r *http.Request, key string) *bool {
 	value, err := parse.NullableBool(r.URL.Query().Get(key))
 	if err != nil {

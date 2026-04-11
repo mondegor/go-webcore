@@ -9,7 +9,17 @@ import (
 	"github.com/mondegor/go-webcore/mrserver"
 )
 
-// IdempotencyHandler - промежуточный обработчик для организации идемпотентных запросов.
+// IdempotencyHandler - middleware для обеспечения идемпотентности запросов.
+//
+// Логика работы:
+//  1. Извлекает Idempotency-Key из заголовка запроса;
+//  2. Если ключ отсутствует, пропускает запрос без обработки;
+//  3. Валидирует ключ через provider.Validate();
+//  4. Проверяет наличие кэшированного ответа через provider.Get();
+//  5. Если ответ найден, возвращает его немедленно (без вызова next);
+//  6. Если ответ не найден, блокирует ключ через provider.Lock();
+//  7. Вызывает следующий обработчик, записывая ответ в CacheableResponseWriter;
+//  8. Сохраняет ответ в кэш через provider.Save().
 func IdempotencyHandler(
 	logger mrlog.Logger,
 	provider mridempotency.Provider,
@@ -53,7 +63,7 @@ func IdempotencyHandler(
 				return err
 			}
 
-			if err = provider.Store(r.Context(), idempotencyKey, sw); err != nil {
+			if err = provider.Save(r.Context(), idempotencyKey, sw); err != nil {
 				logger.Error(r.Context(), "IdempotencyHandler->Store", "error", err)
 			}
 

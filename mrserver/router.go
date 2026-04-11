@@ -5,13 +5,19 @@ import (
 )
 
 const (
-	// VarRestOfURL - переменная остатка пути.
+	// VarRestOfURL - шаблонная переменная для обозначения остатка пути в URL.
+	// Используется в маршрутах для захвата произвольной части пути после указанного префикса.
 	VarRestOfURL = "{{restOfUrl}}"
 )
 
 type (
-	// HttpRouter - обеспечивает регистрацию middleware,
-	// контроллеров и маршрутизацию HTTP-запросов.
+	// HttpRouter - интерфейс маршрутизатора HTTP-запросов.
+	//
+	// Обеспечивает:
+	//  - Регистрацию middleware-обработчиков в цепочку обработки;
+	//  - Регистрацию HTTP-контроллеров с их обработчиками;
+	//  - Регистрацию отдельных функций-обработчиков для метода и пути;
+	//  - Обработку входящих HTTP-запросов (реализация http.Handler);
 	HttpRouter interface {
 		RegisterMiddleware(handlers ...func(next http.Handler) http.Handler)
 		Register(controllers ...HttpController)
@@ -19,21 +25,31 @@ type (
 		ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
-	// HttpController - определяет контроллер с набором HTTP-обработчиков.
+	// HttpController - интерфейс контроллера с набором HTTP-обработчиков.
+	// Контроллер - это логическая группа обработчиков, обычно связанных с одной сущностью.
 	HttpController interface {
+		// Handlers - возвращает список всех обработчиков контроллера.
 		Handlers() []HttpHandler
 	}
 
-	// HttpHandler - http обработчик, к которому привязаны метод, URL и разрешение
-	// контролирующее запуск этого обработчика.
+	// HttpHandler - HTTP-обработчик с метаданными маршрутизации и доступа.
 	HttpHandler struct {
-		Method     string
-		URL        string
+		// Method - HTTP-метод запроса.
+		Method string
+
+		// URL - путь для маршрутизации (может содержать параметры маршрутизатора).
+		URL string
+
+		// Permission - разрешение для проверки доступа (пустая строка = без проверки).
 		Permission string
-		Func       HttpHandlerFunc
+
+		// Func - функция-обработчик запроса.
+		Func HttpHandlerFunc
 	}
 
-	// HttpHandlerFunc - изменённый дизайн стандартного HTTP обработчика
-	// с возможностью возврата ошибки вместо её обработки в самом обработчике.
+	// HttpHandlerFunc - сигнатура функции HTTP-обработчика.
+	// Отличие от стандартного http.HandlerFunc: возвращает ошибку,
+	// которую обрабатывает вышестоящий код (например: middleware или адаптер),
+	// а не сам обработчик. Это позволяет централизованно обрабатывать ошибки.
 	HttpHandlerFunc func(w http.ResponseWriter, r *http.Request) error
 )

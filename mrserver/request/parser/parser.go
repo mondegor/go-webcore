@@ -1,7 +1,14 @@
 package parser
 
 type (
-	// Parser - агрегатор базовых парсеров.
+	// Parser - агрегатор базовых парсеров HTTP-запросов.
+	// Встраивает парсеры через композицию,
+	// предоставляя единый доступ ко всем методам извлечения данных:
+	//  - Bool, DateTime, Int64, Uint64, Float64 - числовые и логические типы;
+	//  - String, UUID - строковые типы;
+	//  - ListSorter, ListPager, ListCursor - параметры списков;
+	//  - Validator - валидация структур;
+	//  - File, Image - работа с файлами и изображениями.
 	Parser struct {
 		*Bool
 		*DateTime
@@ -17,7 +24,7 @@ type (
 	}
 )
 
-// NewParser - создаёт объект Parser.
+// NewParser - создаёт агрегированный парсер из всех компонентов.
 func NewParser(
 	p1 *Bool,
 	p2 *DateTime,

@@ -21,7 +21,10 @@ type (
 	}
 )
 
-// NewBotClient - создаёт объект BotClient.
+// NewBotClient - создаёт и настраивает BotClient для работы с Telegram Bot API.
+// Параметры:
+//   - apiToken - токен авторизации Telegram бота (получается от @BotFather);
+//   - tracer - используется для трассировки операций отправки сообщений;
 func NewBotClient(
 	apiToken string,
 	tracer mrtrace.Tracer,
@@ -37,7 +40,10 @@ func NewBotClient(
 	}, nil
 }
 
-// SendToChat - отправляет сообщение в указанный чат.
+// SendToChat - отправляет текстовое сообщение в указанный Telegram-чат.
+// Параметры:
+//   - chatKey - числовой идентификатор чата (chat_id) в виде строки;
+//   - message - текст сообщения с поддержкой Markdown-разметки;
 func (c *BotClient) SendToChat(ctx context.Context, chatKey, message string) error {
 	chatID, err := strconv.ParseInt(chatKey, 10, 64)
 	if err != nil {

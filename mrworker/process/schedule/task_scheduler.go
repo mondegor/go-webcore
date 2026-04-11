@@ -14,12 +14,23 @@ import (
 )
 
 const (
-	defaultCaption      = "TaskScheduler"
+	// defaultCaption - название планировщика по умолчанию.
+	defaultCaption = "TaskScheduler"
+
+	// defaultReadyTimeout - таймаут готовности планировщика по умолчанию.
 	defaultReadyTimeout = 30 * time.Second
 )
 
 type (
-	// TaskScheduler - многопоточный сервис запуска задач по расписанию (планировщик задач).
+	// TaskScheduler - многопоточный сервис запуска задач по расписанию.
+	//
+	// Принцип работы:
+	//  1. При старте последовательно запускает задачи с task.Startup() == true;
+	//  2. Для каждой задачи создаёт отдельный воркер с таймером (task.Period());
+	//  3. Воркеры выполняют task.Do(ctx) периодически или по сигналу task.SignalDo();
+	//  4. При ошибках вызывает errorHandler, не останавливая другие задачи;
+	//
+	// Каждая задача выполняется в отдельной горутине с своим таймером.
 	TaskScheduler struct {
 		caption      string
 		readyTimeout time.Duration
@@ -33,14 +44,14 @@ type (
 )
 
 var (
-	// ErrInternalNoTasks - no tasks to start for the task scheduler.
+	// ErrInternalNoTasks - ошибка при отсутствии задач для запуска.
 	ErrInternalNoTasks = errors.NewInternalProto("no tasks to start for the task scheduler")
 
-	// ErrInternalZeroParam - task has zero param for the task scheduler (attrs: param_name, task_name).
+	// ErrInternalZeroParam - ошибка при нулевых period и timeout задачи (attrs: param_name, task_name).
 	ErrInternalZeroParam = errors.NewInternalProto("task has zero param for the task scheduler")
 )
 
-// NewTaskScheduler - создаёт объект TaskScheduler.
+// NewTaskScheduler - создаёт планировщик задач.
 func NewTaskScheduler(
 	errorHandler errors.Handler,
 	logger mrlog.Logger,
@@ -83,9 +94,19 @@ func (p *TaskScheduler) ReadyTimeout() time.Duration {
 }
 
 // Start - запуск планировщика задач.
-// Отмена внешнего контекста приведёт к аварийному завершению процесса,
-// для корректной остановки следует использовать Shutdown.
-// Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
+//
+// Процесс работы:
+//  1. Проверяет наличие задач (ошибка ErrInternalNoTasks если пусто);
+//  2. Последовательно запускает задачи с task.Startup() == true;
+//  3. Для каждой задачи создаёт воркер с таймером (task.Period());
+//  4. Воркеры выполняют task.Do(ctx) с таймаутом (task.Timeout());
+//  5. Задачи выполняются периодически или по сигналу task.SignalDo();
+//  6. При ошибках вызывает errorHandler, не останавливая другие задачи;
+//
+// Важно:
+//   - Отмена внешнего контекста приведёт к завершению всех воркеров;
+//   - Для корректной остановки используйте Shutdown;
+//   - Повторный запуск того же объекта не поддерживается.
 func (p *TaskScheduler) Start(ctx context.Context, ready func()) error {
 	p.wg.Add(1)
 	defer p.wg.Done()
@@ -135,10 +156,11 @@ func (p *TaskScheduler) Start(ctx context.Context, ready func()) error {
 					return
 				case <-task.SignalDo():
 					p.logger.Debug(ctx, "signalDo event", "task_name", task.Caption())
-					ticker.Reset(task.Period())
 				case <-ticker.C:
 					p.logger.Debug(ctx, "ticker.C event", "task_name", task.Caption())
 				}
+
+				ticker.Reset(task.Period())
 
 				if err := p.execTask(ctx, task); err != nil {
 					p.errorHandler.Handle(ctx, err)
@@ -157,7 +179,9 @@ func (p *TaskScheduler) Start(ctx context.Context, ready func()) error {
 }
 
 // Shutdown - корректная остановка планировщика задач.
-// При повторном вызове метода произойдёт panic.
+// Останавливает все воркеры и ожидает их завершения.
+//
+// Важно: при повторном вызове произойдёт panic (закрытие закрытого канала done).
 func (p *TaskScheduler) Shutdown(ctx context.Context) error {
 	p.logger.Debug(ctx, "Shutting down the task scheduler...")
 	close(p.done)

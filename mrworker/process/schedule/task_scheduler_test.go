@@ -127,7 +127,7 @@ func (ts *SchedulerTestSuite) Test_StartAndShutdown() {
 	ts.mockContextManager.EXPECT().WithGeneratedProcessID(ts.ctx, mrtrace.KeyTaskID).Return(ts.ctx).MinTimes(minTaskExecution)
 
 	ts.mockTask.EXPECT().Startup().Return(false).Times(2)
-	ts.mockTask.EXPECT().Period().Return(time.Nanosecond).Times(4)
+	ts.mockTask.EXPECT().Period().Return(time.Nanosecond).MinTimes(minTaskExecution)
 	ts.mockTask.EXPECT().Timeout().Return(time.Second).MinTimes(minTaskExecution)
 	ts.mockTask.EXPECT().SignalDo().Return(nil).AnyTimes()
 
@@ -140,13 +140,13 @@ func (ts *SchedulerTestSuite) Test_StartAndShutdown() {
 			return nil
 		}).
 		Return(nil).
-		MinTimes(1)
+		MinTimes(minTaskExecution)
 
 	taskScheduler := schedule.NewTaskScheduler(
 		errors.NopHandler(),
 		mrlog.NopLogger(),
 		ts.mockContextManager,
-		schedule.WithTasks(ts.mockTask, ts.mockTask),
+		schedule.WithTasks(ts.mockTask, ts.mockTask), // 2 tasks
 	)
 
 	go func() {

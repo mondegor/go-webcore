@@ -14,26 +14,50 @@ import (
 )
 
 const (
-	defaultCaption              = "MessageProcessor"
-	defaultReadyTimeout         = 30 * time.Second
-	defaultReadPeriod           = 60 * time.Second
-	defaultConsumerReadTimeout  = 2 * time.Second
+	// defaultCaption - название сервиса по умолчанию.
+	defaultCaption = "MessageProcessor"
+
+	// defaultReadyTimeout - таймаут готовности сервиса по умолчанию.
+	defaultReadyTimeout = 30 * time.Second
+
+	// defaultConsumerReadTimeout - таймаут чтения консьюмером по умолчанию.
+	defaultConsumerReadTimeout = 2 * time.Second
+
+	// defaultConsumerWriteTimeout - таймаут записи консьюмером по умолчанию.
 	defaultConsumerWriteTimeout = 3 * time.Second
-	defaultHandlerTimeout       = 30 * time.Second
-	defaultQueueSize            = 100
-	defaultWorkersCount         = 1
+
+	// defaultHandlerTimeout - таймаут выполнения обработчика сообщения по умолчанию.
+	defaultHandlerTimeout = 30 * time.Second
+
+	// defaultQueueSize - размер очереди сообщений для одной выборки по умолчанию.
+	defaultQueueSize = 100
+
+	// defaultWorkersCount - количество воркеров-обработчиков по умолчанию.
+	defaultWorkersCount = 1
+)
+
+var (
+	// defaultReadPeriodStrategy - период опроса очереди в состоянии простоя.
+	defaultReadPeriodStrategy = mrworker.NewStaticPeriod(60 * time.Second) //nolint:gochecknoglobals
+
+	errInternalWorkersAreStopped = errors.NewInternalProto("the message processor workers has been stopped")
 )
 
 type (
-	// MessageProcessor - многопоточный сервис обработки сообщений
-	// на основе консьюмера и обработчика (PULL модель).
+	// MessageProcessor - многопоточный сервис обработки сообщений (PULL-модель).
+	//
+	// Принцип работы:
+	//  1. Периодически опрашивает очередь через MessageConsumer (PULL);
+	//  2. Каждое сообщение отправляется в workersQueue для обработки;
+	//  3. Обработчик (MessageHandler) выполняет работу и возвращает функцию commit;
+	//  4. При успехе вызывает CommitMessage (возможно с preCommit), при ошибке - RejectMessage;
 	MessageProcessor[T any] struct {
-		caption        string
-		readyTimeout   time.Duration
-		readPeriod     time.Duration
-		handlerTimeout time.Duration
-		queueSize      int
-		workersCount   int
+		caption            string
+		readyTimeout       time.Duration
+		readPeriodStrategy mrworker.PeriodStrategy
+		handlerTimeout     time.Duration
+		queueSize          int
+		workersCount       int
 
 		consumer     mrworker.MessageConsumer[T]
 		handler      mrworker.MessageHandler[T]
@@ -48,9 +72,7 @@ type (
 	}
 )
 
-var errInternalWorkersAreStopped = errors.NewInternalProto("the message processor workers has been stopped")
-
-// NewMessageProcessor - создаёт объект MessageProcessor.
+// NewMessageProcessor - создаёт сервис обработки сообщений (PULL-модель).
 func NewMessageProcessor[T any](
 	consumer mrworker.MessageConsumer[T],
 	handler mrworker.MessageHandler[T],
@@ -61,10 +83,10 @@ func NewMessageProcessor[T any](
 ) *MessageProcessor[T] {
 	o := options[T]{
 		processor: &MessageProcessor[T]{
-			caption:        defaultCaption,
-			readyTimeout:   defaultReadyTimeout,
-			readPeriod:     defaultReadPeriod,
-			handlerTimeout: defaultHandlerTimeout,
+			caption:            defaultCaption,
+			readyTimeout:       defaultReadyTimeout,
+			readPeriodStrategy: defaultReadPeriodStrategy,
+			handlerTimeout:     defaultHandlerTimeout,
 
 			handler:      handler,
 			errorHandler: errorHandler,
@@ -117,9 +139,19 @@ func (p *MessageProcessor[T]) ReadyTimeout() time.Duration {
 }
 
 // Start - запуск сервиса обработки сообщений.
-// Отмена внешнего контекста приведёт к аварийному завершению процесса,
-// для корректной остановки следует использовать Shutdown.
-// Повторный запуск метода одно и того же объекта не предусмотрен, даже после вызова Shutdown.
+//
+// Процесс работы:
+//  1. Запускает N воркеров для обработки сообщений;
+//  2. Периодически (readPeriodStrategy) опрашивает очередь через consumer.ReadMessages;
+//  3. Каждое сообщение отправляется в workersQueue для обработки;
+//  4. При signalExecute немедленно выполняет опрос очереди;
+//  5. При ошибке таймаута/EOF логирует ошибку и продолжает работу;
+//  6. При других ошибках завершает работу;
+//
+// Важно:
+//   - Отмена внешнего контекста приведёт к завершению процесса;
+//   - Для корректной остановки используйте Shutdown;
+//   - Повторный запуск того же объекта не поддерживается.
 func (p *MessageProcessor[T]) Start(ctx context.Context, ready func()) error {
 	p.wg.Add(1)
 	defer p.wg.Done()
@@ -129,7 +161,7 @@ func (p *MessageProcessor[T]) Start(ctx context.Context, ready func()) error {
 
 	wgWorkers := sync.WaitGroup{}
 	workersStopped := make(chan struct{})
-	ticker := time.NewTicker(p.readPeriod)
+	ticker := time.NewTicker(p.readPeriodStrategy.Period())
 
 	p.startWorkers(ctx, &wgWorkers)
 
@@ -158,10 +190,11 @@ func (p *MessageProcessor[T]) Start(ctx context.Context, ready func()) error {
 			return nil
 		case <-p.signalExecute:
 			p.logger.Debug(ctx, "signalExecute event", "processor_name", p.caption)
-			ticker.Reset(p.readPeriod)
 		case <-ticker.C:
 			p.logger.Debug(ctx, "ticker.C event", "processor_name", p.caption)
 		}
+
+		ticker.Reset(p.readPeriodStrategy.Period())
 
 		ctx = p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID) // producerID
 
@@ -193,7 +226,9 @@ func (p *MessageProcessor[T]) Start(ctx context.Context, ready func()) error {
 }
 
 // Shutdown - корректная остановка сервиса обработки сообщений.
-// При повторном вызове метода произойдёт panic.
+// Останавливает основной цикл и ожидает завершения всех воркеров.
+//
+// Важно: при повторном вызове произойдёт panic (закрытие закрытого канала done).
 func (p *MessageProcessor[T]) Shutdown(ctx context.Context) error {
 	p.logger.Debug(ctx, "Shutting down the message processor...")
 	close(p.done)
@@ -235,6 +270,14 @@ func (p *MessageProcessor[T]) startWorkers(ctx context.Context, wg *sync.WaitGro
 	}
 }
 
+// workerFunc - создаёт функцию обработки одного сообщения для отправки в воркер.
+//
+// Логика работы:
+//  1. Вызывает handler.Execute(message) для обработки сообщения;
+//  2. При ошибке: логирует ошибку и вызывает RejectMessage;
+//  3. При успехе: вызывает CommitMessage с функцией commit от обработчика;
+//     (commit и consumer commit могут выполняться в единой транзакции);
+//  4. При ошибке коммита: вызывает RejectMessage.
 func (p *MessageProcessor[T]) workerFunc(message T) func(ctx context.Context) {
 	return func(ctx context.Context) {
 		ctx = p.traceManager.WithGeneratedProcessID(ctx, mrtrace.KeyTaskID)

@@ -9,30 +9,49 @@ import (
 )
 
 type (
-	// HttpModule - информация для создания и инициализации всех контроллеров Http модуля.
+	// HttpModule - описывает HTTP-модуль для создания и инициализации контроллеров.
+	// Модуль - это логическая группа контроллеров с общими компонентами и разрешениями.
 	HttpModule struct {
-		Name       string
+		// Caption - название модуля в свободной форме.
+		Caption string
+
+		// Permission - разрешение по умолчанию для всех контроллеров модуля.
+		// Может быть переопределено на уровне контроллера.
 		Permission string
 
-		// InitSharedComponents - функция вызывается перед созданием первого контроллера,
-		// с помощью нее можно инициализировать общие переменные доступные
-		// всем контроллерам, которые можно только получить предварительно обработав ошибки.
+		// InitSharedComponents - функция инициализации общих компонентов модуля.
+		// Вызывается один раз перед созданием первого контроллера.
+		// Позволяет создать и настроить ресурсы, которые будут доступны всем контроллерам модуля.
 		InitSharedComponents func() (err error)
-		Controllers          []HttpController
+
+		// Controllers - список контроллеров, принадлежащих модулю.
+		Controllers []HttpController
 	}
 
-	// HttpController - информация для создания и инициализации Http контроллера, и всех его обработчиков.
+	// HttpController - описывает HTTP-контроллер для создания и регистрации обработчиков.
+	// Контроллер - это группа связанных HTTP-обработчиков (например: CRUD операции для сущности).
 	HttpController struct {
-		Name       string
+		// Caption - название контроллера в свободной форме.
+		Caption string
+
+		// Permission - разрешение для всех обработчиков контроллера.
+		// Если не указано, используется разрешение родительского модуля.
 		Permission string
-		Create     func() (mrserver.HttpController, error)
+
+		// Create - функция создания экземпляра контроллера.
+		Create func() (mrserver.HttpController, error)
 	}
 )
 
-// CreateHttpControllers - создание инициализация всех контроллеров для указанных модулей.
+// CreateHttpControllers - создаёт и инициализирует все контроллеры для указанных модулей.
+// Процесс инициализации:
+//  1. Для каждого модуля вызывается InitSharedComponents (если определена);
+//  2. Для каждого контроллера вызывается Create();
+//  3. Если разрешение контроллера не указано, наследуется разрешение модуля;
+//  4. К каждому обработчику применяются операции: WithPermission + operations.
 func CreateHttpControllers(logger mrlog.Logger, modules []HttpModule, operations ...PrepareHandlerFunc) (list []mrserver.HttpController, err error) {
 	for _, module := range modules {
-		mrlog.Info(logger, "Create and init module", "module", module.Name, "permission", module.Permission)
+		mrlog.Info(logger, "Create and init module", "module", module.Caption, "permission", module.Permission)
 
 		if module.InitSharedComponents != nil {
 			if err := module.InitSharedComponents(); err != nil {
@@ -42,7 +61,7 @@ func CreateHttpControllers(logger mrlog.Logger, modules []HttpModule, operations
 
 		for _, c := range module.Controllers {
 			if c.Create == nil {
-				return nil, fmt.Errorf("create controller for module '%s'", module.Name)
+				return nil, fmt.Errorf("create controller for module '%s'", module.Caption)
 			}
 
 			controller, err := c.Create()
@@ -50,11 +69,11 @@ func CreateHttpControllers(logger mrlog.Logger, modules []HttpModule, operations
 				return nil, err
 			}
 
-			if c.Name != "" || c.Permission != "" {
+			if c.Caption != "" || c.Permission != "" {
 				mrlog.Info(
 					logger,
 					"Create and init controller",
-					"controller", c.Name,
+					"controller", c.Caption,
 					"permission", c.Permission,
 				)
 			}

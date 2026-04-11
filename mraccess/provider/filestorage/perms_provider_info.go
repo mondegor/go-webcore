@@ -1,21 +1,22 @@
 package filestorage
 
 type (
-	// RegisteredPermsInfo - информация о зарегистрированных ролях и разрешениях.
-	RegisteredPermsInfo struct {
+	// PermsProviderInfo - информация о зарегистрированных ролях, привилегиях и разрешениях.
+	// Используется для отладки и отображения в консоли.
+	PermsProviderInfo struct {
 		Roles       []string
 		Privileges  []string
 		Permissions []string
 	}
 )
 
-// NewRegisteredPermsInfo - создаёт объект RegisteredPermsInfo.
-func NewRegisteredPermsInfo(provider *PermsProvider) RegisteredPermsInfo {
+// ExtractProviderInfo - извлекает данные PermsProviderInfo из PermsProvider.
+func ExtractProviderInfo(provider *PermsProvider) PermsProviderInfo {
 	if provider == nil {
-		return RegisteredPermsInfo{}
+		return PermsProviderInfo{}
 	}
 
-	return RegisteredPermsInfo{
+	return PermsProviderInfo{
 		Roles:       registeredRoles(provider.roles),
 		Privileges:  registeredPermissions(provider.privileges),
 		Permissions: registeredPermissions(provider.permissions),

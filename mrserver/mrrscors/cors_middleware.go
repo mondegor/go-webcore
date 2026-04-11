@@ -11,23 +11,37 @@ import (
 // go get -u github.com/rs/cors
 
 type (
-	// Options - опции для создания Middleware.
+	// Options - конфигурация CORS middleware.
 	Options struct {
-		AllowedOrigins   []string
-		AllowedMethods   []string
-		AllowedHeaders   []string
-		ExposedHeaders   []string
+		// AllowedOrigins: список разрешённых origin (например: ["https://example.com", "http://localhost:3000"]).
+		AllowedOrigins []string
+
+		// AllowedMethods: список разрешённых HTTP-методов (например: ["GET", "POST", "PUT", "DELETE"]).
+		AllowedMethods []string
+
+		// AllowedHeaders: список разрешённых заголовков запроса (например: ["Content-Type", "Authorization"]).
+		AllowedHeaders []string
+
+		// ExposedHeaders: список заголовков ответа, доступных клиентскому JS (например: ["X-Request-Id"]).
+		ExposedHeaders []string
+
+		// AllowCredentials: разрешить передачу cookies и авторизационных заголовков.
 		AllowCredentials bool
-		Logger           mrlog.Logger
+
+		// Logger: логгер для отладки CORS конфигурации.
+		Logger mrlog.Logger
 	}
 )
 
 // Middleware - создаёт HTTP-middleware для обработки CORS-запросов.
+// Оборачивает библиотеку github.com/rs/cors в стандартный middleware-интерфейс.
+// Автоматически обрабатывает preflight-запросы (OPTIONS) и добавляет CORS-заголовки.
+// Возвращает функцию-обёртку для регистрации в роутере.
 func Middleware(opts Options) func(next http.Handler) http.Handler {
 	options := cors.Options{
 		AllowedOrigins:   opts.AllowedOrigins,
 		AllowedMethods:   opts.AllowedMethods,
-		AllowedHeaders:   opts.ExposedHeaders,
+		AllowedHeaders:   opts.AllowedHeaders,
 		ExposedHeaders:   opts.ExposedHeaders,
 		AllowCredentials: opts.AllowCredentials,
 	}

@@ -10,14 +10,22 @@ import (
 )
 
 const (
-	defaultTotalLimit    = 100000
-	maxTotalLimit        = 1000000000
+	// defaultTotalLimit - лимит обработки элементов по умолчанию.
+	defaultTotalLimit = 100000
+
+	// maxTotalLimit - максимальный допустимый лимит элементов.
+	maxTotalLimit = 1000000000
+
+	// defaultDurationLimit - лимит длительности обработки по умолчанию.
 	defaultDurationLimit = time.Minute
-	maxDurationLimit     = 365 * 24 * time.Hour
+
+	// maxDurationLimit - максимальная допустимая длительность обработки (1 год).
+	maxDurationLimit = 365 * 24 * time.Hour
 )
 
 type (
-	// ItemBatchPlayer - объект изменяющий статусы сломавшихся элементов, находящихся в очереди.
+	// ItemBatchPlayer - сервис пакетной обработки элементов в очереди.
+	// Выполняет циклическую обработку элементов до их исчерпания или достижения лимитов.
 	ItemBatchPlayer struct {
 		handler       handler
 		eventEmitter  mrevent.Emitter
@@ -25,13 +33,12 @@ type (
 		durationLimit time.Duration
 	}
 
-	// handler - внутренний интерфейс для пакетной обработки элементов.
 	handler interface {
 		Execute(ctx context.Context, limit int) (count int, err error)
 	}
 )
 
-// NewItemBatchPlayer - создаёт объект ItemBatchPlayer.
+// NewItemBatchPlayer - создаёт ItemBatchPlayer с лимитами по умолчанию.
 func NewItemBatchPlayer(
 	handler handler,
 	eventEmitter mrevent.Emitter,
@@ -39,7 +46,7 @@ func NewItemBatchPlayer(
 	return newItemBatchPlayer(handler, eventEmitter, 0, 0)
 }
 
-// NewItemBatchPlayerWithTotalLimit - создаёт объект ItemBatchPlayer.
+// NewItemBatchPlayerWithTotalLimit - создаёт ItemBatchPlayer с лимитом по количеству элементов.
 func NewItemBatchPlayerWithTotalLimit(
 	handler handler,
 	eventEmitter mrevent.Emitter,
@@ -48,7 +55,7 @@ func NewItemBatchPlayerWithTotalLimit(
 	return newItemBatchPlayer(handler, eventEmitter, totalLimit, maxDurationLimit)
 }
 
-// NewItemBatchPlayerWithDurationLimit - создаёт объект ItemBatchPlayer.
+// NewItemBatchPlayerWithDurationLimit - создаёт ItemBatchPlayer с лимитом по времени.
 func NewItemBatchPlayerWithDurationLimit(
 	handler handler,
 	eventEmitter mrevent.Emitter,
@@ -79,9 +86,15 @@ func newItemBatchPlayer(
 	}
 }
 
-// Execute - запускает в цикле вложенный процесс пакетной обработки элементов.
-// Процесс завершается когда элементов для обработки не остаётся или
-// превышен лимит кол-ва обработанных элементов.
+// Execute - запускает циклическую пакетную обработку элементов.
+// Параметр batchSize - размер пакета для одной итерации обработки.
+//
+// Процесс завершается когда:
+//  1. Обработчик вернул 0 элементов (нечего обрабатывать);
+//  2. Обработчик вернул меньше batchSize (последняя пачка);
+//  3. Достигнут totalLimit (лимит по количеству);
+//  4. Истёк durationLimit (лимит по времени);
+//  5. Отменён контекст;
 func (p *ItemBatchPlayer) Execute(ctx context.Context, batchSize int) error {
 	if batchSize < 1 {
 		return errors.ErrInternalIncorrectInputData.WithDetails("batchSize is zero or negative")
@@ -120,9 +133,9 @@ func (p *ItemBatchPlayer) Execute(ctx context.Context, batchSize int) error {
 		ctx,
 		"Execute",
 		conv.Group{
-			"total":           total,
-			"durationSeconds": time.Since(start).Seconds(),
-			"batchSize":       batchSize,
+			"total":        total,
+			"duration_sec": time.Since(start).Seconds(),
+			"batch_size":   batchSize,
 		},
 	)
 

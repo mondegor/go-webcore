@@ -10,8 +10,18 @@ import (
 	"github.com/mondegor/go-webcore/mrserver/request"
 )
 
-// RequestIDHandler - промежуточный обработчик,
-// который устанавливает в контекст requestId, correlationId.
+// RequestIDHandler - middleware для генерации и управления идентификаторами запросов.
+//
+// Логика работы:
+//  1. Генерирует уникальный RequestID и добавляет его в контекст;
+//  2. Устанавливает RequestID в заголовок ответа (X-Request-ID);
+//  3. Извлекает CorrelationID из запроса (если присутствует);
+//  4. Добавляет CorrelationID в контекст и заголовок ответа;
+//  5. Передаёт управление следующему обработчику с обновлённым контекстом.
+//
+// Важно:
+//   - RequestID генерируется автоматически для каждого запроса;
+//   - CorrelationID опционален и берётся из входящего запроса.
 func RequestIDHandler(logger mrlog.Logger, traceManager mrtrace.ContextManager) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -24,9 +34,6 @@ func RequestIDHandler(logger mrlog.Logger, traceManager mrtrace.ContextManager) 
 				ctx = traceManager.WithProcessID(ctx, mrtrace.KeyCorrelationID, correlationID)
 				w.Header().Set(mrserver.HeaderKeyCorrelationID, correlationID)
 			}
-
-			// необходимо гарантировать, чтобы этот заголовок не был передан из вне
-			r.Header.Del(mrserver.HeaderKeyUserIDSlashGroup)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

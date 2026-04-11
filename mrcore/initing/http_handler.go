@@ -13,7 +13,9 @@ import (
 )
 
 type (
-	// PrepareHandlerFunc - функция для подготовки http обработчика (корректировка URL, настройка разрешений).
+	// PrepareHandlerFunc - функция-преобразователь HTTP-обработчика.
+	// Используется для модификации обработчиков: установка разрешений,
+	// добавление middleware, изменение URL и т.д.
 	PrepareHandlerFunc func(handler mrserver.HttpHandler) mrserver.HttpHandler
 )
 
@@ -33,7 +35,8 @@ type (
 //  {privilege}      | {permission}       | check token/priv/perm  | 401, 403        | yes           |
 // ==================|====================|========================|=================|===============|
 
-// WithPermission - возвращает функцию для установки указанного разрешения обработчику.
+// WithPermission - создаёт функцию-преобразователь, которая устанавливает обработчику
+// указанное разрешение (permission), если оно ещё не установлено.
 func WithPermission(permission string) PrepareHandlerFunc {
 	return func(handler mrserver.HttpHandler) mrserver.HttpHandler {
 		if handler.Permission == "" {
@@ -44,8 +47,15 @@ func WithPermission(permission string) PrepareHandlerFunc {
 	}
 }
 
-// WithCheckAccessMiddleware - возвращает функцию для установки обработчику Middleware,
-// проверяющей доступ к этому обработчику на основе его разрешения.
+// WithCheckAccessMiddleware - создаёт функцию-преобразователь, которая добавляет к обработчику
+// middleware проверки доступа. Middleware проверяет токен доступа, привилегии и разрешения пользователя.
+//
+// Логика работы зависит от комбинации Privilege группы и Permission обработчика:
+//   - public + guest: без проверок;
+//   - public + guest-only: проверка токена (возврат 403 если токен существует);
+//   - public + permission: проверка токена и разрешения (возврат 401/403);
+//   - privilege + permission: проверка токена, привилегии и разрешения (возврат 401/403);
+//   - privilege + guest/guest-only: предупреждение в лог и возврат 403.
 func WithCheckAccessMiddleware(
 	logger mrlog.Logger,
 	actionGroup *mraccess.ActionGroup,
