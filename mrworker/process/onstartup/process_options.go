@@ -11,7 +11,7 @@ type (
 	}
 )
 
-// WithCaption - устанавливает название сервиса.
+// WithCaption - устанавливает название сервиса в свободной форме.
 // Переопределяет значение по умолчанию ("OnStartup").
 func WithCaption(value string) Option {
 	return func(o *options) {

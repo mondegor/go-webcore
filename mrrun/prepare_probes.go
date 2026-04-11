@@ -16,7 +16,6 @@ type (
 	}
 
 	// FinishedProbe - результат выполнения пробы с её статусом.
-	// Содержит название пробы и HTTP-код результата.
 	FinishedProbe struct {
 		Caption string
 		Status  int

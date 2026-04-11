@@ -116,7 +116,7 @@ func NewMessageCollector[T any](
 	return o.collector
 }
 
-// Caption - возвращает название сервиса обработки сообщений.
+// Caption - возвращает название сервиса обработки сообщений в свободной форме.
 func (p *MessageCollector[T]) Caption() string {
 	return p.caption
 }

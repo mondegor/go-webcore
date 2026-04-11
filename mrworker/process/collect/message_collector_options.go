@@ -16,7 +16,7 @@ type (
 	}
 )
 
-// WithCaption - устанавливает название сервиса.
+// WithCaption - устанавливает название сервиса в свободной форме.
 // Переопределяет значение по умолчанию ("MessageCollector").
 func WithCaption[T any](value string) Option[T] {
 	return func(o *options[T]) {

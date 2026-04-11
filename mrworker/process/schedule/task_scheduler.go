@@ -83,7 +83,7 @@ func NewTaskScheduler(
 	return o.scheduler
 }
 
-// Caption - возвращает название планировщика задач.
+// Caption - возвращает название планировщика задач в свободной форме.
 func (p *TaskScheduler) Caption() string {
 	return p.caption
 }

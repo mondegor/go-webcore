@@ -21,7 +21,7 @@ type (
 	// Используется в healthcheck-эндпоинтах для мониторинга состояния
 	// зависимостей приложения (базы данных, кэши, внешние сервисы и т.д.).
 	HealthProbe struct {
-		caption string                          // название проверяемого процесса
+		caption string
 		check   func(ctx context.Context) error // функция проверки работоспособности процесса
 		timeout time.Duration                   // таймаут, после которого функция check должна остановить своё выполнение
 		logger  mrlog.Logger
@@ -43,7 +43,7 @@ func NewHealthProbe(logger mrlog.Logger, caption string, check func(ctx context.
 	}
 }
 
-// Caption - возвращает название пробы для идентификации в логах.
+// Caption - возвращает название пробы в свободной форме.
 func (p *HealthProbe) Caption() string {
 	return p.caption
 }

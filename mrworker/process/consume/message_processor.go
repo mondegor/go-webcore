@@ -128,7 +128,7 @@ func NewMessageProcessor[T any](
 	return o.processor
 }
 
-// Caption - возвращает название сервиса обработки сообщений.
+// Caption - возвращает название сервиса обработки сообщений в свободной форме.
 func (p *MessageProcessor[T]) Caption() string {
 	return p.caption
 }

@@ -58,7 +58,7 @@ func NewJobWrapper(job mrworker.Job, opts ...Option) *JobWrapper {
 	return o.job
 }
 
-// Caption - возвращает название задачи.
+// Caption - возвращает название задачи в свободной форме.
 func (j *JobWrapper) Caption() string {
 	return j.caption
 }

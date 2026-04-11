@@ -63,7 +63,7 @@ func NewProcess(
 	return o.process
 }
 
-// Caption - возвращает название сервиса.
+// Caption - возвращает название сервиса в свободной форме.
 func (p *Process) Caption() string {
 	return p.caption
 }

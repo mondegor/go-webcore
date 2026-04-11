@@ -16,7 +16,7 @@ type (
 	}
 )
 
-// WithCaption - устанавливает название планировщика.
+// WithCaption - устанавливает название планировщика в свободной форме.
 // Переопределяет значение по умолчанию ("TaskScheduler").
 func WithCaption(value string) Option {
 	return func(o *options) {

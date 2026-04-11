@@ -45,7 +45,7 @@ func WithBaseContext(ctx context.Context) Option {
 	}
 }
 
-// WithCaption - устанавливает название сервера.
+// WithCaption - устанавливает название сервера в свободной форме.
 // Переопределяет значение по умолчанию ("MainHttpServer").
 func WithCaption(value string) Option {
 	return func(o *options) {

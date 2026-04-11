@@ -16,7 +16,7 @@ type (
 	}
 )
 
-// WithCaption - устанавливает название задачи.
+// WithCaption - устанавливает название задачи в свободной форме.
 // Переопределяет значение по умолчанию ("Task").
 func WithCaption(value string) Option {
 	return func(o *options) {

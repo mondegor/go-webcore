@@ -47,7 +47,7 @@ func NewInterceptor(logger mrlog.Logger) *Interceptor {
 	}
 }
 
-// Caption - возвращает название сервиса.
+// Caption - возвращает название сервиса в свободной форме.
 func (p *Interceptor) Caption() string {
 	return processCaption
 }

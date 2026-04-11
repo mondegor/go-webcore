@@ -61,7 +61,7 @@ func New(handler http.Handler, opts ...Option) *Adapter {
 	return o.server
 }
 
-// Caption - возвращает название HTTP-сервера.
+// Caption - возвращает название HTTP-сервера в свободной форме.
 func (s *Adapter) Caption() string {
 	return s.caption
 }
