@@ -14,7 +14,7 @@ import (
 type (
 	// User - представляет пользователя с валидируемым логином.
 	User struct {
-		Login string `validate:"required,min=3,max=16,login"` //nolint:revive
+		Login string `validate:"required,min=3,max=16,login"`
 	}
 )
 

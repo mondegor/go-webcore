@@ -38,5 +38,5 @@ func NewItemStatusWithDefault(logger mrlog.Logger, items []itemstatus.Enum) *Ite
 // FilterStatusList - возвращает массив itemstatus.Enum поступивший из внешнего запроса.
 // Если ключ key не найден или возникнет ошибка, то возвращается nil значение.
 func (p *ItemStatus) FilterStatusList(r *http.Request, key string) []itemstatus.Enum {
-	return p.FilterEnumList(r, key)
+	return p.EnumList.FilterEnumList(r, key)
 }
