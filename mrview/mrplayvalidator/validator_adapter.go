@@ -48,10 +48,10 @@ type (
 var errInternalValidatorTagIsNotFound = errors.NewInternalProto("validator error: tag is empty")
 
 // New - создаёт и настраивает адаптер валидатора на базе go-playground/validator.
-//
 // Регистрируются шаблоны ошибок для популярных тегов:
+//   http_url, required, gte, lte, max, min
 //
-//	http_url, required, gte, lte, max, min
+// Возвращает настроенный экземпляр ValidatorAdapter, готовый к использованию.
 func New(logger mrlog.Logger) *ValidatorAdapter {
 	validate := validator.New()
 
