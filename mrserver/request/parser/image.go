@@ -120,7 +120,9 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrmodel.ImageCont
 		return mrmodel.ImageContent{}, err
 	}
 
-	defer file.Body.Close()
+	defer func() {
+		_ = file.Body.Close()
+	}()
 
 	var buf bytes.Buffer
 
@@ -168,7 +170,9 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrmodel.ImageHeader, 
 				return errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
 			}
 
-			defer file.Close()
+			defer func() {
+				_ = file.Close()
+			}()
 
 			contentType := p.file.detectedContentType(fds[i])
 
@@ -226,7 +230,7 @@ func (p *Image) decode(file multipart.File, contentType string) (imageMeta, erro
 	}
 
 	return imageMeta{
-		width:  int32(cfg.Width), //nolint:gosec
+		width:  int32(cfg.Width),
 		height: int32(cfg.Height),
 	}, nil
 }

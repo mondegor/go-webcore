@@ -44,9 +44,9 @@ func RecoverHandler(logger mrlog.Logger, isDebug bool, fatalFunc http.HandlerFun
 					errorMessage := fmt.Sprintf("proto='%s', method='%s', url='%s'", r.Proto, r.Method, r.URL)
 
 					if isDebug {
-						os.Stderr.Write([]byte(errorMessage))
-						os.Stderr.Write([]byte(fmt.Sprintf("; panic: %v\n", rvr)))
-						os.Stderr.Write(debug.Stack())
+						_, _ = os.Stderr.Write([]byte(errorMessage))
+						fmt.Fprintf(os.Stderr, "; panic: %v\n", rvr)
+						_, _ = os.Stderr.Write(debug.Stack())
 					} else {
 						logger.Error(
 							ctx,

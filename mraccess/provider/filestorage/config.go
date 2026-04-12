@@ -31,12 +31,14 @@ func loadRoleConfig(filePath string) (*roleConfig, error) {
 }
 
 func parseFile(path string, data any) error {
-	f, err := os.OpenFile(path, os.O_RDONLY, 0)
+	f, err := os.OpenFile(path, os.O_RDONLY, 0) //nolint:gosec
 	if err != nil {
 		return err
 	}
 
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	return yaml.NewDecoder(f).Decode(data)
 }

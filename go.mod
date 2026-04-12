@@ -41,4 +41,4 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 )
 
-replace github.com/mondegor/go-sysmess => ../go-sysmess
+// replace github.com/mondegor/go-sysmess => ../go-sysmess

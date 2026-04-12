@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"math/rand/v2"
 	"os"
 	"sync/atomic"
 	"time"
@@ -28,14 +29,15 @@ func main() {
 		}
 	}()
 
-	timer := time.After(3 * time.Second)
+	timer1 := time.After(time.Duration(1000+rand.IntN(2001)) * time.Millisecond)
+	timer2 := time.After(time.Duration(1000+rand.IntN(2001)) * time.Millisecond)
 
 	go func() {
 		select {
 		case <-ctx.Done():
-		case <-timer:
+		case <-timer1:
 			cancel()
-		case <-timer:
+		case <-timer2:
 			if !isTimeout.Swap(true) {
 				_ = app.Shutdown(ctx)
 				logger.Error(ctx, "The application has been interrupted by timeout")

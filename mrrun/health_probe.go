@@ -59,6 +59,7 @@ func (p *HealthProbe) Caption() string {
 // Возвращает ошибку от check-функции или ошибку при панике.
 func (p *HealthProbe) Check(ctx context.Context) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
+
 	defer func() {
 		cancel()
 

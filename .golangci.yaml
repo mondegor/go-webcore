@@ -82,6 +82,7 @@ linters:
         linters:
           - forbidigo
           - gochecknoglobals
+          - gosec
           - wrapcheck
 
   settings:

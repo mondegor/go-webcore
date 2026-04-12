@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -26,7 +27,7 @@ func NewHttpRequest(method, target string, structRequest any) *HttpRequest {
 	}
 
 	return &HttpRequest{
-		r: httptest.NewRequest(method, target, bytes.NewBuffer(requestBody)),
+		r: httptest.NewRequestWithContext(context.Background(), method, target, bytes.NewBuffer(requestBody)),
 	}
 }
 
@@ -46,7 +47,10 @@ func (r *HttpRequest) Exec(handler http.Handler, structResponse any) (statusCode
 	handler.ServeHTTP(w, r.r)
 
 	response := w.Result()
-	defer response.Body.Close()
+
+	defer func() {
+		_ = response.Body.Close()
+	}()
 
 	if err = json.Unmarshal(w.Body.Bytes(), &structResponse); err != nil {
 		return 0, err

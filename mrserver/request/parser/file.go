@@ -111,7 +111,9 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrmodel.FileContent
 		return mrmodel.FileContent{}, err
 	}
 
-	defer file.Body.Close()
+	defer func() {
+		_ = file.Body.Close()
+	}()
 
 	var buf bytes.Buffer
 
