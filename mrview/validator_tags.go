@@ -16,8 +16,8 @@ type (
 // Примеры валидных значений: "article123", "my-article", "123".
 func TagArticle() Tag {
 	return Tag{
-		"tag_article",
-		ValidateAnyNotSpaceSymbol,
+		Name:         "tag_article",
+		ValidateFunc: ValidateAnyNotSpaceSymbol,
 	}
 }
 
@@ -25,8 +25,8 @@ func TagArticle() Tag {
 // Примеры валидных значений: "myVar", "UserName", "count123".
 func TagVariable() Tag {
 	return Tag{
-		"tag_variable",
-		ValidateVariable,
+		Name:         "tag_variable",
+		ValidateFunc: ValidateVariable,
 	}
 }
 
@@ -34,8 +34,8 @@ func TagVariable() Tag {
 // Примеры валидных значений: "user_name", "my-app", "file.txt", "path/to/resource".
 func TagName() Tag {
 	return Tag{
-		"tag_name",
-		ValidateName,
+		Name:         "tag_name",
+		ValidateFunc: ValidateName,
 	}
 }
 
@@ -43,16 +43,16 @@ func TagName() Tag {
 // Примеры валидных значений: "my-page", "user-profile", "item-123".
 func TagRewriteName() Tag {
 	return Tag{
-		"tag_rewrite_name",
-		ValidateRewriteName,
+		Name:         "tag_rewrite_name",
+		ValidateFunc: ValidateRewriteName,
 	}
 }
 
 // TagPassword - создаёт тег для валидации пароля.
 func TagPassword() Tag {
 	return Tag{
-		"tag_password",
-		ValidatePassword,
+		Name:         "tag_password",
+		ValidateFunc: ValidatePassword,
 	}
 }
 
@@ -60,8 +60,8 @@ func TagPassword() Tag {
 // Примеры валидных значений: "100x200", "1920x1080".
 func TagDoubleSize() Tag {
 	return Tag{
-		"tag_double_size",
-		ValidateDoubleSize,
+		Name:         "tag_double_size",
+		ValidateFunc: ValidateDoubleSize,
 	}
 }
 
@@ -69,7 +69,7 @@ func TagDoubleSize() Tag {
 // Примеры валидных значений: "100x200x300", "10x20x5".
 func TagTripleSize() Tag {
 	return Tag{
-		"tag_triple_size",
-		ValidateTripleSize,
+		Name:         "tag_triple_size",
+		ValidateFunc: ValidateTripleSize,
 	}
 }
