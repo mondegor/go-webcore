@@ -42,7 +42,7 @@ func WithReadyTimeout[T any](value time.Duration) Option[T] {
 // WithFlushPeriod - устанавливает период принудительной отправки накопленных сообщений.
 func WithFlushPeriod[T any](value time.Duration) Option[T] {
 	return func(o *options[T]) {
-		o.collector.flushPeriodStrategy = mrworker.NewStaticPeriod(value)
+		o.collector.flushPeriodStrategy = mrworker.NewStaticPeriodStrategy(value)
 	}
 }
 

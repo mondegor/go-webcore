@@ -13,26 +13,26 @@ type (
 	}
 )
 
-// NewStaticPeriod - создает стратегию статичного периода.
-func NewStaticPeriod(value time.Duration) PeriodStrategy {
+// NewStaticPeriodStrategy - создает стратегию статичного периода.
+func NewStaticPeriodStrategy(value time.Duration) PeriodStrategy {
 	return strategy.NewStaticPeriod(value)
 }
 
-// NewDispersionPeriod - создает стратегию периода со случайной дисперсией.
+// NewDispersionPeriodStrategy - создает стратегию периода со случайной дисперсией.
 // Параметры:
 //   - value - базовый период;
 //   - ratio - коэффициент дисперсии [0..1), при 0 период статичен.
-func NewDispersionPeriod(period time.Duration, ratio float64) PeriodStrategy {
+func NewDispersionPeriodStrategy(period time.Duration, ratio float64) PeriodStrategy {
 	return strategy.NewDispersionPeriod(period, ratio)
 }
 
-// NewDelayedPeriod - создает стратегию периода с начальным запаздыванием.
+// NewDelayedPeriodStrategy - создает стратегию периода с начальным запаздыванием.
 // Параметры:
 //   - delayed - начальная задержка перед выходом на номинальный период (может быть отрицательной);
 //   - ratio - коэффициент дисперсии [0..1), добавляющий случайное отклонение к периоду;
 //   - decay - коэффициент затухания задержки [0..1);
 //   - periodStrategy - стратегия определения номинального периода.
-func NewDelayedPeriod(
+func NewDelayedPeriodStrategy(
 	delayed time.Duration,
 	ratio float64,
 	decay float64,
@@ -41,14 +41,29 @@ func NewDelayedPeriod(
 	return strategy.NewDelayedPeriod(delayed, ratio, decay, periodStrategy)
 }
 
-// NewDoubleDelayedPeriod - создает составную стратегию периода с удвоенным запаздыванием на старте.
-// Комбинирует DelayedPeriod (с начальной задержкой, равной периоду, и затуханием 0.5)
-// и DispersionPeriod (со случайной дисперсией для предотвращения синхронизации тикеров).
-func NewDoubleDelayedPeriod(period time.Duration, ratio float64) PeriodStrategy {
+// NewDoubleDelayedStartStrategy - создает составную стратегию периода с удвоенным запаздыванием на старте.
+// Комбинирует DelayedPeriod (с начальной задержкой, равной периоду, и с затуханием 50%)
+// и DispersionPeriod (со случайной дисперсией ratio).
+func NewDoubleDelayedStartStrategy(period time.Duration, ratio float64) PeriodStrategy {
 	return strategy.NewDelayedPeriod(
 		period,
 		ratio,
-		0.5,
+		0.5, // затухание 50%
+		strategy.NewDispersionPeriod(
+			period,
+			ratio,
+		),
+	)
+}
+
+// NewQuadQuickStartStrategy - создает составную стратегию периода с четырёх-кратным ускорением на старте.
+// Комбинирует DelayedPeriod (с начальным ускорением в 4 раза больше периода, и с мгновенным затуханием)
+// и DispersionPeriod (со случайной дисперсией ratio).
+func NewQuadQuickStartStrategy(period time.Duration, ratio float64) PeriodStrategy {
+	return strategy.NewDelayedPeriod(
+		-(period/4)*3, // period / 4 = k * period + period -> k = - 3/4
+		ratio,
+		0, // мгновенное затухание
 		strategy.NewDispersionPeriod(
 			period,
 			ratio,

@@ -38,7 +38,7 @@ const (
 
 var (
 	// defaultReadPeriodStrategy - период опроса очереди в состоянии простоя.
-	defaultReadPeriodStrategy = mrworker.NewStaticPeriod(60 * time.Second) //nolint:gochecknoglobals
+	defaultReadPeriodStrategy = mrworker.NewStaticPeriodStrategy(60 * time.Second) //nolint:gochecknoglobals
 
 	errInternalWorkersAreStopped = errors.NewInternalProto("the message processor workers has been stopped")
 )

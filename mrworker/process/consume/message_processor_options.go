@@ -44,7 +44,7 @@ func WithReadyTimeout[T any](value time.Duration) Option[T] {
 // WithReadPeriod - устанавливает период опроса очереди в состоянии простоя.
 func WithReadPeriod[T any](value time.Duration) Option[T] {
 	return func(o *options[T]) {
-		o.processor.readPeriodStrategy = mrworker.NewStaticPeriod(value)
+		o.processor.readPeriodStrategy = mrworker.NewStaticPeriodStrategy(value)
 	}
 }
 

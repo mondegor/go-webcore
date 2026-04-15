@@ -42,7 +42,7 @@ func WithStartup(value bool) Option {
 // WithPeriod - устанавливает периодичность запуска задачи.
 func WithPeriod(value time.Duration) Option {
 	return func(o *options) {
-		o.job.periodStrategy = mrworker.NewStaticPeriod(value)
+		o.job.periodStrategy = mrworker.NewStaticPeriodStrategy(value)
 	}
 }
 

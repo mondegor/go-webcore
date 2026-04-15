@@ -32,7 +32,7 @@ const (
 )
 
 // defaultFlushPeriodStrategy - период принудительной отправки накопленного пакета.
-var defaultFlushPeriodStrategy = mrworker.NewStaticPeriod(60 * time.Second) //nolint:gochecknoglobals
+var defaultFlushPeriodStrategy = mrworker.NewStaticPeriodStrategy(60 * time.Second) //nolint:gochecknoglobals
 
 type (
 	// MessageCollector - многопоточный сервис сбора и пакетной обработки сообщений (PUSH-модель).

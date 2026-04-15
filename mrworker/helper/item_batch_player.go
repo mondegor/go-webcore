@@ -6,7 +6,6 @@ import (
 
 	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrevent"
-	"github.com/mondegor/go-sysmess/util/conv"
 )
 
 const (
@@ -132,11 +131,9 @@ func (p *ItemBatchPlayer) Execute(ctx context.Context, batchSize int) error {
 	p.eventEmitter.Emit(
 		ctx,
 		"Execute",
-		conv.Group{
-			"total":        total,
-			"duration_sec": time.Since(start).Seconds(),
-			"batch_size":   batchSize,
-		},
+		"total", total,
+		"duration_sec", time.Since(start).Seconds(),
+		"batch_size", batchSize,
 	)
 
 	return nil

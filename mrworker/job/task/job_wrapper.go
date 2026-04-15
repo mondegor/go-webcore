@@ -19,7 +19,7 @@ const (
 )
 
 // defaultPeriod - периодичность запуска задачи по умолчанию.
-var defaultPeriod = mrworker.NewStaticPeriod(60 * time.Second) //nolint:gochecknoglobals
+var defaultPeriod = mrworker.NewStaticPeriodStrategy(60 * time.Second) //nolint:gochecknoglobals
 
 // JobWrapper - обёртка, реализующая интерфейс mrworker.Task для использования
 // в планировщике задач (TaskScheduler). Позволяет адаптировать любой mrworker.Job
