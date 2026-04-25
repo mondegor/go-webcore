@@ -4,33 +4,23 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/mondegor/go-webcore/mrserver"
 )
 
 type (
 	// RequestMetrics - сборщик метрик HTTP-запросов для системы мониторинга.
-	//
 	// Собирает и отправляет:
-	//  - Время выполнения запроса (гистограмма)
-	//  - Размер полученного запроса (счётчик)
-	//  - Размер отправленного ответа (счётчик)
-	//
-	// Реализует интерфейс mrserver.RequestStat для использования в ObserverHandler.
+	//  - Время выполнения запроса (гистограмма);
+	//  - Размер полученного запроса (счётчик);
+	//  - Размер отправленного ответа (счётчик).
 	RequestMetrics struct {
-		// metrics - внутренний отправитель метрик (например: mrprometheus.ObserveRequest).
-		metrics requestMetrics
-	}
-
-	// requestMetrics - внутренний интерфейс для отправки метрик в систему мониторинга.
-	// Реализуется, например, mrprometheus.ObserveRequest.
-	requestMetrics interface {
-		SetStatusWithTime(method, location, status string, duration time.Duration)
-		IncrementRequestSize(method, location string, size int)
-		IncrementResponseSize(method, location string, size int)
+		metrics mrserver.RequestObserve
 	}
 )
 
 // NewRequestMetrics - создаёт сборщик метрик HTTP-запросов.
-func NewRequestMetrics(metrics requestMetrics) *RequestMetrics {
+func NewRequestMetrics(metrics mrserver.RequestObserve) *RequestMetrics {
 	return &RequestMetrics{
 		metrics: metrics,
 	}

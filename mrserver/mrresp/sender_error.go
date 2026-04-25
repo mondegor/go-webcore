@@ -45,7 +45,6 @@ type (
 )
 
 // NewErrorSender - создаёт объект ErrorSender.
-//
 // Параметры:
 //   - encoder - кодировщик для сериализации ответов (например: JsonEncoder);
 //   - errorHandler - обработчик для логирования ошибок;

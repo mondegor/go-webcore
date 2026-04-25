@@ -88,6 +88,7 @@ func NewMessageProcessor[T any](
 			readPeriodStrategy: defaultReadPeriodStrategy,
 			handlerTimeout:     defaultHandlerTimeout,
 
+			consumer:     consumer,
 			handler:      handler,
 			errorHandler: errorHandler,
 			logger:       logger,
@@ -119,7 +120,7 @@ func NewMessageProcessor[T any](
 
 	if o.consumerReadTimeout > 0 || o.consumerWriteTimeout > 0 {
 		o.processor.consumer = NewConsumerWithTimeout(
-			consumer,
+			o.processor.consumer,
 			o.consumerReadTimeout,
 			o.consumerWriteTimeout,
 		)

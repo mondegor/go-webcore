@@ -22,7 +22,6 @@ type (
 )
 
 // NewObserveRequest - создаёт сборщик метрик HTTP-запросов.
-//
 // Параметры:
 //   - namespace - пространство имён метрик (например: имя приложения);
 //   - subsystem - подсистема (например: "http").
@@ -70,7 +69,6 @@ func (o *ObserveRequest) Collectors() []prometheus.Collector {
 }
 
 // SetStatusWithTime - записывает длительность выполнения HTTP-запроса с указанием статуса.
-//
 // Параметры:
 //   - method - HTTP-метод (GET, POST, и т.д.);
 //   - location - путь запроса (URL-шаблон);
@@ -81,7 +79,6 @@ func (o *ObserveRequest) SetStatusWithTime(method, location, status string, dura
 }
 
 // IncrementRequestSize - добавляет размер тела полученного HTTP-запроса в байтах.
-//
 // Параметры:
 //   - method - HTTP-метод запроса;
 //   - location - путь запроса (URL-шаблон);
@@ -91,7 +88,6 @@ func (o *ObserveRequest) IncrementRequestSize(method, location string, size int)
 }
 
 // IncrementResponseSize - добавляет размер тела отправленного HTTP-ответа в байтах.
-//
 // Параметры:
 //   - method - HTTP-метод запроса;
 //   - location - путь запроса (URL-шаблон);

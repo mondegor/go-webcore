@@ -3,7 +3,7 @@ module github.com/mondegor/go-webcore
 go 1.25.0
 
 require (
-	github.com/getsentry/sentry-go v0.45.1
+	github.com/getsentry/sentry-go v0.46.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-playground/validator/v10 v10.30.2
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible

@@ -23,7 +23,6 @@ func NewSender(encoder mrserver.ResponseEncoder) *Sender {
 }
 
 // Send - отправляет клиенту ответ с сериализованными данными.
-//
 // Параметры:
 //   - w - HTTP-ответ для записи;
 //   - status - HTTP-код ответа (должен быть 2XX или 3XX);
