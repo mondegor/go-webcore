@@ -215,12 +215,10 @@ func (p *TaskScheduler) startup(ctx context.Context) error {
 			return err
 		}
 
-		select {
-		case <-ctx.Done():
+		if ctx.Err() != nil {
 			p.logger.Debug(ctx, "Task scheduler detected context 'Done'", "error", ctx.Err())
 
 			return ctx.Err()
-		default:
 		}
 	}
 

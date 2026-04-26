@@ -112,10 +112,9 @@ func (p *ItemBatchPlayer) Execute(ctx context.Context, batchSize int) error {
 			return p.wrapError(err)
 		}
 
-		select {
-		case <-ctx.Done(): // на случай, если обработчик не обработал контекст
+		// на случай, если обработчик не обработал контекст
+		if ctx.Err() != nil {
 			return p.wrapError(ctx.Err())
-		default:
 		}
 
 		total += count
