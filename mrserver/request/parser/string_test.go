@@ -11,5 +11,7 @@ import (
 
 // Make sure the String conforms with the request.ParserString interface.
 func TestStringImplementsRequestParserString(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserString)(nil), &parser.String{})
 }

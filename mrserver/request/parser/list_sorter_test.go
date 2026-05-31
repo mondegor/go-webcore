@@ -11,5 +11,7 @@ import (
 
 // Make sure the ListSorter conforms with the request.ParserListSorter interface.
 func TestListSorterImplementsRequestParserListSorter(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserListSorter)(nil), &parser.ListSorter{})
 }

@@ -11,5 +11,7 @@ import (
 
 // Make sure the Responser conforms with the mridempotency.Responser interface.
 func TestResponserImplementsResponser(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*mridempotency.Responser)(nil), &nopresponser.Responser{})
 }

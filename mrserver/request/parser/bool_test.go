@@ -11,5 +11,7 @@ import (
 
 // Make sure the Bool conforms with the request.ParserBool interface.
 func TestBoolImplementsRequestParserBool(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserBool)(nil), &parser.Bool{})
 }

@@ -11,5 +11,7 @@ import (
 
 // Make sure the Validator conforms with the request.ParserValidate interface.
 func TestValidatorImplementsRequestParserValidate(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserValidate)(nil), &parser.Validator{})
 }

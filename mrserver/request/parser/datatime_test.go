@@ -11,5 +11,7 @@ import (
 
 // Make sure the DateTime conforms with the request.ParserDateTime interface.
 func TestDateTimeImplementsRequestParserDateTime(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserDateTime)(nil), &parser.DateTime{})
 }

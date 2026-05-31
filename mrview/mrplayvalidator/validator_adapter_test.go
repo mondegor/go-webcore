@@ -11,5 +11,7 @@ import (
 
 // Make sure the ValidatorAdapter conforms with the mrview.Validator interface.
 func TestValidatorAdapterImplementsValidator(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*mrview.Validator)(nil), &mrplayvalidator.ValidatorAdapter{})
 }

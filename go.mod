@@ -3,18 +3,18 @@ module github.com/mondegor/go-webcore
 go 1.25.0
 
 require (
-	github.com/getsentry/sentry-go v0.46.0
-	github.com/go-chi/chi/v5 v5.2.5
-	github.com/go-playground/validator/v10 v10.30.2
+	github.com/getsentry/sentry-go v0.46.2
+	github.com/go-chi/chi/v5 v5.3.0
+	github.com/go-playground/validator/v10 v10.30.3
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-sysmess v0.15.4-0.20260426080509-f951a7fd4acb
+	github.com/mondegor/go-sysmess v0.15.4-0.20260531222435-e553863f6cf9
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/text v0.36.0
+	golang.org/x/text v0.37.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -31,13 +31,12 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
-	github.com/prometheus/common v0.67.5 // indirect
+	github.com/prometheus/common v0.68.0 // indirect
 	github.com/prometheus/procfs v0.20.1 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
-	go.yaml.in/yaml/v2 v2.4.4 // indirect
-	golang.org/x/crypto v0.50.0 // indirect
-	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
-	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/crypto v0.52.0 // indirect
+	golang.org/x/exp v0.0.0-20260529124908-c761662dc8c9 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
 

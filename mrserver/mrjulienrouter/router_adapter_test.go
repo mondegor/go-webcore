@@ -11,5 +11,7 @@ import (
 
 // Make sure the RouterAdapter conforms with the mrserver.HttpRouter interface.
 func TestRouterAdapterImplementsHttpRouter(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*mrserver.HttpRouter)(nil), &mrjulienrouter.RouterAdapter{})
 }

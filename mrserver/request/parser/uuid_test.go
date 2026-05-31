@@ -11,5 +11,7 @@ import (
 
 // Make sure the UUID conforms with the request.ParserUUID interface.
 func TestUUIDImplementsRequestParserUUID(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserUUID)(nil), &parser.UUID{})
 }

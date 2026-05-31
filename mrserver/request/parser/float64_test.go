@@ -11,5 +11,7 @@ import (
 
 // Make sure the Float64 conforms with the request.ParserFloat64 interface.
 func TestFloat64ImplementsRequestParserFloat64(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserFloat64)(nil), &parser.Float64{})
 }

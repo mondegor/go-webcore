@@ -11,5 +11,7 @@ import (
 
 // Make sure the File conforms with the request.ParserFile interface.
 func TestFileImplementsRequestParserFile(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserFile)(nil), &parser.File{})
 }

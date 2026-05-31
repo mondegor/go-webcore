@@ -11,5 +11,7 @@ import (
 
 // Make sure the ItemStatus conforms with the request.ParserItemStatus interface.
 func TestItemStatusImplementsRequestParserItemStatus(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserItemStatus)(nil), &parser.ItemStatus{})
 }

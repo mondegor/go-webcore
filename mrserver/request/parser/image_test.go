@@ -11,5 +11,7 @@ import (
 
 // Make sure the Image conforms with the request.ParserImage interface.
 func TestImageImplementsRequestParserImage(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserImage)(nil), &parser.Image{})
 }

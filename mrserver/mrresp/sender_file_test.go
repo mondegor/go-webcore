@@ -11,5 +11,7 @@ import (
 
 // Make sure the FileSender conforms with the mrserver.FileResponseSender interface.
 func TestFileSenderImplementsFileResponseSender(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*mrserver.FileResponseSender)(nil), &mrresp.FileSender{})
 }

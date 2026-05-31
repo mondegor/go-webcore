@@ -11,5 +11,7 @@ import (
 
 // Make sure the Provider conforms with the mridempotency.Provider interface.
 func TestProviderImplementsProvider(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*mridempotency.Provider)(nil), &nopprovider.Provider{})
 }

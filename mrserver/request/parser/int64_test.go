@@ -11,5 +11,7 @@ import (
 
 // Make sure the Int64 conforms with the request.ParserInt64 interface.
 func TestInt64ImplementsRequestParserInt64(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*request.ParserInt64)(nil), &parser.Int64{})
 }
