@@ -8,7 +8,7 @@ import (
 
 	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrmodel"
+	"github.com/mondegor/go-sysmess/mrmodel/media"
 	"github.com/mondegor/go-sysmess/util/mime"
 
 	"github.com/mondegor/go-webcore/mrdebug"
@@ -78,23 +78,23 @@ func NewFile(logger mrlog.Logger, opts ...FileOption) *File {
 
 // FormFile - возвращает информацию о файле со ссылкой для чтения файла из MultipartForm.
 // WARNING: you don't forget to call result.Body.Close().
-func (p *File) FormFile(r *http.Request, key string) (mrmodel.File, error) {
+func (p *File) FormFile(r *http.Request, key string) (media.File, error) {
 	hdr, err := p.formFile(r, p.logger, key)
 	if err != nil {
-		return mrmodel.File{}, err
+		return media.File{}, err
 	}
 
 	if err = p.checkFile(hdr); err != nil {
-		return mrmodel.File{}, err
+		return media.File{}, err
 	}
 
 	file, err := hdr.Open()
 	if err != nil {
-		return mrmodel.File{}, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
+		return media.File{}, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
 	}
 
-	return mrmodel.File{
-		FileInfo: mrmodel.FileInfo{
+	return media.File{
+		FileInfo: media.FileInfo{
 			ContentType:  p.detectedContentType(hdr),
 			OriginalName: hdr.Filename,
 			Size:         hdr.Size,
@@ -105,10 +105,10 @@ func (p *File) FormFile(r *http.Request, key string) (mrmodel.File, error) {
 
 // FormFileContent - возвращает информацию о файле и сам файл из MultipartForm.
 // WARNING: only for short files.
-func (p *File) FormFileContent(r *http.Request, key string) (mrmodel.FileContent, error) {
+func (p *File) FormFileContent(r *http.Request, key string) (media.FileContent, error) {
 	file, err := p.FormFile(r, key)
 	if err != nil {
-		return mrmodel.FileContent{}, err
+		return media.FileContent{}, err
 	}
 
 	defer func() {
@@ -118,17 +118,17 @@ func (p *File) FormFileContent(r *http.Request, key string) (mrmodel.FileContent
 	var buf bytes.Buffer
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
-		return mrmodel.FileContent{}, errors.WrapInternalError(err, "reading file.Body failed")
+		return media.FileContent{}, errors.WrapInternalError(err, "reading file.Body failed")
 	}
 
-	return mrmodel.FileContent{
+	return media.FileContent{
 		FileInfo: file.FileInfo,
 		Body:     buf.Bytes(),
 	}, nil
 }
 
 // FormFiles - возвращает массив заголовков на файлы из MultipartForm.
-func (p *File) FormFiles(r *http.Request, key string) ([]mrmodel.FileHeader, error) {
+func (p *File) FormFiles(r *http.Request, key string) ([]media.FileHeader, error) {
 	fds, err := p.formFiles(r, p.logger, key, 0)
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrmodel.FileHeader, err
 		return nil, err
 	}
 
-	files := make([]mrmodel.FileHeader, 0, countFiles)
+	files := make([]media.FileHeader, 0, countFiles)
 
 	for i := 0; i < countFiles; i++ {
 		if err = p.checkFile(fds[i]); err != nil {
@@ -157,8 +157,8 @@ func (p *File) FormFiles(r *http.Request, key string) ([]mrmodel.FileHeader, err
 
 		files = append(
 			files,
-			mrmodel.FileHeader{
-				FileInfo: mrmodel.FileInfo{
+			media.FileHeader{
+				FileInfo: media.FileInfo{
 					ContentType:  p.detectedContentType(fds[i]),
 					OriginalName: fds[i].Filename,
 					Size:         fds[i].Size,

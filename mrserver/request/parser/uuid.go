@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrtype/parse"
+	"github.com/mondegor/go-sysmess/mrtype/errors"
 )
 
 const (
@@ -63,19 +63,19 @@ func (p *UUID) parseUUID(value string, required bool) (uuid.UUID, error) {
 
 	if value == "" {
 		if required {
-			return uuid.Nil, parse.NewParamEmptyError(typeUUID)
+			return uuid.Nil, errors.NewParamEmptyError(typeUUID)
 		}
 
 		return uuid.Nil, nil
 	}
 
 	if len(value) > maxLenUUID {
-		return uuid.Nil, parse.NewParamLenMaxError(typeUUID, maxLenUUID)
+		return uuid.Nil, errors.NewParamLenMaxError(typeUUID, maxLenUUID)
 	}
 
 	id, err := uuid.Parse(value)
 	if err != nil {
-		return uuid.Nil, parse.NewParamIncorrectError(typeUUID, err)
+		return uuid.Nil, errors.NewParamIncorrectError(typeUUID, err)
 	}
 
 	return id, nil

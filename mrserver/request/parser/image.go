@@ -8,7 +8,7 @@ import (
 
 	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrmodel"
+	"github.com/mondegor/go-sysmess/mrmodel/media"
 	"github.com/mondegor/go-sysmess/util/mime"
 	"github.com/mondegor/go-sysmess/util/ximage"
 )
@@ -74,19 +74,19 @@ func NewImage(logger mrlog.Logger, opts ...ImageOption) *Image {
 
 // FormImage - возвращает информацию об изображении со ссылкой для чтения файла изображения из MultipartForm.
 // WARNING: you don't forget to call result.Body.Close().
-func (p *Image) FormImage(r *http.Request, key string) (mrmodel.Image, error) {
+func (p *Image) FormImage(r *http.Request, key string) (media.Image, error) {
 	hdr, err := p.file.formFile(r, p.file.logger, key)
 	if err != nil {
-		return mrmodel.Image{}, err
+		return media.Image{}, err
 	}
 
 	if err = p.file.checkFile(hdr); err != nil {
-		return mrmodel.Image{}, err
+		return media.Image{}, err
 	}
 
 	file, err := hdr.Open()
 	if err != nil {
-		return mrmodel.Image{}, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
+		return media.Image{}, errors.ErrSystemHttpMultipartFormFile.Wrap(err, "key", key)
 	}
 
 	contentType := p.file.detectedContentType(hdr)
@@ -97,11 +97,11 @@ func (p *Image) FormImage(r *http.Request, key string) (mrmodel.Image, error) {
 			p.file.logger.Error(r.Context(), "mrparser.FormImage: error when closing file image", "error", err)
 		}
 
-		return mrmodel.Image{}, err
+		return media.Image{}, err
 	}
 
-	return mrmodel.Image{
-		ImageInfo: mrmodel.ImageInfo{
+	return media.Image{
+		ImageInfo: media.ImageInfo{
 			ContentType:  contentType,
 			OriginalName: hdr.Filename,
 			Width:        meta.width,
@@ -114,10 +114,10 @@ func (p *Image) FormImage(r *http.Request, key string) (mrmodel.Image, error) {
 
 // FormImageContent - возвращает информацию об изображении и сам файл изображения из MultipartForm.
 // WARNING: only for short files.
-func (p *Image) FormImageContent(r *http.Request, key string) (mrmodel.ImageContent, error) {
+func (p *Image) FormImageContent(r *http.Request, key string) (media.ImageContent, error) {
 	file, err := p.FormImage(r, key)
 	if err != nil {
-		return mrmodel.ImageContent{}, err
+		return media.ImageContent{}, err
 	}
 
 	defer func() {
@@ -127,17 +127,17 @@ func (p *Image) FormImageContent(r *http.Request, key string) (mrmodel.ImageCont
 	var buf bytes.Buffer
 
 	if _, err = buf.ReadFrom(file.Body); err != nil {
-		return mrmodel.ImageContent{}, errors.WrapInternalError(err, "reading file.Body failed")
+		return media.ImageContent{}, errors.WrapInternalError(err, "reading file.Body failed")
 	}
 
-	return mrmodel.ImageContent{
+	return media.ImageContent{
 		ImageInfo: file.ImageInfo,
 		Body:      buf.Bytes(),
 	}, nil
 }
 
 // FormImages - возвращает массив заголовков на файлы изображений из MultipartForm.
-func (p *Image) FormImages(r *http.Request, key string) ([]mrmodel.ImageHeader, error) {
+func (p *Image) FormImages(r *http.Request, key string) ([]media.ImageHeader, error) {
 	fds, err := p.file.formFiles(r, p.file.logger, key, 0)
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrmodel.ImageHeader, 
 		return nil, err
 	}
 
-	images := make([]mrmodel.ImageHeader, 0, countFiles)
+	images := make([]media.ImageHeader, 0, countFiles)
 
 	for i := 0; i < countFiles; i++ {
 		err = func() error { // for defer file.Close()
@@ -183,8 +183,8 @@ func (p *Image) FormImages(r *http.Request, key string) ([]mrmodel.ImageHeader, 
 
 			images = append(
 				images,
-				mrmodel.ImageHeader{
-					ImageInfo: mrmodel.ImageInfo{
+				media.ImageHeader{
+					ImageInfo: media.ImageInfo{
 						ContentType:  contentType,
 						OriginalName: fds[i].Filename,
 						Width:        meta.width,

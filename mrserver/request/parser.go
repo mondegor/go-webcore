@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mondegor/go-sysmess/mrmodel"
-	"github.com/mondegor/go-sysmess/mrstatus/itemstatus"
+	"github.com/mondegor/go-sysmess/mrmodel/media"
 	"github.com/mondegor/go-sysmess/mrtype"
+	"github.com/mondegor/go-sysmess/mrworkflow/itemstatus"
 
 	"github.com/mondegor/go-webcore/mrcore"
 )
@@ -82,16 +82,16 @@ type (
 
 	// ParserFile - извлекает файлы и их метаданные из multipart-формы запроса.
 	ParserFile interface {
-		FormFile(r *http.Request, key string) (mrmodel.File, error)
-		FormFileContent(r *http.Request, key string) (mrmodel.FileContent, error)
-		FormFiles(r *http.Request, key string) ([]mrmodel.FileHeader, error)
+		FormFile(r *http.Request, key string) (media.File, error)
+		FormFileContent(r *http.Request, key string) (media.FileContent, error)
+		FormFiles(r *http.Request, key string) ([]media.FileHeader, error)
 	}
 
 	// ParserImage - извлекает файлы изображений и их метаданные из multipart-формы запроса.
 	ParserImage interface {
-		FormImage(r *http.Request, key string) (mrmodel.Image, error)
-		FormImageContent(r *http.Request, key string) (mrmodel.ImageContent, error)
-		FormImages(r *http.Request, key string) ([]mrmodel.ImageHeader, error)
+		FormImage(r *http.Request, key string) (media.Image, error)
+		FormImageContent(r *http.Request, key string) (media.ImageContent, error)
+		FormImages(r *http.Request, key string) ([]media.ImageHeader, error)
 	}
 
 	// ParserListSorter - извлекает параметры сортировки из query-параметров запроса.

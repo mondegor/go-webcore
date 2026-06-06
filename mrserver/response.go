@@ -6,7 +6,7 @@ import (
 
 	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/errors/helper"
-	"github.com/mondegor/go-sysmess/mrmodel"
+	"github.com/mondegor/go-sysmess/mrmodel/media"
 )
 
 type (
@@ -29,8 +29,8 @@ type (
 	FileResponseSender interface {
 		ResponseSender
 
-		SendFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error
-		SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error
+		SendFile(ctx context.Context, w http.ResponseWriter, file media.File) error
+		SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file media.File) error
 	}
 
 	// ErrorResponseSender - интерфейс отправки клиенту ответов с информацией об ошибках.

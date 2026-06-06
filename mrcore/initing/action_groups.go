@@ -1,10 +1,9 @@
 package initing
 
 import (
+	"github.com/mondegor/go-sysmess/mraccess"
+	"github.com/mondegor/go-sysmess/mraccess/config"
 	"github.com/mondegor/go-sysmess/mrlog"
-
-	"github.com/mondegor/go-webcore/mraccess"
-	"github.com/mondegor/go-webcore/mraccess/config"
 )
 
 // InitActionGroups - создаёт и инициализирует группу действий (ActionGroup) из конфигурации.

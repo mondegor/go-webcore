@@ -10,12 +10,11 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-sysmess v0.15.4-0.20260531222435-e553863f6cf9
+	github.com/mondegor/go-sysmess v0.15.4-0.20260606071946-4910a082c316
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/text v0.37.0
-	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -35,9 +34,9 @@ require (
 	github.com/prometheus/procfs v0.20.1 // indirect
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
-	golang.org/x/exp v0.0.0-20260529124908-c761662dc8c9 // indirect
 	golang.org/x/sys v0.45.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 // replace github.com/mondegor/go-sysmess => ../go-sysmess

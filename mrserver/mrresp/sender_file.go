@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrmodel"
+	"github.com/mondegor/go-sysmess/mrmodel/media"
 )
 
 type (
@@ -32,18 +32,18 @@ func NewFileSender(base *Sender, logger mrlog.Logger) *FileSender {
 // SendFile - отправляет файл для отображения в браузере (inline).
 // Content-Type устанавливается из FileInfo.ContentType файла.
 // Content-Length устанавливается если известен размер файла.
-func (rs *FileSender) SendFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error {
+func (rs *FileSender) SendFile(ctx context.Context, w http.ResponseWriter, file media.File) error {
 	return rs.sendFile(ctx, w, file, false)
 }
 
 // SendAttachmentFile - отправляет файл как вложение для скачивания (attachment).
 // Устанавливает заголовок Content-Disposition: attachment с именем файла.
 // Устанавливает Cache-control: private для предотвращения кэширования прокси.
-func (rs *FileSender) SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File) error {
+func (rs *FileSender) SendAttachmentFile(ctx context.Context, w http.ResponseWriter, file media.File) error {
 	return rs.sendFile(ctx, w, file, true)
 }
 
-func (rs *FileSender) sendFile(ctx context.Context, w http.ResponseWriter, file mrmodel.File, isAttachment bool) error {
+func (rs *FileSender) sendFile(ctx context.Context, w http.ResponseWriter, file media.File, isAttachment bool) error {
 	w.Header().Set("Content-Type", file.ContentType)
 
 	if file.Size > 0 {

@@ -3,9 +3,8 @@ package wire
 import (
 	"strings"
 
+	"github.com/mondegor/go-sysmess/mraccess/provider/filestorage"
 	"github.com/mondegor/go-sysmess/mrlog"
-
-	"github.com/mondegor/go-webcore/mraccess/provider/filestorage"
 )
 
 // InitPermsProvider - создаёт и инициализирует провайдер ролей и разрешений из файлового хранилища.
