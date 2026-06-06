@@ -3,6 +3,7 @@ package initing
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mraccess"
@@ -58,7 +59,7 @@ func WithPermission(permission string) PrepareHandlerFunc {
 //   - privilege + guest/guest-only: предупреждение в лог и возврат 403.
 func WithCheckAccessMiddleware(
 	logger mrlog.Logger,
-	actionGroup *mraccess.ActionGroup,
+	actionGroup mraccess.ActionGroup,
 	userProvider mraccess.UserProvider,
 	rightsAvailability mraccess.RightsChecker,
 ) PrepareHandlerFunc {
@@ -90,7 +91,7 @@ func WithCheckAccessMiddleware(
 	}
 
 	return func(handler mrserver.HttpHandler) mrserver.HttpHandler {
-		handler.URL = actionGroup.BasePath.BuildPath(handler.URL)
+		handler.URL = actionGroup.BasePath + strings.TrimLeft(handler.URL, "/")
 
 		if actionGroup.Privilege == mraccess.PrivilegePublic && handler.Permission == mraccess.PermissionAnyUser {
 			return handler

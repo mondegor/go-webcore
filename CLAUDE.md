@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`go-webcore` (GoWebCore) is a Go library (`github.com/mondegor/go-webcore`, Go 1.25) providing base building blocks for web services. It is consumed by other projects, not run as an application. Code comments and docs are written in **Russian**; match this convention when editing existing files.
+`go-webcore` (GoWebCore) is a Go library (`github.com/mondegor/go-webcore`, Go 1.25) providing base building blocks for web services. It is consumed by other projects, not run as an application. Code comments and docs are written in **English** or **Russian**; match this convention when editing existing files.
 
 The library's design philosophy: each `mr*` package defines **interfaces** (e.g. `HttpRouter`, `Localizer`, `RightsSource`), and third-party libraries are wired in through **adapter sub-packages**. This lets consuming projects swap implementations. When adding support for a new third-party library, follow the adapter pattern rather than importing it into the interface package.
 
