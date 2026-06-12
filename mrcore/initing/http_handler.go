@@ -20,21 +20,25 @@ type (
 	PrepareHandlerFunc func(handler mrserver.HttpHandler) mrserver.HttpHandler
 )
 
-// ==================|====================|========================|=================|===============|
-// Group privilege   | Handler permission |         Actions        | Access errors   | Init/set user |
-// ==================|====================|========================|=================|===============|
-//  public           | guest              | no                     | no              | no            |
-// ------------------|--------------------|------------------------|-----------------|---------------|
-//  public           | guest-only         | check token            | if exists: 403  | no            |
-// ------------------|--------------------|------------------------|-----------------|---------------|
-//  public           | {permission}       | check token/permission | 401, 403        | yes           |
-// ------------------|--------------------|------------------------|-----------------|---------------|
-//  {privilege}      | guest              | warning, skip          |       ---       |      ---      |
-// ------------------|--------------------|------------------------|-----------------|---------------|
-//  {privilege}      | guest-only         | warning, skip          |       ---       |      ---      |
-// ------------------|--------------------|------------------------|-----------------|---------------|
-//  {privilege}      | {permission}       | check token/priv/perm  | 401, 403        | yes           |
-// ==================|====================|========================|=================|===============|
+// ==================|====================|============================|=================|===============|
+// Group privilege   | Handler permission |           Actions          | Access errors   | Init/set user |
+// ==================|====================|============================|=================|===============|
+//  public           | everyone           | no                         | no              | no            |
+// ------------------|--------------------|----------------------------|-----------------|---------------|
+//  public           | guest-only         | check token                | if exists: 403  | no            |
+// ------------------|--------------------|----------------------------|-----------------|---------------|
+//  public           | any-user           | check token (auth only)    | 401             | yes           |
+// ------------------|--------------------|----------------------------|-----------------|---------------|
+//  public           | {permission}       | check token/permission     | 401, 403        | yes           |
+// ------------------|--------------------|----------------------------|-----------------|---------------|
+//  {privilege}      | everyone           | check token/priv           | 401, 403        | yes           |
+// ------------------|--------------------|----------------------------|-----------------|---------------|
+//  {privilege}      | guest-only         | warning, skip              | 403             |      ---      |
+// ------------------|--------------------|----------------------------|-----------------|---------------|
+//  {privilege}      | any-user           | check token/priv (auth)    | 401, 403        | yes           |
+// ------------------|--------------------|----------------------------|-----------------|---------------|
+//  {privilege}      | {permission}       | check token/priv/perm      | 401, 403        | yes           |
+// ==================|====================|============================|=================|===============|
 
 // WithPermission - создаёт функцию-преобразователь, которая устанавливает обработчику
 // указанное разрешение (permission), если оно ещё не установлено.
@@ -52,11 +56,12 @@ func WithPermission(permission string) PrepareHandlerFunc {
 // middleware проверки доступа. Middleware проверяет токен доступа, привилегии и разрешения пользователя.
 //
 // Логика работы зависит от комбинации Privilege группы и Permission обработчика:
-//   - public + guest: без проверок;
+//   - public + everyone: без проверок (доступно всем, включая гостя);
+//   - privilege + everyone: доступ по наличию привилегии (401 без токена, 403 без привилегии; разрешение не проверяется);
 //   - public + guest-only: проверка токена (возврат 403 если токен существует);
-//   - public + permission: проверка токена и разрешения (возврат 401/403);
-//   - privilege + permission: проверка токена, привилегии и разрешения (возврат 401/403);
-//   - privilege + guest/guest-only: предупреждение в лог и возврат 403.
+//   - any-user: требуется только аутентификация (возврат 401 без токена; разрешение не проверяется);
+//   - public/privilege + permission: проверка токена/привилегии/разрешения (возврат 401/403);
+//   - privilege + guest-only: предупреждение в лог и возврат 403.
 func WithCheckAccessMiddleware(
 	logger mrlog.Logger,
 	actionGroup mraccess.ActionGroup,
@@ -93,7 +98,8 @@ func WithCheckAccessMiddleware(
 	return func(handler mrserver.HttpHandler) mrserver.HttpHandler {
 		handler.URL = actionGroup.BasePath + strings.TrimLeft(handler.URL, "/")
 
-		if actionGroup.Privilege == mraccess.PrivilegePublic && handler.Permission == mraccess.PermissionAnyUser {
+		// everyone: доступно всем без проверок
+		if actionGroup.Privilege == mraccess.PrivilegePublic && handler.Permission == mraccess.PermissionEveryone {
 			return handler
 		}
 
@@ -108,8 +114,8 @@ func WithCheckAccessMiddleware(
 			return handler
 		}
 
-		if actionGroup.Privilege != mraccess.PrivilegePublic &&
-			(handler.Permission == mraccess.PermissionAnyUser || handler.Permission == mraccess.PermissionGuestOnly) {
+		// guest-only не имеет смысла в приватной группе
+		if actionGroup.Privilege != mraccess.PrivilegePublic && handler.Permission == mraccess.PermissionGuestOnly {
 			mrlog.Warn(
 				logger,
 				"This permission cannot be present in the private actionGroup",
