@@ -61,9 +61,9 @@ func WithCheckAccessMiddleware(
 	logger mrlog.Logger,
 	actionGroup mraccess.ActionGroup,
 	userProvider mraccess.UserProvider,
-	rightsAvailability mraccess.RightsChecker,
+	rightsAvailability mraccess.RightsRegistry,
 ) PrepareHandlerFunc {
-	if actionGroup.Privilege != mraccess.PrivilegePublic && !rightsAvailability.HasPrivilege(actionGroup.Privilege) {
+	if actionGroup.Privilege != mraccess.PrivilegePublic && !rightsAvailability.IsRegistered(actionGroup.Privilege) {
 		mrlog.Warn(
 			logger,
 			fmt.Sprintf(
@@ -125,7 +125,7 @@ func WithCheckAccessMiddleware(
 			return handler
 		}
 
-		if !rightsAvailability.HasPermission(handler.Permission) {
+		if !rightsAvailability.IsRegistered(handler.Permission) {
 			mrlog.Warn(
 				logger,
 				"Permission is not registered, perhaps, it is not registered in the config or is not associated with any role",

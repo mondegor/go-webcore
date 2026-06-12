@@ -51,11 +51,11 @@ func CheckAccessHandler(
 
 			logger.Debug(ctx, "current user", "userId", uuid.UUID(currentUser.ID()).String())
 
-			if action.Privilege != mraccess.PrivilegePublic && !currentUser.HasPrivilege(action.Privilege) {
+			if action.Privilege != mraccess.PrivilegePublic && !currentUser.Has(action.Privilege) {
 				return errors.ErrHttpAccessForbidden
 			}
 
-			if !currentUser.HasPermission(action.Permission) {
+			if !currentUser.Has(action.Permission) {
 				return errors.ErrHttpAccessForbidden
 			}
 
