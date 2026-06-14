@@ -18,7 +18,7 @@ import (
 //  1. Извлекает access token из запроса;
 //  2. Получает данные пользователя через userProvider;
 //  3. Проверяет привилегию (Privilege) и разрешение (Permission) пользователя;
-//  4. Устанавливает заголовки: Accept-Language (из профиля пользователя), UserID/Group;
+//  4. Устанавливает заголовки: Accept-Language (из профиля пользователя), UserID/Group, SessionID;
 //  5. Вызывает следующий обработчик в цепочке.
 func CheckAccessHandler(
 	logger mrlog.Logger,
@@ -59,13 +59,20 @@ func CheckAccessHandler(
 				return errors.ErrHttpAccessForbidden
 			}
 
+			r.Header.Set(mrserver.HeaderKeyUserIDSlashGroup, uuid.UUID(currentUser.ID()).String()+"/"+currentUser.Group()) // userId/realm/kind
+
+			sessionID := currentUser.SessionID()
+			if sessionID == "" {
+				logger.Error(ctx, "session id is empty", "userId", uuid.UUID(currentUser.ID()).String())
+			}
+
+			r.Header.Set(mrserver.HeaderKeySessionID, sessionID)
+
 			// замена языка переданного клиентом в заголовке Accept-Language
 			// на язык, который был установлен пользователем
 			if code := currentUser.LangCode(); code != "" {
 				r.Header.Set(mrserver.HeaderKeyAcceptLanguage, code)
 			}
-
-			r.Header.Set(mrserver.HeaderKeyUserIDSlashGroup, uuid.UUID(currentUser.ID()).String()+"/"+currentUser.Group()) // userId/realm/kind
 
 			if err = next(w, r); err != nil {
 				// if errors.Is(err, errors.ErrAccessForbidden) {

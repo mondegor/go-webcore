@@ -49,6 +49,11 @@ func (p *User) UserAndGroup(r *http.Request) (userID uuid.UUID, group string) {
 	return p.userID(r.Context(), val), group
 }
 
+// SessionID - извлекает ID сессии пользователя из HTTP запроса.
+func (p *User) SessionID(r *http.Request) string {
+	return r.Header.Get(mrserver.HeaderKeySessionID)
+}
+
 func (p *User) userID(ctx context.Context, value string) uuid.UUID {
 	userID, err := uuid.Parse(value)
 	if err != nil {

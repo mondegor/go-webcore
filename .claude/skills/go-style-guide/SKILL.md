@@ -29,16 +29,34 @@ by `.golangci.yaml` (`golangci-lint` runs strict — `make lint` must pass befor
   This is pervasive (the norm here, unlike Uber which groups only related decls):
   ```go
   type (
-      // Formatter - описание типа ...
-      Formatter struct {
-          parser *Parser
+      // Service - описание типа ...
+      Service struct {
+          repo Repository
       }
   )
   ```
 - Group related `var`/`const` in blocks. Predefined error catalogs are `var ( … )` blocks
   of `ErrXxx` factory protos.
+- **Functional options go in their own file.** When a type uses the functional-options
+  pattern (`Option` type + `WithXxx` constructors), put the option type and all its
+  `WithXxx` functions in a dedicated file next to the type. Name it bare `options.go`
+  **only** when the package has a single type (no ambiguity). When the package holds
+  other types/files, name the file `<thing>_options.go` after the owning type (e.g.
+  `session_list_options.go` next to `session_list.go`), so it's clear which type the
+  options belong to — a bare `options.go` would be ambiguous there.
 - No global mutable state (`gochecknoglobals`) — error/sentinel `var`s are the accepted
   exception. No `init()` functions (`gochecknoinits`).
+- **Repository/storage methods return simple shapes — slices or entities, never `map`.**
+  A data-access method yields `([]entity.X, error)` / `([]uint32, error)`; any derived
+  structure (a lookup set, an index, a grouping) is built by the **consuming layer**
+  (usecase/service), not by the repository. This keeps the data-access API uniform and
+  decoupled from how a caller chooses to index the rows.
+- **Name the result parameters of interface methods when the results are native types.**
+  In an interface declaration, give the returns names when their types are built-in/native
+  (`[]uint32`, `string`, `bool`, `int`, …) so the signature is self-documenting, e.g.
+  `FetchOpenSessionIDs(ctx context.Context, userID uuid.UUID) (sessionIDs []uint32, err error)`.
+  When a result is already a descriptive named type (`dto.UserScopes`, `[]entity.Session`), a
+  name is optional. When other results are named, name the error `err` too.
 
 ## Comments (English or Russian godot-checked)
 
@@ -50,19 +68,25 @@ by `.golangci.yaml` (`golangci-lint` runs strict — `make lint` must pass befor
   declarations only, so these aren't linter-enforced — follow the convention manually.)
 - Document constructor params with a bulleted list when non-trivial:
   ```go
-  // NewFormatter - создаёт Formatter ...
+  // NewService - создаёт Service ...
   // Параметры:
-  //   - parser - разбирает входные данные;
+  //   - repo - доступ к хранилищу данных;
   //   - handler - функция обработки результата.
   ```
 
 ## Naming
 
 - Constructors: `NewXxx`. Receivers: short (1 letter), consistent per type
-  (`e *protoError`, `w *customErrorWrapper`). `revive receiver-naming` enforces consistency.
+  (`s *service`, `w *wrapper`). `revive receiver-naming` enforces consistency.
 - Sentinel errors prefixed `Err`, error *types* suffixed `Error` (`errname`).
   Note: error *codes* are camelCase string literals (e.g. `"errSomethingFailed"`).
 - Initialisms via `revive var-naming`: `HTTP`, `JSON` (not `Http`/`Json`).
+- **Layer-based entity & method naming.** In the `usecase`/`service` layers, name domain
+  entity values `item` / `items` and give methods **business-intent** names that describe
+  the operation in domain terms. In the `repository` layer, name DB-row values
+  `row` / `rows` and give methods **technical CRUD** names (`Insert`, `Update`, `Delete`,
+  `Fetch`, …). The split keeps domain vocabulary in the upper layers and data-access
+  vocabulary at the storage boundary.
 - Import aliases lowercase `^[a-z][a-z0-9]*$`; no redundant aliases.
 - `staticcheck -ST1003` is off, so some naming rules are relaxed — still follow Go idiom.
 
@@ -88,6 +112,25 @@ by `.golangci.yaml` (`golangci-lint` runs strict — `make lint` must pass befor
 - Early return / guard clauses; avoid `else` after a returning `if`
   (`indent-error-flow`, `early-return`, `superfluous-else`, all `preserveScope`).
   Avoid deep nesting (`nestif`).
+- **Keep the main positive (happy) path outside `if` blocks.** Branch on the error
+  condition `if err != nil { … }` and let execution fall through to the success path —
+  do **not** put the success logic inside `if err == nil { … }`. Use `err == nil` as a
+  condition only as a last resort (when the negated form is genuinely not expressible or
+  would obscure intent), and **always** with a comment explaining why:
+  ```go
+  // good — error branch guards, happy path continues unindented
+  v, err := parse(s)
+  if err != nil {
+      return err
+  }
+
+  use(v)
+
+  // avoid — happy path buried inside the condition
+  if v, err := parse(s); err == nil {
+      use(v)
+  }
+  ```
 - Prefer `make(...)` to init maps/slices (`enforce-map-style`, `enforce-slice-style`).
   Preallocate slices with a capacity hint when length is known (`prealloc`):
   `make([]string, 0, len(x)*2)`.
@@ -123,6 +166,19 @@ by `.golangci.yaml` (`golangci-lint` runs strict — `make lint` must pass befor
 - For mocks use **only** `go.uber.org/mock/gomock`. Generate mocks with `mockgen`
   (`//go:generate mockgen ...`), drive expectations via `gomock.NewController(t)` and
   `EXPECT()`. Do **not** hand-write mocks or use any other mocking library.
+- **Put the `//go:generate mockgen ...` directives in the `_test.go` file that consumes
+  the mocks, not in the production source.** Mocks are test-only tooling, so the
+  directives belong with the tests; place them right after the import block of the
+  package's test file. `go generate` runs per-directory, so `-source=foo.go` (and the
+  `-destination=mock/...` paths) still resolve correctly from the test file. When one
+  directory has several source files generating mocks, group all their directives in the
+  single package test file (e.g. `session_test.go`).
+- **Always generate mocks into a nested `mock/` directory next to the consuming package**
+  (`package mock`, e.g. `service/session/mock/`), one `mock/` per package that owns/consumes
+  the interfaces — never into `*_mock_test.go` in the test package. The external `_test`
+  package imports `<pkg>/mock` and uses `mock.NewMockXxx(ctrl)`. A mock of an unexported
+  interface (generated via `mockgen -source`) is assigned to the constructor's unexported
+  interface parameter structurally — the unexported type name is never written in the test.
 - `t.Parallel()` at the top of every test and subtest (`tparallel`). Test helpers call
   `t.Helper()` (`thelper`).
 - Table-driven with a local `type testCase struct`, named cases, `t.Run(tt.name, …)`:

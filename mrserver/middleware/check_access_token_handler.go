@@ -25,6 +25,7 @@ func CheckAccessTokenHandler(logger mrlog.Logger, handlerName string) func(next 
 
 			// гарантируется, чтобы пользователь не был авторизованным
 			r.Header.Del(mrserver.HeaderKeyUserIDSlashGroup)
+			r.Header.Del(mrserver.HeaderKeySessionID)
 
 			return next(w, r)
 		}

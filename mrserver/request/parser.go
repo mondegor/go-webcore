@@ -137,5 +137,6 @@ type (
 	ParserUser interface {
 		UserID(r *http.Request) uuid.UUID
 		UserAndGroup(r *http.Request) (userID uuid.UUID, group string)
+		SessionID(r *http.Request) string
 	}
 )
