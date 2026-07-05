@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrtype/errors"
+	"github.com/mondegor/go-core/mrlog"
+	"github.com/mondegor/go-core/mrtype/errors"
 )
 
 const (

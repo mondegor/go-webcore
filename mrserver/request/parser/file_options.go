@@ -1,6 +1,6 @@
 package parser
 
-import "github.com/mondegor/go-sysmess/util/mime"
+import "github.com/mondegor/go-core/util/mime"
 
 type (
 	// FileOption - настройка объекта File.

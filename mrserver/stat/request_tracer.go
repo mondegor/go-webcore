@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrtrace"
+	"github.com/mondegor/go-core/mrtrace"
 )
 
 type (

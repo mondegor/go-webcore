@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
-	"github.com/mondegor/go-sysmess/errors"
-	"github.com/mondegor/go-sysmess/errors/runtime/hint"
+	"github.com/mondegor/go-core/errors"
+	"github.com/mondegor/go-core/errors/runtime/hint"
 )
 
 // go get -u github.com/getsentry/sentry-go

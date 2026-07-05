@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/mondegor/go-sysmess/errors"
-	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/util/xstrings"
+	"github.com/mondegor/go-core/errors"
+	"github.com/mondegor/go-core/mrlog"
+	"github.com/mondegor/go-core/util/xstrings"
 )
 
 // go get -u github.com/go-playground/validator/v10

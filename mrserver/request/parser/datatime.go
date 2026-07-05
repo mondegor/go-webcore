@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrtype/parse"
+	"github.com/mondegor/go-core/mrlog"
+	"github.com/mondegor/go-core/mrtype/parse"
 )
 
 type (

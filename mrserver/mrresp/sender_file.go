@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrmodel/media"
+	"github.com/mondegor/go-core/mrlog"
+	"github.com/mondegor/go-core/mrmodel/media"
 )
 
 type (

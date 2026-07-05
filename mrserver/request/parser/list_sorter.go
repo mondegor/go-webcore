@@ -3,9 +3,9 @@ package parser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrtype"
-	"github.com/mondegor/go-sysmess/mrtype/parse"
+	"github.com/mondegor/go-core/mrlog"
+	"github.com/mondegor/go-core/mrtype"
+	"github.com/mondegor/go-core/mrtype/parse"
 )
 
 type (

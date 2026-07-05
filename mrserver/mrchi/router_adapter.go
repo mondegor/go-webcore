@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mrlog"
 
 	"github.com/mondegor/go-webcore/mrserver"
 )

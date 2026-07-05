@@ -6,7 +6,7 @@ import (
 	"mime/multipart"
 	"strings"
 
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mrlog"
 )
 
 // MultipartForm - логирует отладочную информацию о multipart-форме запроса.

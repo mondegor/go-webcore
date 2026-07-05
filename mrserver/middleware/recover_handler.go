@@ -7,8 +7,8 @@ import (
 	"os"
 	"runtime/debug"
 
-	"github.com/mondegor/go-sysmess/errors"
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/errors"
+	"github.com/mondegor/go-core/mrlog"
 )
 
 // RecoverHandler - middleware для перехвата и обработки panic в HTTP-обработчиках.

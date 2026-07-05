@@ -3,8 +3,8 @@ package parser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrworkflow/itemstatus"
+	"github.com/mondegor/go-core/mrlog"
+	"github.com/mondegor/go-core/mrworkflow/itemstatus"
 )
 
 type (

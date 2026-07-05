@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mrlog"
 	"github.com/rs/cors"
 )
 

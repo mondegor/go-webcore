@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/util/xio"
+	"github.com/mondegor/go-core/mrlog"
+	"github.com/mondegor/go-core/util/xio"
 )
 
 // HandlerGetStatusOkAsJSON - создаёт обработчик для ответов 200 OK.

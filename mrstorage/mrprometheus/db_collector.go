@@ -1,7 +1,7 @@
 package mrprometheus
 
 import (
-	"github.com/mondegor/go-sysmess/mrstorage"
+	"github.com/mondegor/go-core/mrstorage"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

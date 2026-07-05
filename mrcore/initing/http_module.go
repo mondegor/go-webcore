@@ -3,7 +3,7 @@ package initing
 import (
 	"fmt"
 
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mrlog"
 
 	"github.com/mondegor/go-webcore/mrserver"
 )
