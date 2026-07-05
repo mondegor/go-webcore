@@ -3,7 +3,7 @@ package mrresp
 import (
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/errors"
+	"github.com/mondegor/go-core/errors"
 
 	"github.com/mondegor/go-webcore/mrserver"
 )

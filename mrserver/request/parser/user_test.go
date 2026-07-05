@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mrlog"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mondegor/go-webcore/mrserver"

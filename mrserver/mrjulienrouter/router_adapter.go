@@ -8,7 +8,7 @@ import (
 	"runtime"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mrlog"
 
 	"github.com/mondegor/go-webcore/mrserver"
 )

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mrlog"
 )
 
 type (

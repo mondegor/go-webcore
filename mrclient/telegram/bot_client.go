@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	tgclient "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/mondegor/go-sysmess/errors"
-	"github.com/mondegor/go-sysmess/mrtrace"
+	"github.com/mondegor/go-core/errors"
+	"github.com/mondegor/go-core/mrtrace"
 )
 
 const (

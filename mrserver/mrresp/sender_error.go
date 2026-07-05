@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-sysmess/errors"
-	"github.com/mondegor/go-sysmess/mrlocale/model"
-	"github.com/mondegor/go-sysmess/mrlog"
-	mrtracectx "github.com/mondegor/go-sysmess/mrtrace/context"
-	"github.com/mondegor/go-sysmess/util/xio"
+	"github.com/mondegor/go-core/errors"
+	"github.com/mondegor/go-core/mrlocale/model"
+	"github.com/mondegor/go-core/mrlog"
+	mrtracectx "github.com/mondegor/go-core/mrtrace/context"
+	"github.com/mondegor/go-core/util/xio"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrserver"

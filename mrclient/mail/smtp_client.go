@@ -7,8 +7,8 @@ import (
 	"net/textproto"
 	"strings"
 
-	"github.com/mondegor/go-sysmess/errors"
-	"github.com/mondegor/go-sysmess/mrtrace"
+	"github.com/mondegor/go-core/errors"
+	"github.com/mondegor/go-core/mrtrace"
 )
 
 const (

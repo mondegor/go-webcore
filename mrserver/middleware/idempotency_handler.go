@@ -3,8 +3,8 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mridempotency"
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mridempotency"
+	"github.com/mondegor/go-core/mrlog"
 
 	"github.com/mondegor/go-webcore/mrserver"
 )

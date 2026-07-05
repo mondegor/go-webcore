@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/errors"
-	"github.com/mondegor/go-sysmess/errors/helper"
-	"github.com/mondegor/go-sysmess/mrmodel/media"
+	"github.com/mondegor/go-core/errors"
+	"github.com/mondegor/go-core/errors/helper"
+	"github.com/mondegor/go-core/mrmodel/media"
 )
 
 type (

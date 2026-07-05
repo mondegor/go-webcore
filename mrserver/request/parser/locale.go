@@ -3,8 +3,8 @@ package parser
 import (
 	"net/http"
 
-	"github.com/mondegor/go-sysmess/mrlocale"
-	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-core/mrlocale"
+	"github.com/mondegor/go-core/mrlog"
 	"golang.org/x/text/language"
 
 	"github.com/mondegor/go-webcore/mrcore"
