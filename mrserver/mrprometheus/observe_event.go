@@ -5,13 +5,17 @@ import (
 )
 
 type (
-	// ObserveEvent - метрики событий источников данных.
+	// ObserveEvent - сборщик метрик событий от источников данных.
+	// Используется для мониторинга и алертинга на основе Prometheus.
 	ObserveEvent struct {
 		eventCount *prometheus.CounterVec
 	}
 )
 
-// NewObserveEvent - создаёт объект ObserveEvent.
+// NewObserveEvent - создаёт сборщик метрик событий.
+// Параметры:
+//   - namespace - пространство имён метрик (например: имя приложения);
+//   - subsystem - подсистема (например: "events").
 func NewObserveEvent(namespace, subsystem string) *ObserveEvent {
 	return &ObserveEvent{
 		eventCount: prometheus.NewCounterVec(
@@ -26,14 +30,15 @@ func NewObserveEvent(namespace, subsystem string) *ObserveEvent {
 	}
 }
 
-// Collectors - возвращает всех собирателей метрик событий источников данных.
+// Collectors - возвращает срез всех коллекторов метрик событий для регистрации в Prometheus.
+// Используется при инициализации реестра метрик.
 func (o *ObserveEvent) Collectors() []prometheus.Collector {
 	return []prometheus.Collector{
 		o.eventCount,
 	}
 }
 
-// IncrementEvent - увеличивает счётчик указанного события для указанного источника данных.
+// IncrementEvent - инкрементирует счётчик указанного события от источника данных.
 func (o *ObserveEvent) IncrementEvent(event, source string) {
 	o.eventCount.With(prometheus.Labels{"event": event, "source": source}).Inc()
 }

@@ -9,7 +9,7 @@ import (
 
 var regexpURLVars = regexp.MustCompile(`{([a-zA-Z][a-zA-Z0-9_]*)}`)
 
-// ConvertURL - comment func.
+// ConvertURL - преобразует URL-шаблон из формата webcore в формат julienschmidt/httprouter.
 func ConvertURL(url string) string {
 	url = strings.Replace(url, mrserver.VarRestOfURL, "*"+varRestOfURL, 1)
 

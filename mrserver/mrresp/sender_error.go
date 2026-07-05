@@ -6,12 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-sysmess/mrerr/mr"
-	"github.com/mondegor/go-sysmess/mrlib/extio"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlocale/model"
 	"github.com/mondegor/go-sysmess/mrlog"
 	mrtracectx "github.com/mondegor/go-sysmess/mrtrace/context"
+	"github.com/mondegor/go-sysmess/util/xio"
 
 	"github.com/mondegor/go-webcore/mrcore"
 	"github.com/mondegor/go-webcore/mrserver"
@@ -19,40 +18,62 @@ import (
 
 type (
 	// ErrorSender - формирует и отправляет клиенту ответ об ошибке.
+	//
+	// Обрабатывает три типа ошибок:
+	//  1. CustomError (одиночная пользовательская ошибка) - 400 Bad Request с одним ErrorAttribute;
+	//  2. CustomListError (список пользовательских ошибок) - 400 Bad Request с несколькими ErrorAttribute;
+	//  3. Остальные ошибки (runtime, системные) - 4xx/5xx согласно ErrorStatusMapper;
+	//
+	// Пользовательские ошибки (KindUser) переводятся на язык клиента через Localizer.
+	// Системные ошибки формируются в формате RFC 9457 (Problem Details).
 	ErrorSender struct {
-		encoder      mrserver.ResponseEncoder
-		errorHandler mrcore.ErrorHandler
-		logger       mrlog.Logger
-		parserLocale parserLocale
-		statusGetter mrserver.ErrorStatusGetter
-		isDebug      bool
+		encoder        mrserver.ResponseEncoder
+		errorHandler   errors.Handler
+		extractErrorID func(err error) string
+		logger         mrlog.Logger
+		parserLocale   parserLocale
+		statusMapper   mrserver.ErrorStatusMapper
+		debugFunc      func(value any) string
 	}
+)
 
+type (
+	// parserLocale - внутренний интерфейс для получения локализатора из запроса.
 	parserLocale interface {
 		Localizer(r *http.Request) mrcore.Localizer
 	}
 )
 
 // NewErrorSender - создаёт объект ErrorSender.
+// Параметры:
+//   - encoder - кодировщик для сериализации ответов (например: JsonEncoder);
+//   - errorHandler - обработчик для логирования ошибок;
+//   - extractErrorID - функция извлечения идентификатора ошибки для трассировки;
+//   - logger - логгер для записи ошибок;
+//   - parserLocale - извлечение локализатора для перевода ошибок;
+//   - statusMapper - маппер для определения HTTP-кода ответа по ошибке;
+//   - debugFunc - функция получения отладочной информации (nil для production);
 func NewErrorSender(
 	encoder mrserver.ResponseEncoder,
-	errorHandler mrcore.ErrorHandler,
+	errorHandler errors.Handler,
+	extractErrorID func(err error) string,
 	logger mrlog.Logger,
 	parserLocale parserLocale,
-	statusGetter mrserver.ErrorStatusGetter,
-	isDebug bool,
+	statusMapper mrserver.ErrorStatusMapper,
+	debugFunc func(value any) string,
 ) *ErrorSender {
 	return &ErrorSender{
-		encoder:      encoder,
-		errorHandler: errorHandler,
-		logger:       logger,
-		parserLocale: parserLocale,
-		statusGetter: statusGetter,
-		isDebug:      isDebug,
+		encoder:        encoder,
+		errorHandler:   errorHandler,
+		extractErrorID: extractErrorID,
+		logger:         logger,
+		parserLocale:   parserLocale,
+		statusMapper:   statusMapper,
+		debugFunc:      debugFunc,
 	}
 }
 
-// SendError - отправляет клиенту ответ об ошибке с одним из статусов: 4XX, 5XX и её деталями.
+// SendError - анализирует ошибку и отправляет соответствующий HTTP-ответ клиенту.
 func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err error) {
 	ctx := r.Context()
 	sendResponse := func(status int, response any) {
@@ -65,77 +86,92 @@ func (rs *ErrorSender) SendError(w http.ResponseWriter, r *http.Request, err err
 		)
 	}
 
-	if customError, ok := err.(*mrerr.CustomError); ok { //nolint:errorlint
-		if !customError.IsValid() {
-			err = customError.Err()
+	if customError, ok := err.(errors.CustomError); ok { //nolint:errorlint
+		err = customError.Unwrap() // здесь возвращается ошибка с причиной невалидности
 
-			goto InternalErrorSection
+		if !customError.IsKindUser() {
+			goto GeneralErrorSection
 		}
 
-		rs.errorHandler.Handle(ctx, customError.Err()) // логируется пользовательская ошибка
+		rs.errorHandler.Handle(ctx, err) // логируется пользовательская ошибка
 
 		sendResponse(
 			http.StatusBadRequest,
-			rs.getErrorListResponse(r, customError),
+			NewError400Response(
+				r,
+				ErrorAttribute{
+					Code:      customError.CustomCode(),
+					Detail:    rs.parserLocale.Localizer(r).TranslateError(err),
+					DebugInfo: rs.debugFunc(err),
+				},
+			),
 		)
 
 		return // OK, пользовательская ошибка обработана
 	}
 
-	if customErrorList, ok := err.(mrerr.CustomErrors); ok { //nolint:errorlint
+	if customErrors, ok := err.(errors.CustomListError); ok { //nolint:errorlint
 		hasInvalidError := false
 
-		for _, customError := range customErrorList {
-			if hasInvalidError || customError.IsValid() {
-				rs.errorHandler.Handle(ctx, customError.Err()) // логируются все ошибки кроме первой невалидной
+		for _, customError := range customErrors {
+			if hasInvalidError || customError.IsKindUser() {
+				rs.errorHandler.Handle(ctx, customError.Unwrap()) // логируются валидные пользовательские ошибки и невалидные начиная со второй
 
 				continue
 			}
 
 			hasInvalidError = true
-			err = customError.Err() // здесь возвращается внутренняя или системная ошибка
+			err = customError.Unwrap() // здесь возвращается ошибка с причиной невалидности
 		}
 
 		if hasInvalidError {
-			goto InternalErrorSection
+			goto GeneralErrorSection
 		}
 
 		sendResponse(
 			http.StatusBadRequest,
-			rs.getErrorListResponse(r, customErrorList...),
+			NewError400Response(
+				r,
+				rs.customErrorsToErrorAttrs(r, customErrors)...,
+			),
 		)
 
 		return // OK, список пользовательских ошибок обработан
 	}
 
-InternalErrorSection:
-
+GeneralErrorSection:
 	// в эту секцию поступают следующие виды ошибок:
-	// 1. ошибки: InstantError kind=User/Internal/System;
-	// 2. ProtoError kind=User/Internal/System (требуется найти место их создания и добавить для них вызов одного из методов New/Wrap);
-	// 3. остальные ошибки: которые не были обёрнуты в InstantError (требуется найти место их создания и вложить их в InstantError);
-	rs.errorHandler.HandleWith(
-		ctx,
-		err,
-		func(analyzedKind mrerr.ErrorKind, err error) {
-			status := rs.statusGetter.ErrorStatus(analyzedKind, err)
+	// 1. runtime ошибки;
+	// 2. остальные ошибки у которых нет метода Kind() (требуется найти место их возникновения и правильно обработать);
+	rs.errorHandler.Handle(ctx, err)
 
-			if status == http.StatusBadRequest {
-				sendResponse(
-					status,
-					[]ErrorAttribute{
-						NewErrorAttribute(rs.parserLocale.Localizer(r), err, rs.isDebug),
-					},
-				)
+	status := rs.statusMapper.ErrorStatus(err)
 
-				return
-			}
+	if status == http.StatusBadRequest {
+		errorCode := ErrorAttributeCodeByDefault
 
-			sendResponse(
-				status,
-				rs.getErrorDetailsResponse(r, err),
-			)
-		},
+		if e, ok := err.(interface{ Code() string }); ok && e.Code() != "" {
+			errorCode = e.Code()
+		}
+
+		sendResponse(
+			status,
+			NewError400Response(
+				r,
+				ErrorAttribute{
+					Code:      errorCode,
+					Detail:    rs.parserLocale.Localizer(r).TranslateError(err),
+					DebugInfo: rs.debugFunc(err),
+				},
+			),
+		)
+
+		return
+	}
+
+	sendResponse(
+		status,
+		rs.getErrorDetailsResponse(r, status, err),
 	)
 }
 
@@ -151,47 +187,47 @@ func (rs *ErrorSender) sendStructResponse(
 		status = http.StatusUnprocessableEntity
 		bytes = nil
 
-		rs.logger.Error(ctx, "marshal failed", "error", mr.ErrHttpResponseParseData.Wrap(err))
+		rs.logger.Error(ctx, "marshal failed", "error", errors.ErrInternalHttpResponseParseData.Wrap(err))
 	}
 
 	w.Header().Set("Content-Type", contentType)
 	w.WriteHeader(status)
-	extio.Write(ctx, rs.logger, w, bytes)
+	xio.Write(ctx, rs.logger, w, bytes)
 }
 
-func (rs *ErrorSender) getErrorListResponse(r *http.Request, errors ...*mrerr.CustomError) ErrorListResponse {
+func (rs *ErrorSender) customErrorsToErrorAttrs(r *http.Request, errorList []errors.CustomError) []ErrorAttribute {
 	lz := rs.parserLocale.Localizer(r)
-	attrs := make([]ErrorAttribute, len(errors))
+	attrs := make([]ErrorAttribute, len(errorList))
 
-	for i, customError := range errors {
-		attrs[i] = NewErrorAttribute(lz, customError, rs.isDebug)
+	for i, customError := range errorList {
+		err := customError.Unwrap()
+		attrs[i] = ErrorAttribute{
+			Code:      customError.CustomCode(),
+			Detail:    lz.TranslateError(err),
+			DebugInfo: rs.debugFunc(err),
+		}
 	}
 
 	return attrs
 }
 
-func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, err error) ErrorDetailsResponse {
+func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, status int, err error) ErrorDetailsResponse {
 	errorMessage := model.ParseErrorMessage(rs.parserLocale.Localizer(r).TranslateError(err))
 	errorTraceID := mrtracectx.RequestID(r.Context())
 
-	if e, ok := err.(interface{ ID() string }); ok && e.ID() != "" {
-		errorTraceID = e.ID()
+	if id := rs.extractErrorID(err); id != "" {
+		errorTraceID = id
 	}
 
 	response := ErrorDetailsResponse{
+		Type:         errorMessage.ProblemURL,
 		Title:        errorMessage.Reason,
-		Details:      errorMessage.Details,
-		Request:      r.Method + " " + r.URL.Path,
+		Status:       status,
+		Detail:       errorMessage.Details,
+		Instance:     r.Method + " " + r.URL.Path,
 		Time:         time.Now().UTC().Format(time.RFC3339),
 		ErrorTraceID: errorTraceID,
-	}
-
-	if rs.isDebug {
-		if response.Details != "" {
-			response.Details += "\n"
-		}
-
-		response.Details += "DebugInfo: " + err.Error()
+		DebugInfo:    rs.debugFunc(err),
 	}
 
 	return response

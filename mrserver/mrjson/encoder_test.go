@@ -11,5 +11,7 @@ import (
 
 // Make sure the JsonEncoder conforms with the mrserver.ResponseEncoder interface.
 func TestJsonEncoderImplementsResponseEncoder(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*mrserver.ResponseEncoder)(nil), &mrjson.JsonEncoder{})
 }

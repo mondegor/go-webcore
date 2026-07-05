@@ -5,20 +5,18 @@ import (
 	"os"
 
 	"github.com/mondegor/go-sysmess/mrlog"
-	"github.com/mondegor/go-sysmess/mrlog/litelog"
 	"github.com/mondegor/go-sysmess/mrlog/slog"
+	wireslog "github.com/mondegor/go-sysmess/wire/mrlog/slog"
 
-	"github.com/mondegor/go-webcore/mrsender/mail"
-	"github.com/mondegor/go-webcore/mrsender/mail/smtp"
+	"github.com/mondegor/go-webcore/mrclient/mail"
 )
 
 func main() {
-	l, _ := slog.NewLoggerAdapter(
+	logger, _ := slog.NewLoggerAdapter(
 		slog.WithWriter(os.Stdout),
 	)
 
-	logger := litelog.NewLogger(l)
-	tr := mrlog.NewDebugTracer(l)
+	tracer := wireslog.InitTracer(logger)
 
 	smtpHost := "{host}" // smtp.gmail.com
 	smtpPort := "{port}" // 587 с поддержкой STARTTLS
@@ -37,13 +35,12 @@ func main() {
 		// mail.WithUseExtendEmailFormat(false),
 	)
 	if err != nil {
-		logger.Error("this is error", "error", err)
-		os.Exit(1)
+		mrlog.Fatal(logger, "this is error", "error", err)
 	}
 
-	mailClient := smtp.NewMailClient(smtpHost, smtpPort, smtpUsername, smtpPassword, tr)
+	smtpClient := mail.NewSMTPClient(smtpHost, smtpPort, smtpUsername, smtpPassword, tracer)
 
-	if err = mailClient.SendMail(context.Background(), msg.From(), msg.To(), msg.Header(), body); err != nil {
-		os.Exit(1)
+	if err = smtpClient.SendMail(context.Background(), msg.From(), msg.To(), msg.Header(), body); err != nil {
+		mrlog.Fatal(logger, "this is error", "error", err)
 	}
 }

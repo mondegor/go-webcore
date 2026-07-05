@@ -7,7 +7,13 @@ import (
 )
 
 type (
-	// ObserveRequest - метрики сетевых запросов.
+	// ObserveRequest - сборщик метрик HTTP-запросов.
+	// Используется для мониторинга производительности и трафика HTTP-сервера.
+	//
+	// Предоставляет:
+	//  - requestDuration - гистограмма времени выполнения запросов;
+	//  - requestSize - счётчик размера полученных данных (байты);
+	//  - responseSize - счётчик размера отправленных данных (байты).
 	ObserveRequest struct {
 		requestDuration *prometheus.HistogramVec
 		requestSize     *prometheus.CounterVec
@@ -15,7 +21,10 @@ type (
 	}
 )
 
-// NewObserveRequest - создаёт объект ObserveRequest.
+// NewObserveRequest - создаёт сборщик метрик HTTP-запросов.
+// Параметры:
+//   - namespace - пространство имён метрик (например: имя приложения);
+//   - subsystem - подсистема (например: "http").
 func NewObserveRequest(namespace, subsystem string) *ObserveRequest {
 	return &ObserveRequest{
 		requestDuration: prometheus.NewHistogramVec(
@@ -49,7 +58,8 @@ func NewObserveRequest(namespace, subsystem string) *ObserveRequest {
 	}
 }
 
-// Collectors - возвращает всех собирателей метрик сетевых запросов.
+// Collectors - возвращает срез всех коллекторов метрик запросов для регистрации в Prometheus.
+// Используется при инициализации реестра метрик.
 func (o *ObserveRequest) Collectors() []prometheus.Collector {
 	return []prometheus.Collector{
 		o.requestDuration,
@@ -58,17 +68,30 @@ func (o *ObserveRequest) Collectors() []prometheus.Collector {
 	}
 }
 
-// SetStatusWithTime - устанавливает статус запроса (200, 404, 500, и т.д) и время исполнения запроса для указанного URL.
+// SetStatusWithTime - записывает длительность выполнения HTTP-запроса с указанием статуса.
+// Параметры:
+//   - method - HTTP-метод (GET, POST, и т.д.);
+//   - location - путь запроса (URL-шаблон);
+//   - status - HTTP-код ответа (например: "200", "404", "500");
+//   - duration - время выполнения запроса.
 func (o *ObserveRequest) SetStatusWithTime(method, location, status string, duration time.Duration) {
 	o.requestDuration.With(prometheus.Labels{"method": method, "location": location, "status": status}).Observe(float64(duration.Microseconds()))
 }
 
-// IncrementRequestSize - добавляет размер тела запроса в байтах для указанного URL.
+// IncrementRequestSize - добавляет размер тела полученного HTTP-запроса в байтах.
+// Параметры:
+//   - method - HTTP-метод запроса;
+//   - location - путь запроса (URL-шаблон);
+//   - size - размер тела запроса в байтах.
 func (o *ObserveRequest) IncrementRequestSize(method, location string, size int) {
 	o.requestSize.With(prometheus.Labels{"method": method, "location": location}).Add(float64(size))
 }
 
-// IncrementResponseSize - добавляет размер тела ответа в байтах для указанного URL.
+// IncrementResponseSize - добавляет размер тела отправленного HTTP-ответа в байтах.
+// Параметры:
+//   - method - HTTP-метод запроса;
+//   - location - путь запроса (URL-шаблон);
+//   - size - размер тела ответа в байтах.
 func (o *ObserveRequest) IncrementResponseSize(method, location string, size int) {
 	o.responseSize.With(prometheus.Labels{"method": method, "location": location}).Add(float64(size))
 }

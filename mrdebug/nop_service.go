@@ -9,23 +9,37 @@ import (
 )
 
 type (
+	// nopServiceError - внутренняя ошибка сервиса NopService.
+	// Используется для сигнализации о завершении сервиса по таймауту или внешней отмене.
+	// Содержит имя сервиса и причину завершения.
 	nopServiceError struct {
 		name string
 		err  error
 	}
 )
 
-// Error - comment method.
+// Error - возвращает человеко-читаемое описание ошибки NopService.
 func (e *nopServiceError) Error() string {
 	if e.err != nil {
-		return fmt.Sprintf("NopService '%s' has error: %s", e.name, e.err.Error())
+		return "NopService has error: name=" + e.name + ", " + e.err.Error()
 	}
 
-	return fmt.Sprintf("NopService '%s' has no error", e.name)
+	return "NopService has no error: name=" + e.name
 }
 
-// PrepareNopServiceWithTimeoutToStart - предназначен для тестирования запуска и остановки процессов
-// Пример: appRunner.Add(mrdebug.PrepareNopServiceWithTimeoutToStart(ctx, "s1", 5 * time.Second)).
+// PrepareNopServiceWithTimeoutToStart - создаёт тестовый сервис с таймаутом для проверки
+// механизмов запуска и остановки процессов.
+//
+// Сервис ждёт истечения таймаута (expiry) или отмены контекста, после чего завершается
+// с ошибкой nopServiceError. Используется для тестирования infrastructure-кода,
+// например appRunner, без выполнения реальной работы.
+//
+// Возвращает две функции:
+//   - execute - запускает сервис (блокируется до истечения таймаута или отмены);
+//   - interrupt - принудительно останавливает сервис с указанной ошибкой;
+//
+// Пример использования:
+//   - appRunner.Add(mrdebug.PrepareNopServiceWithTimeoutToStart(ctx, logger, "s1", 5*time.Second)).
 func PrepareNopServiceWithTimeoutToStart(
 	ctx context.Context,
 	logger mrlog.Logger,

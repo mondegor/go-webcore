@@ -11,5 +11,7 @@ import (
 
 // Make sure the ErrorSender conforms with the mrserver.ErrorResponseSender interface.
 func TestErrorSenderImplementsErrorResponseSender(t *testing.T) {
+	t.Parallel()
+
 	assert.Implements(t, (*mrserver.ErrorResponseSender)(nil), &mrresp.ErrorSender{})
 }

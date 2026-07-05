@@ -4,34 +4,35 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/mondegor/go-webcore/mrserver"
 )
 
 type (
-	// RequestMetrics - comment struct.
+	// RequestMetrics - сборщик метрик HTTP-запросов для системы мониторинга.
+	// Собирает и отправляет:
+	//  - Время выполнения запроса (гистограмма);
+	//  - Размер полученного запроса (счётчик);
+	//  - Размер отправленного ответа (счётчик).
 	RequestMetrics struct {
-		metrics requestMetrics
-	}
-
-	requestMetrics interface {
-		SetStatusWithTime(method, location, status string, duration time.Duration)
-		IncrementRequestSize(method, location string, size int)
-		IncrementResponseSize(method, location string, size int)
+		metrics mrserver.RequestObserve
 	}
 )
 
-// NewRequestMetrics - создаёт объект RequestMetrics.
-func NewRequestMetrics(metrics requestMetrics) *RequestMetrics {
+// NewRequestMetrics - создаёт сборщик метрик HTTP-запросов.
+func NewRequestMetrics(metrics mrserver.RequestObserve) *RequestMetrics {
 	return &RequestMetrics{
 		metrics: metrics,
 	}
 }
 
-// Enabled - comment method.
+// Enabled - всегда возвращает true, так как сбор метрик всегда включен.
 func (rs *RequestMetrics) Enabled() bool {
 	return true
 }
 
-// Emit - comment method.
+// Emit - собирает и отправляет метрики HTTP-запроса.
+// TODO: использовать нормализованный путь для группировки метрик по шаблону маршрута.
 func (rs *RequestMetrics) Emit(r *http.Request, _ []byte, size int, _ []byte, responseSize int, duration time.Duration, status int) {
 	method := r.Method
 	path := r.URL.Path // TODO: из пути обрезать ID и другие параметры

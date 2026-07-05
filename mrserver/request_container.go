@@ -6,13 +6,13 @@ import (
 )
 
 type (
-	// RequestContainer - comment struct.
+	// RequestContainer - контейнер обработчиков статистики HTTP-запросов.
 	RequestContainer struct {
 		list []RequestStat
 	}
 )
 
-// NewRequestContainer - создаёт объект RequestContainer.
+// NewRequestContainer - создаёт контейнер обработчиков статистики.
 func NewRequestContainer(list ...RequestStat) *RequestContainer {
 	n := 0
 
@@ -44,12 +44,12 @@ func NewRequestContainer(list ...RequestStat) *RequestContainer {
 	}
 }
 
-// Enabled - comment method.
+// Enabled - сообщает, если есть хотя бы один активный обработчик статистики.
 func (rs *RequestContainer) Enabled() bool {
 	return len(rs.list) > 0
 }
 
-// Emit - функция трассировки http запроса.
+// Emit - отправляет статистику завершённого запроса всем зарегистрированным обработчикам.
 func (rs *RequestContainer) Emit(r *http.Request, body []byte, size int, responseBody []byte, responseSize int, duration time.Duration, status int) {
 	for i := range rs.list {
 		rs.list[i].Emit(r, body, size, responseBody, responseSize, duration, status)

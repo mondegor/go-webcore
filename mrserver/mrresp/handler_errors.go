@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mondegor/go-sysmess/mrerr/mr"
-	"github.com/mondegor/go-sysmess/mrlib/extio"
+	"github.com/mondegor/go-sysmess/errors"
 	"github.com/mondegor/go-sysmess/mrlog"
+	"github.com/mondegor/go-sysmess/util/xio"
 )
 
-// HandlerGetNotFoundAsJSON - возвращает обработчик для формирования 404 ошибки.
+// HandlerGetNotFoundAsJSON - создаёт обработчик для ответов 404 Not Found.
+// Формирует ответ в формате RFC 9457 (Problem Details).
 func HandlerGetNotFoundAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return HandlerErrorResponse(
 		logger,
@@ -20,7 +21,8 @@ func HandlerGetNotFoundAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	)
 }
 
-// HandlerGetMethodNotAllowedAsJSON - возвращает обработчик для формирования 405 ошибки.
+// HandlerGetMethodNotAllowedAsJSON - создаёт обработчик для ответов 405 Method Not Allowed.
+// Формирует ответ в формате RFC 9457 (Problem Details).
 func HandlerGetMethodNotAllowedAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return HandlerErrorResponse(
 		logger,
@@ -30,7 +32,8 @@ func HandlerGetMethodNotAllowedAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	)
 }
 
-// HandlerGetFatalErrorAsJSON - возвращает обработчик для формирования 500 ошибки.
+// HandlerGetFatalErrorAsJSON - создаёт обработчик для ответов 500 Internal Server Error.
+// Формирует ответ в формате RFC 9457 (Problem Details).
 func HandlerGetFatalErrorAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	return HandlerErrorResponse(
 		logger,
@@ -40,26 +43,29 @@ func HandlerGetFatalErrorAsJSON(logger mrlog.Logger) http.HandlerFunc {
 	)
 }
 
-// HandlerErrorResponse - возвращает обработчик для формирования ошибки согласно RFC 7807 (Problem Details for HTTP APIs).
-func HandlerErrorResponse(logger mrlog.Logger, status int, title, details string) http.HandlerFunc {
+// HandlerErrorResponse - создаёт универсальный обработчик для ответов с ошибкой.
+// Формирует ответ в формате RFC 9457 (Problem Details for HTTP APIs).
+// Instance и Time заполняются автоматически из запроса.
+func HandlerErrorResponse(logger mrlog.Logger, status int, title, detail string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		bytes, err := json.Marshal(
 			ErrorDetailsResponse{
-				Title:   title,
-				Details: details,
-				Request: r.URL.Path,
-				Time:    time.Now().UTC().Format(time.RFC3339),
+				Title:    title,
+				Status:   status,
+				Detail:   detail,
+				Instance: r.Method + " " + r.URL.Path, // TODO: добавить helper xhttp.RequestInstance(r)
+				Time:     time.Now().UTC().Format(time.RFC3339),
 			},
 		)
 		if err != nil {
 			status = http.StatusUnprocessableEntity
 			bytes = nil
 
-			logger.Error(r.Context(), "marshal failed", "error", mr.ErrHttpResponseParseData.Wrap(err))
+			logger.Error(r.Context(), "marshal failed", "error", errors.ErrInternalHttpResponseParseData.Wrap(err))
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
-		extio.Write(r.Context(), logger, w, bytes)
+		xio.Write(r.Context(), logger, w, bytes)
 	}
 }

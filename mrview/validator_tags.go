@@ -1,76 +1,75 @@
 package mrview
 
-import (
-	"regexp"
+type (
+	// Tag - представляет тег валидации с именем и ассоциированной функцией проверки.
+	// Используется для регистрации кастомных правил валидации в Validator.
+	Tag struct {
+		// Name - уникальное имя тега для использования в struct-аннотациях.
+		Name string
+
+		// ValidateFunc - функция, принимающая строковое значение и возвращающая результат валидации.
+		ValidateFunc func(value string) bool
+	}
 )
 
-var (
-	regexpAnyNotSpaceSymbol = regexp.MustCompile(`^\S+$`)
-	regexpVariable          = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*$`)
-	regexpName              = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9/_.+-]*[a-zA-Z0-9]$`)
-	regexpRewriteName       = regexp.MustCompile(`^[a-z][a-z0-9-]*[a-z0-9]$`)
-	regexpPassword          = regexp.MustCompile(`^[a-zA-Z0-9!"#$%&'()*+,\-./:;<=>?@\[\\\]^_{|}~]+$`)
-	regexpDoubleSize        = regexp.MustCompile(`^[0-9]+x[0-9]+$`)
-	regexpTripleSize        = regexp.MustCompile(`^[0-9]+x[0-9]+x[0-9]+$`)
-)
-
-// ValidateAnd - comment func.
-func ValidateAnd(values ...func(value string) bool) func(value string) bool {
-	return func(value string) bool {
-		for _, fn := range values {
-			if !fn(value) {
-				return false
-			}
-		}
-
-		return true
+// TagArticle - создаёт тег для валидации слова-идентификатора.
+// Примеры валидных значений: "article123", "my-article", "123".
+func TagArticle() Tag {
+	return Tag{
+		Name:         "tag_article",
+		ValidateFunc: ValidateAnyNotSpaceSymbol,
 	}
 }
 
-// ValidateOr - comment func.
-func ValidateOr(values ...func(value string) bool) func(value string) bool {
-	return func(value string) bool {
-		for _, fn := range values {
-			if fn(value) {
-				return true
-			}
-		}
-
-		return false
+// TagVariable - создаёт тег для валидации имени переменной.
+// Примеры валидных значений: "myVar", "UserName", "count123".
+func TagVariable() Tag {
+	return Tag{
+		Name:         "tag_variable",
+		ValidateFunc: ValidateVariable,
 	}
 }
 
-// ValidateAnyNotSpaceSymbol - comment func.
-func ValidateAnyNotSpaceSymbol(value string) bool {
-	return regexpAnyNotSpaceSymbol.MatchString(value)
+// TagName - создаёт тег для валидации имени.
+// Примеры валидных значений: "user_name", "my-app", "file.txt", "path/to/resource".
+func TagName() Tag {
+	return Tag{
+		Name:         "tag_name",
+		ValidateFunc: ValidateName,
+	}
 }
 
-// ValidateVariable - comment func.
-func ValidateVariable(value string) bool {
-	return regexpVariable.MatchString(value)
+// TagRewriteName - создаёт тег для валидации человеко-читаемого имени.
+// Примеры валидных значений: "my-page", "user-profile", "item-123".
+func TagRewriteName() Tag {
+	return Tag{
+		Name:         "tag_rewrite_name",
+		ValidateFunc: ValidateRewriteName,
+	}
 }
 
-// ValidateName - comment func.
-func ValidateName(value string) bool {
-	return regexpName.MatchString(value)
+// TagPassword - создаёт тег для валидации пароля.
+func TagPassword() Tag {
+	return Tag{
+		Name:         "tag_password",
+		ValidateFunc: ValidatePassword,
+	}
 }
 
-// ValidateRewriteName - comment func.
-func ValidateRewriteName(value string) bool {
-	return regexpRewriteName.MatchString(value)
+// TagDoubleSize - создаёт тег для валидации двумерного размера (ШxВ).
+// Примеры валидных значений: "100x200", "1920x1080".
+func TagDoubleSize() Tag {
+	return Tag{
+		Name:         "tag_double_size",
+		ValidateFunc: ValidateDoubleSize,
+	}
 }
 
-// ValidatePassword - comment func.
-func ValidatePassword(value string) bool {
-	return regexpPassword.MatchString(value)
-}
-
-// ValidateDoubleSize - comment func.
-func ValidateDoubleSize(value string) bool {
-	return regexpDoubleSize.MatchString(value)
-}
-
-// ValidateTripleSize - comment func.
-func ValidateTripleSize(value string) bool {
-	return regexpTripleSize.MatchString(value)
+// TagTripleSize - создаёт тег для валидации трёхмерного размера (ШxВxГ).
+// Примеры валидных значений: "100x200x300", "10x20x5".
+func TagTripleSize() Tag {
+	return Tag{
+		Name:         "tag_triple_size",
+		ValidateFunc: ValidateTripleSize,
+	}
 }

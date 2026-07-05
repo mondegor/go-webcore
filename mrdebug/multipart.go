@@ -9,13 +9,15 @@ import (
 	"github.com/mondegor/go-sysmess/mrlog"
 )
 
-// MultipartForm - comment func.
+// MultipartForm - логирует отладочную информацию о multipart-форме запроса.
+// Выводит все поля формы (form.Value) и информацию о загруженных файлах (form.File).
+// Функция безопасна для nil формы и проверяет включён ли debug-режим перед логированием.
 func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.Form) {
-	if !logger.Enabled(mrlog.LevelDebug) {
+	if !mrlog.DebugEnabled(logger) {
 		return
 	}
 
-	logger = logger.WithAttrs("func", "MultipartForm")
+	logger = mrlog.WithAttrs(logger, "func", "MultipartForm")
 
 	if form == nil {
 		logger.Debug(ctx, "Param form is nil")
@@ -25,7 +27,7 @@ func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.For
 
 	if len(form.Value) > 0 {
 		for key, values := range form.Value {
-			logger.Debug(ctx, fmt.Sprintf("key=%s; value=%s", key, strings.Join(values, ", ")))
+			logger.Debug(ctx, fmt.Sprintf("key='%s', value='%s'", key, strings.Join(values, ", ")))
 		}
 	} else {
 		logger.Debug(ctx, "value is EMPTY")
@@ -33,20 +35,22 @@ func MultipartForm(ctx context.Context, logger mrlog.Logger, form *multipart.For
 
 	if len(form.File) > 0 {
 		for key, fhs := range form.File {
-			logger.Debug(ctx, fmt.Sprintf("key=%s; fhs.len=%d", key, len(fhs)))
+			logger.Debug(ctx, fmt.Sprintf("key='%s', fhs.len=%d", key, len(fhs)))
 		}
 	} else {
 		logger.Debug(ctx, "form.File is EMPTY")
 	}
 }
 
-// MultipartFileHeader - comment func.
+// MultipartFileHeader - логирует отладочную информацию о заголовке загруженного файла.
+// Выводит имя файла, размер и HTTP-заголовки.
+// Функция безопасна для nil заголовка и проверяет включён ли debug-режим перед логированием.
 func MultipartFileHeader(ctx context.Context, logger mrlog.Logger, hdr *multipart.FileHeader) {
-	if !logger.Enabled(mrlog.LevelDebug) {
+	if !mrlog.DebugEnabled(logger) {
 		return
 	}
 
-	logger = logger.WithAttrs("func", "MultipartFileHeader")
+	logger = mrlog.WithAttrs(logger, "func", "MultipartFileHeader")
 
 	if hdr == nil {
 		logger.Debug(ctx, "Param hdr is nil")

@@ -1,0 +1,66 @@
+package parser
+
+import (
+	"context"
+	"net/http"
+	"strings"
+
+	"github.com/google/uuid"
+	"github.com/mondegor/go-sysmess/mrlog"
+
+	"github.com/mondegor/go-webcore/mrserver"
+)
+
+type (
+	// User - извлекает информацию о пользователе из HTTP-запроса.
+	User struct {
+		logger mrlog.Logger
+	}
+)
+
+// NewUser - создаёт объект User.
+func NewUser(logger mrlog.Logger) *User {
+	return &User{
+		logger: logger,
+	}
+}
+
+// UserID - извлекает ID пользователя из HTTP запроса.
+func (p *User) UserID(r *http.Request) uuid.UUID {
+	val, _, _ := strings.Cut(r.Header.Get(mrserver.HeaderKeyUserIDSlashGroup), "/") // отбрасывается группа пользователя
+	if val == "" {
+		return uuid.Nil
+	}
+
+	return p.userID(r.Context(), val)
+}
+
+// UserAndGroup - извлекает ID пользователя и группу из HTTP запроса.
+func (p *User) UserAndGroup(r *http.Request) (userID uuid.UUID, group string) {
+	val, group, ok := strings.Cut(r.Header.Get(mrserver.HeaderKeyUserIDSlashGroup), "/")
+	if !ok && val == "" {
+		return uuid.Nil, ""
+	}
+
+	if group == "" {
+		p.logger.Warn(r.Context(), "user group is empty", "userID", val)
+	}
+
+	return p.userID(r.Context(), val), group
+}
+
+// SessionID - извлекает ID сессии пользователя из HTTP запроса.
+func (p *User) SessionID(r *http.Request) string {
+	return r.Header.Get(mrserver.HeaderKeySessionID)
+}
+
+func (p *User) userID(ctx context.Context, value string) uuid.UUID {
+	userID, err := uuid.Parse(value)
+	if err != nil {
+		p.logger.Warn(ctx, "userID parse error", "userID", value, "error", err)
+
+		return uuid.Nil
+	}
+
+	return userID
+}

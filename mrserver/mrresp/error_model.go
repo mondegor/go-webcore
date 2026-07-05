@@ -1,66 +1,88 @@
 package mrresp
 
 import (
-	"github.com/mondegor/go-sysmess/mrerr"
-	"github.com/mondegor/go-sysmess/mrerr/mr"
-
-	"github.com/mondegor/go-webcore/mrcore"
+	"net/http"
+	"time"
 )
 
 const (
-	// ErrorAttributeIDByDefault - название пользовательской ошибки по умолчанию.
-	ErrorAttributeIDByDefault = "GeneralError"
+	// ErrorAttributeCodeByDefault - код ошибки по умолчанию для неклассифицированных ошибок.
+	// Используется когда у ошибки нет собственного кода (Code).
+	ErrorAttributeCodeByDefault = "FailedToProcessError"
 )
 
 type (
-	// ErrorListResponse - используется для формирования ответа application/json (400).
-	ErrorListResponse []ErrorAttribute
+	// ErrorDetailsResponse - модель пользовательской ошибки в формате RFC 9457 (Problem Details for HTTP APIs).
+	// Используется для ответов с кодами: 401, 403, 404, 409, 422, 5xx.
+	// Content-Type: application/problem+json.
+	ErrorDetailsResponse struct {
+		// Type - URL с описанием типа проблемы.
+		Type string `json:"type,omitempty"`
 
-	// ErrorAttribute - пользовательская ошибка с идентификатором и её значением.
-	ErrorAttribute struct {
-		ID        string `json:"id"`
-		Value     string `json:"value"`
-		DebugInfo string `json:"debugInfo,omitempty"`
+		// Title - краткое описание проблемы.
+		Title string `json:"title"`
+
+		// Status - HTTP-код ответа.
+		Status int `json:"status"`
+
+		// Detail - подробное описание проблемы.
+		Detail string `json:"detail,omitempty"`
+
+		// Instance - идентификатор конкретного запроса (METHOD path).
+		Instance string `json:"instance"`
+
+		// Time - время возникновения ошибки в RFC3339.
+		Time string `json:"time"`
+
+		// ErrorTraceID - идентификатор трассировки ошибки для поиска в логах.
+		ErrorTraceID string `json:"error_trace_id,omitempty"`
+
+		// DebugInfo - отладочная информация (только в debug-режиме).
+		DebugInfo string `json:"debug_info,omitempty"`
 	}
 
-	// ErrorDetailsResponse - application/problem+json (401, 403, 404, 418, 422, 5XX).
-	ErrorDetailsResponse struct {
-		Title        string `json:"title"`
-		Details      string `json:"details"`
-		Request      string `json:"request"`
-		Time         string `json:"time"`
-		ErrorTraceID string `json:"errorTraceId,omitempty"`
+	// Error400Response - модель пользовательской ошибки для кода 400 Bad Request.
+	// Используется для ответов с валидацией полей.
+	// Content-Type: application/json.
+	Error400Response struct {
+		// Status - HTTP-код ответа (всегда 400).
+		Status int `json:"status"`
+
+		// Instance - идентификатор запроса (METHOD path).
+		Instance string `json:"instance"`
+
+		// Time - время возникновения ошибки в RFC3339.
+		Time string `json:"time"`
+
+		// Errors - список ошибок валидации с кодами и описаниями.
+		Errors []ErrorAttribute `json:"errors"`
+
+		// DebugInfo - отладочная информация (только в debug-режиме).
+		DebugInfo string `json:"debug_info,omitempty"`
+	}
+
+	// ErrorAttribute - атрибут отдельной пользовательской ошибки с кодом и описанием.
+	// Используется в Error400Response для перечисления ошибок валидации.
+	ErrorAttribute struct {
+		// Code - уникальный код ошибки (например: имя поля или параметра).
+		Code string `json:"code"`
+
+		// Detail - описание ошибки.
+		Detail string `json:"detail"`
+
+		// DebugInfo - отладочная информация (только в debug-режиме).
+		DebugInfo string `json:"debug_info,omitempty"`
 	}
 )
 
-// NewErrorAttribute - создаёт объект ErrorAttribute.
-func NewErrorAttribute(lz mrcore.Localizer, err error, withDebugInfo bool) ErrorAttribute {
-	var (
-		errCode    string
-		customCode string
-	)
-
-	if e, ok := err.(*mrerr.CustomError); ok { //nolint:errorlint
-		customCode = "/" + e.CustomCode()
-		err = e.Err()
+// NewError400Response - создаёт ответ с ошибкой валидации полей.
+//
+// Автоматически устанавливает статус 400, Instance и текущее время UTC.
+func NewError400Response(r *http.Request, errorAttrs ...ErrorAttribute) Error400Response {
+	return Error400Response{
+		Status:   http.StatusBadRequest,
+		Instance: r.Method + " " + r.URL.Path,
+		Time:     time.Now().UTC().Format(time.RFC3339),
+		Errors:   errorAttrs,
 	}
-
-	e := mr.CastOrWrapUnexpectedInternal(err)
-
-	if e.Code() != "" {
-		errCode = e.Code()
-	} else {
-		errCode = ErrorAttributeIDByDefault
-	}
-
-	attr := ErrorAttribute{
-		ID:    errCode + customCode,
-		Value: lz.TranslateError(e),
-	}
-
-	if withDebugInfo {
-		attr.DebugInfo = e.Error()
-	}
-
-	return attr
 }
