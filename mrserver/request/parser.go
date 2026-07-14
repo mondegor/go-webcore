@@ -3,8 +3,8 @@ package request
 import (
 	"context"
 	"io"
-	"net"
 	"net/http"
+	"net/netip"
 	"time"
 
 	"github.com/google/uuid"
@@ -121,7 +121,7 @@ type (
 
 	// ParserClientIP - парсер для получения IP-адреса клиента из запроса.
 	ParserClientIP interface {
-		RealIP(r *http.Request) net.IP
+		RealIP(r *http.Request) netip.Addr
 		DetailedIP(r *http.Request) mrtype.DetailedIP
 	}
 

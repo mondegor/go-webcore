@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"net"
 	"net/http"
-	"regexp"
+	"net/netip"
+	"strings"
 
 	"github.com/mondegor/go-core/mrlog"
 	"github.com/mondegor/go-core/mrtype"
@@ -17,8 +17,6 @@ type (
 		logger  mrlog.Logger
 	}
 )
-
-var regexpClientIP = regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
 
 // NewClientIP - создаёт объект ClientIP.
 func NewClientIP(
@@ -36,12 +34,12 @@ func NewClientIP(
 }
 
 // RealIP - возвращает реальный IP адрес клиента из RemoteAddr.
-func (p *ClientIP) RealIP(r *http.Request) net.IP {
+func (p *ClientIP) RealIP(r *http.Request) netip.Addr {
 	ip, err := parse.IP(r.RemoteAddr, true)
 	if err != nil {
 		p.logger.Warn(r.Context(), "remote address parse error", "addr", r.RemoteAddr, "error", err)
 
-		return net.IP{}
+		return netip.Addr{}
 	}
 
 	return ip
@@ -58,9 +56,9 @@ func (p *ClientIP) DetailedIP(r *http.Request) mrtype.DetailedIP {
 			continue
 		}
 
-		for _, value := range regexpClientIP.FindAllString(header, -1) {
+		for _, value := range strings.Split(header, ",") {
 			ip, err := parse.IP(value, true)
-			if err != nil || !p.isClientGlobalIP(ip) || ip.Equal(realIP) {
+			if err != nil || !p.isClientGlobalIP(ip) || ip == realIP {
 				continue
 			}
 
@@ -76,7 +74,7 @@ func (p *ClientIP) DetailedIP(r *http.Request) mrtype.DetailedIP {
 	}
 }
 
-func (p *ClientIP) isClientGlobalIP(ip net.IP) bool {
+func (p *ClientIP) isClientGlobalIP(ip netip.Addr) bool {
 	return ip.IsGlobalUnicast() &&
 		!ip.IsPrivate() &&
 		!ip.IsInterfaceLocalMulticast() &&
