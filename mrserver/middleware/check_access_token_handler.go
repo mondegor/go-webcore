@@ -23,9 +23,11 @@ func CheckAccessTokenHandler(logger mrlog.Logger, handlerName string) func(next 
 				return errors.ErrHttpAccessForbidden
 			}
 
-			// гарантируется, чтобы пользователь не был авторизованным
+			// внутренние заголовки удаляются, чтобы клиент не мог выдать себя
+			// за авторизованного пользователя, подставив их самостоятельно
 			r.Header.Del(mrserver.HeaderKeyUserIDSlashGroup)
 			r.Header.Del(mrserver.HeaderKeySessionID)
+			r.Header.Del(mrserver.HeaderKeyTimeZone)
 
 			return next(w, r)
 		}

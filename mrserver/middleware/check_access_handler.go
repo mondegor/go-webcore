@@ -18,7 +18,7 @@ import (
 //  1. Извлекает access token из запроса;
 //  2. Получает данные пользователя через userProvider;
 //  3. Проверяет привилегию (Privilege) и разрешение (Permission) пользователя;
-//  4. Устанавливает заголовки: Accept-Language (из профиля пользователя), UserID/Group, SessionID;
+//  4. Устанавливает заголовки: Accept-Language и X-Internal-Time-Zone (из профиля пользователя), UserID/Group, SessionID;
 //  5. Вызывает следующий обработчик в цепочке.
 func CheckAccessHandler(
 	logger mrlog.Logger,
@@ -59,7 +59,7 @@ func CheckAccessHandler(
 				return errors.ErrHttpAccessForbidden
 			}
 
-			r.Header.Set(mrserver.HeaderKeyUserIDSlashGroup, uuid.UUID(currentUser.ID()).String()+"/"+currentUser.Group()) // userId/realm/kind
+			r.Header.Set(mrserver.HeaderKeyUserIDSlashGroup, uuid.UUID(currentUser.ID()).String()+"/"+currentUser.Group()) // userId/group
 
 			sessionID := currentUser.SessionID()
 			if sessionID == "" {
@@ -68,10 +68,22 @@ func CheckAccessHandler(
 
 			r.Header.Set(mrserver.HeaderKeySessionID, sessionID)
 
-			// замена языка переданного клиентом в заголовке Accept-Language
-			// на язык, который был установлен пользователем
+			// язык, переданный клиентом, заменяется на установленный
+			// в профиле пользователя; при пустом значении в профиле заголовок остаётся
+			// нетронутым, поэтому до обработчика доходит значение клиента
+			//
+			// ВНИМАНИЕ: язык запроса этим не фиксируется - ParserLocale выше Accept-Language
+			// ставит query-параметр (?lang), который приходит от клиента и здесь не срезается
 			if code := currentUser.LangCode(); code != "" {
 				r.Header.Set(mrserver.HeaderKeyAcceptLanguage, code)
+			}
+
+			// HeaderKeyTimeZone объявлен внутренним заголовком, поэтому у пользователя
+			// с незаданным часовым поясом будет действовать часовой пояс по умолчанию
+			if timeZone := currentUser.TimeZone(); timeZone != "" {
+				r.Header.Set(mrserver.HeaderKeyTimeZone, timeZone)
+			} else {
+				r.Header.Del(mrserver.HeaderKeyTimeZone)
 			}
 
 			if err = next(w, r); err != nil {

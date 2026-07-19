@@ -20,9 +20,13 @@ const (
 	// Пример: 3c0b88e8-ba21-4d49-afda-d92e7ac08918.
 	HeaderKeyRequestID = "X-Request-Id"
 
+	// HeaderKeyTimeZone - внутренний заголовок с часовым поясом пользователя (IANA-имя).
+	// Пример: Europe/Moscow.
+	HeaderKeyTimeZone = "X-Internal-Time-Zone"
+
 	// HeaderKeyUserIDSlashGroup - внутренний заголовок с ID пользователя и его группой.
-	// Формат: "{userId}/{realm}/{kind}".
-	// Пример: 550e8400-e29b-41d4-a716-446655440000/app/admin.
+	// Формат: "{userId}/{group}".
+	// Пример: 550e8400-e29b-41d4-a716-446655440000/app/admin (где app/admin - является группой).
 	HeaderKeyUserIDSlashGroup = "X-Internal-UserId-Group"
 
 	// HeaderKeySessionID - внутренний заголовок с ID текущей сессии пользователя.

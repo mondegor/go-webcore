@@ -133,10 +133,12 @@ type (
 	}
 
 	// ParserUser - парсер для получения информации о пользователе из запроса.
-	// Извлекает данные из заголовка X-User-Id/Group, установленного middleware.
+	// Извлекает данные из внутренних заголовков X-Internal-UserId-Group,
+	// X-Internal-Session-Id и X-Internal-Time-Zone, установленных middleware.
 	ParserUser interface {
 		UserID(r *http.Request) uuid.UUID
 		UserAndGroup(r *http.Request) (userID uuid.UUID, group string)
+		Location(r *http.Request) *time.Location
 		SessionID(r *http.Request) string
 	}
 )

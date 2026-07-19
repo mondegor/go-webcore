@@ -54,7 +54,7 @@ func HandlerErrorResponse(logger mrlog.Logger, status int, title, detail string)
 				Status:   status,
 				Detail:   detail,
 				Instance: r.Method + " " + r.URL.Path, // TODO: добавить helper xhttp.RequestInstance(r)
-				Time:     time.Now().UTC().Format(time.RFC3339),
+				Time:     time.Now().UTC().Format(timeLayoutRFC3339Milli),
 			},
 		)
 		if err != nil {
