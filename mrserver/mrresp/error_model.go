@@ -9,6 +9,10 @@ const (
 	// ErrorAttributeCodeByDefault - код ошибки по умолчанию для неклассифицированных ошибок.
 	// Используется когда у ошибки нет собственного кода (Code).
 	ErrorAttributeCodeByDefault = "FailedToProcessError"
+
+	// timeLayoutRFC3339Milli - формат RFC3339 с точностью до миллисекунд; для UTC-времени
+	// смещение выводится как суффикс Z (например 2020-01-01T12:00:00.000Z).
+	timeLayoutRFC3339Milli = "2006-01-02T15:04:05.000Z07:00"
 )
 
 type (
@@ -31,7 +35,7 @@ type (
 		// Instance - идентификатор конкретного запроса (METHOD path).
 		Instance string `json:"instance"`
 
-		// Time - время возникновения ошибки в RFC3339.
+		// Time - время возникновения ошибки в RFC3339 с точностью до миллисекунд (UTC).
 		Time string `json:"time"`
 
 		// ErrorTraceID - идентификатор трассировки ошибки для поиска в логах.
@@ -51,7 +55,7 @@ type (
 		// Instance - идентификатор запроса (METHOD path).
 		Instance string `json:"instance"`
 
-		// Time - время возникновения ошибки в RFC3339.
+		// Time - время возникновения ошибки в RFC3339 с точностью до миллисекунд (UTC).
 		Time string `json:"time"`
 
 		// Errors - список ошибок валидации с кодами и описаниями.
@@ -82,7 +86,7 @@ func NewError400Response(r *http.Request, errorAttrs ...ErrorAttribute) Error400
 	return Error400Response{
 		Status:   http.StatusBadRequest,
 		Instance: r.Method + " " + r.URL.Path,
-		Time:     time.Now().UTC().Format(time.RFC3339),
+		Time:     time.Now().UTC().Format(timeLayoutRFC3339Milli),
 		Errors:   errorAttrs,
 	}
 }

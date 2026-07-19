@@ -225,7 +225,7 @@ func (rs *ErrorSender) getErrorDetailsResponse(r *http.Request, status int, err 
 		Status:       status,
 		Detail:       errorMessage.Details,
 		Instance:     r.Method + " " + r.URL.Path,
-		Time:         time.Now().UTC().Format(time.RFC3339),
+		Time:         time.Now().UTC().Format(timeLayoutRFC3339Milli),
 		ErrorTraceID: errorTraceID,
 		DebugInfo:    rs.debugFunc(err),
 	}
