@@ -54,31 +54,37 @@ func (p *Locale) Localizer(r *http.Request) mrcore.Localizer {
 	return p.locale(r)
 }
 
-// locale - определяет локаль запроса по приоритету источников:
-//  1. query-параметр (?lang) - одиночный тег; при валидности добавляется первым в список предпочтений;
-//  2. заголовок Accept-Language - список тегов, отсортированный по убыванию веса q; для авторизованных
-//     запросов middleware подставляет сюда язык из профиля пользователя (клиентский заголовок игнорируется).
+// locale - разбирает источники локали; их порядок и контракт описаны в request.ParserLocale.
 //
-// Невалидное значение источника логируется и пропускается (не прерывает разбор), а из заголовка
-// при этом извлекаются языки тех его элементов, которые разобрать удалось. Итоговый список
-// предпочтений передаётся в language.Matcher пула поддерживаемых языков, который выбирает наиболее
-// близкий поддерживаемый язык. Теги с регионом (напр. fr-CH, en-US) сводятся к базовому языку.
+// Первые два источника (query-параметр и X-Internal-Lang-Code) строгие и потому разбираются
+// одним проходом: негодное значение молча отбрасывается, и разбор продолжается со следующего
+// источника. Логирования здесь нет намеренно: годные значения клиент получает от самого
+// приложения (см. mrlocale.Pool.Languages), а промах на внутреннем заголовке означает язык,
+// который приложение больше не поддерживает, - и то, и другое штатно откатывается ниже.
+//
+// Accept-Language разбирается терпимее, так как приходит от браузера, который о списке языков
+// приложения ничего не знает: негодный элемент логируется и пропускается, не прерывая разбор,
+// а языки уцелевших элементов учитываются по весу q. Итоговый список предпочтений передаётся
+// в language.Matcher пула, который выбирает наиболее близкий поддерживаемый язык; теги
+// с регионом (напр. fr-CH, en-US) сводятся к базовому языку.
+//
 // При пустом списке предпочтений, а также когда ни один тег не подошёл, возвращается язык по умолчанию.
 func (p *Locale) locale(r *http.Request) *mrlocale.Localizer {
-	langs := make([]language.Tag, 0, 2)
+	// строгие источники в порядке приоритета
+	for _, langCode := range [...]string{
+		r.URL.Query().Get(p.paramNameLang),
+		r.Header.Get(mrserver.HeaderKeyInternalLangCode),
+	} {
+		if langCode == "" {
+			continue
+		}
 
-	if langCode := r.URL.Query().Get(p.paramNameLang); langCode != "" {
-		if lang, err := language.Parse(langCode); err != nil {
-			p.logger.Warn(
-				r.Context(),
-				"Language param is incorrect",
-				"param", p.paramNameLang,
-				"lang", langCode,
-			)
-		} else {
-			langs = append(langs, lang)
+		if localizer, ok := p.pool.LocalizerByCode(langCode); ok {
+			return localizer
 		}
 	}
+
+	langs := make([]language.Tag, 0, 2)
 
 	if acceptLanguage := r.Header.Get(mrserver.HeaderKeyAcceptLanguage); acceptLanguage != "" {
 		lang, _, err := language.ParseAcceptLanguage(acceptLanguage)

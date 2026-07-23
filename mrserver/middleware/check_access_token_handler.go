@@ -25,9 +25,10 @@ func CheckAccessTokenHandler(logger mrlog.Logger, handlerName string) func(next 
 
 			// внутренние заголовки удаляются, чтобы клиент не мог выдать себя
 			// за авторизованного пользователя, подставив их самостоятельно
-			r.Header.Del(mrserver.HeaderKeyUserIDSlashGroup)
-			r.Header.Del(mrserver.HeaderKeySessionID)
-			r.Header.Del(mrserver.HeaderKeyTimeZone)
+			r.Header.Del(mrserver.HeaderKeyInternalUserIDSlashGroup)
+			r.Header.Del(mrserver.HeaderKeyInternalSessionID)
+			r.Header.Del(mrserver.HeaderKeyInternalLangCode)
+			r.Header.Del(mrserver.HeaderKeyInternalTimeZone)
 
 			return next(w, r)
 		}

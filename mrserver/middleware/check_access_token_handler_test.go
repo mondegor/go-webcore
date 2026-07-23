@@ -21,9 +21,20 @@ func TestCheckAccessTokenHandler_InternalHeadersAreDropped(t *testing.T) {
 	t.Parallel()
 
 	internalHeaders := []string{
-		mrserver.HeaderKeyUserIDSlashGroup,
-		mrserver.HeaderKeyTimeZone,
-		mrserver.HeaderKeySessionID,
+		mrserver.HeaderKeyInternalUserIDSlashGroup,
+		mrserver.HeaderKeyInternalSessionID,
+		// язык и пояс доступом не управляют, но их внутренние заголовки срезаются
+		// наравне с остальными: иначе клиент задавал бы значение "от имени сервера",
+		// минуя подбор, которому подлежит его собственное
+		mrserver.HeaderKeyInternalLangCode,
+		mrserver.HeaderKeyInternalTimeZone,
+	}
+
+	// заголовки клиента, не являющиеся внутренними, должны остаться нетронутыми:
+	// часовой пояс и язык клиент вправе задать на любом маршруте, в том числе гостевом
+	clientHeaders := map[string]string{
+		mrserver.HeaderKeyAcceptLanguage: "en",
+		mrserver.HeaderKeyAcceptTimeZone: "Europe/Moscow;offset=+03:00;dst=0",
 	}
 
 	var got http.Header
@@ -43,8 +54,9 @@ func TestCheckAccessTokenHandler_InternalHeadersAreDropped(t *testing.T) {
 		r.Header.Set(key, "spoofed-by-client")
 	}
 
-	// заголовок клиента, не являющийся внутренним, должен остаться нетронутым
-	r.Header.Set(mrserver.HeaderKeyAcceptLanguage, "en")
+	for key, value := range clientHeaders {
+		r.Header.Set(key, value)
+	}
 
 	require.NoError(t, handler(w, r))
 
@@ -55,7 +67,9 @@ func TestCheckAccessTokenHandler_InternalHeadersAreDropped(t *testing.T) {
 		assert.False(t, ok, "header %s must be removed", key)
 	}
 
-	assert.Equal(t, "en", got.Get(mrserver.HeaderKeyAcceptLanguage))
+	for key, value := range clientHeaders {
+		assert.Equal(t, value, got.Get(key), "header %s must be kept", key)
+	}
 }
 
 // TestCheckAccessTokenHandler_AuthorizedIsForbidden - проверяет, что запрос
