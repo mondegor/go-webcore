@@ -56,13 +56,14 @@ func TestCheckAccessHandler_UserLangAndTimeZone(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
-		name         string
-		userLang     string
-		userTimeZone string
-		clientLang   string
-		clientTZ     string
-		wantLang     string
-		wantTZ       string
+		name          string
+		userLang      string
+		userTimeZone  string
+		clientLang    string
+		clientTZ      string
+		spoofInternal bool
+		wantLang      string
+		wantTZ        string
 	}
 
 	tests := []testCase{
@@ -74,28 +75,38 @@ func TestCheckAccessHandler_UserLangAndTimeZone(t *testing.T) {
 			wantTZ:       "Europe/Moscow",
 		},
 		{
-			name:         "client values are overwritten by user values",
+			// клиентские заголовки не перезаписываются и не удаляются: сервер лишь
+			// добавляет источник более высокого приоритета, а разбирается с приоритетом
+			// парсер, а не middleware
+			name:         "client values survive alongside user values",
 			userLang:     "ru",
 			userTimeZone: "Europe/Moscow",
 			clientLang:   "en",
-			clientTZ:     "Asia/Tokyo",
+			clientTZ:     "Asia/Tokyo;offset=+09:00;dst=0",
 			wantLang:     "ru",
 			wantTZ:       "Europe/Moscow",
 		},
 		{
-			// Accept-Language - клиентский заголовок, при пустом значении в профиле
-			// он не удаляется и доходит до обработчика как есть, а внутренний
-			// заголовок с часовым поясом срезается, чтобы клиент не мог его подделать
-			name:       "client lang survives, but client time zone is removed",
+			// профиль пуст, поэтому внутренние заголовки выставляются пустыми;
+			// до обработчика доходят только значения клиента
+			name:       "internal headers are emptied when profile is empty",
 			clientLang: "en",
-			clientTZ:   "Asia/Tokyo",
-			wantLang:   "en",
+			clientTZ:   "Asia/Tokyo;offset=+09:00;dst=0",
+			wantLang:   "",
 			wantTZ:     "",
 		},
 		{
-			name:     "headers are absent when neither profile nor client set them",
+			name:     "internal headers are emptied when neither profile nor client set them",
 			wantLang: "",
 			wantTZ:   "",
+		},
+		{
+			// клиент подсунул внутренние заголовки, но профиль пуст: middleware
+			// затирает их пустым значением, чтобы клиент не выдавал себя за сервер
+			name:          "spoofed internal headers are emptied when profile is empty",
+			spoofInternal: true,
+			wantLang:      "",
+			wantTZ:        "",
 		},
 	}
 
@@ -132,28 +143,31 @@ func TestCheckAccessHandler_UserLangAndTimeZone(t *testing.T) {
 			}
 
 			if tc.clientTZ != "" {
-				r.Header.Set(mrserver.HeaderKeyTimeZone, tc.clientTZ)
+				r.Header.Set(mrserver.HeaderKeyAcceptTimeZone, tc.clientTZ)
+			}
+
+			if tc.spoofInternal {
+				r.Header.Set(mrserver.HeaderKeyInternalLangCode, "xx")
+				r.Header.Set(mrserver.HeaderKeyInternalTimeZone, "Mars/Olympus")
 			}
 
 			require.NoError(t, handler(w, r))
 
-			// пустое ожидаемое значение означает отсутствие самой записи в карте
-			// заголовков, а не запись с пустым значением
+			// внутренние заголовки выставляются всегда; пустое ожидаемое значение
+			// означает запись с пустым значением, а не отсутствие записи
 			for key, want := range map[string]string{
-				mrserver.HeaderKeyAcceptLanguage: tc.wantLang,
-				mrserver.HeaderKeyTimeZone:       tc.wantTZ,
+				mrserver.HeaderKeyInternalLangCode: tc.wantLang,
+				mrserver.HeaderKeyInternalTimeZone: tc.wantTZ,
 			} {
 				_, ok := got[http.CanonicalHeaderKey(key)]
-
-				if want == "" {
-					assert.False(t, ok, "header %s must be removed", key)
-
-					continue
-				}
 
 				assert.True(t, ok, "header %s must be set", key)
 				assert.Equal(t, want, got.Get(key))
 			}
+
+			// клиентские заголовки middleware не касается ни при каком профиле
+			assert.Equal(t, tc.clientLang, got.Get(mrserver.HeaderKeyAcceptLanguage))
+			assert.Equal(t, tc.clientTZ, got.Get(mrserver.HeaderKeyAcceptTimeZone))
 		})
 	}
 }
@@ -202,8 +216,8 @@ func TestCheckAccessHandler_SessionID(t *testing.T) {
 
 			next := func(_ http.ResponseWriter, r *http.Request) error {
 				nextCalled = true
-				gotSessionID = r.Header.Get(mrserver.HeaderKeySessionID)
-				_, hasHeader = r.Header[http.CanonicalHeaderKey(mrserver.HeaderKeySessionID)]
+				gotSessionID = r.Header.Get(mrserver.HeaderKeyInternalSessionID)
+				_, hasHeader = r.Header[http.CanonicalHeaderKey(mrserver.HeaderKeyInternalSessionID)]
 
 				return nil
 			}
