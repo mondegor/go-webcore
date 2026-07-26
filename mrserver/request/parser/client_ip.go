@@ -8,28 +8,34 @@ import (
 	"github.com/mondegor/go-core/mrlog"
 	"github.com/mondegor/go-core/mrtype"
 	"github.com/mondegor/go-core/mrtype/parse"
+
+	"github.com/mondegor/go-webcore/mrserver"
 )
 
 type (
 	// ClientIP - определяет реальный и прокси IP-адрес клиента.
 	ClientIP struct {
-		headers []string
-		logger  mrlog.Logger
+		proxyHeaders []string
+		logger       mrlog.Logger
 	}
 )
 
 // NewClientIP - создаёт объект ClientIP.
+// Заголовки просматриваются в порядке их перечисления, поэтому первым указывается
+// наиболее достоверный источник. Если proxyHeaders не заданы, используется список
+// по умолчанию: X-Real-Ip, X-Forwarded-For. Свой список полностью заменяет список
+// по умолчанию, а не дополняет его.
 func NewClientIP(
 	logger mrlog.Logger,
-	headers ...string,
+	proxyHeaders ...string,
 ) *ClientIP {
-	if len(headers) == 0 {
-		headers = append(headers, "X-Client-IP", "X-Cluster-Client-IP", "X-Forwarded-For")
+	if len(proxyHeaders) == 0 {
+		proxyHeaders = []string{mrserver.HeaderKeyRealIP, mrserver.HeaderKeyForwardedFor}
 	}
 
 	return &ClientIP{
-		headers: headers,
-		logger:  logger,
+		proxyHeaders: proxyHeaders,
+		logger:       logger,
 	}
 }
 
@@ -49,7 +55,7 @@ func (p *ClientIP) RealIP(r *http.Request) netip.Addr {
 func (p *ClientIP) DetailedIP(r *http.Request) mrtype.DetailedIP {
 	realIP := p.RealIP(r)
 
-	for _, key := range p.headers {
+	for _, key := range p.proxyHeaders {
 		header := r.Header.Get(key)
 
 		if header == "" {
