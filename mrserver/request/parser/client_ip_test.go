@@ -132,13 +132,34 @@ func TestClientIP_DetailedIP(t *testing.T) {
 			want:       mrtype.DetailedIP{Real: realIP},
 		},
 		{
+			name:       "global proxy in X-Real-Ip",
+			remoteAddr: remoteAddr,
+			headers:    map[string]string{"X-Real-Ip": proxyIP.String()},
+			want:       mrtype.DetailedIP{Real: realIP, Proxy: proxyIP},
+		},
+		{
+			name:       "X-Real-Ip takes precedence over X-Forwarded-For",
+			remoteAddr: remoteAddr,
+			headers: map[string]string{
+				"X-Real-Ip":       proxyIP.String(),
+				"X-Forwarded-For": "198.51.100.7",
+			},
+			want: mrtype.DetailedIP{Real: realIP, Proxy: proxyIP},
+		},
+		{
 			name:       "first global proxy is taken across default headers",
 			remoteAddr: remoteAddr,
 			headers: map[string]string{
-				"X-Client-IP":     "10.0.0.1",
+				"X-Real-Ip":       "10.0.0.1",
 				"X-Forwarded-For": proxyIP.String(),
 			},
 			want: mrtype.DetailedIP{Real: realIP, Proxy: proxyIP},
+		},
+		{
+			name:       "header outside the default list is ignored",
+			remoteAddr: remoteAddr,
+			headers:    map[string]string{"X-Client-IP": proxyIP.String()},
+			want:       mrtype.DetailedIP{Real: realIP},
 		},
 	}
 
