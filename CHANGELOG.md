@@ -1,6 +1,17 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2026-08-02
+### Added
+- `request.ParserValidate` получил метод `ValidateStruct` - проверка заранее
+  подготовленной структуры без парсинга тела запроса; реализация `parser.Validator`
+  делегирует вызов `mrview.Validator.Validate`. **ВНИМАНИЕ**: расширение интерфейса
+  ломает внешние реализации `request.ParserValidate` - их нужно дополнить этим методом;
+
+### Changed
+- в описании модели `mrresp.ErrorDetailsResponse` уточнён список кодов ответов,
+  в которых она используется: добавлен 429 (`ErrHttpTooManyRequests`);
+
 ## 2026-07-26
 ### Added
 - `mrserver.HeaderKeyRealIP` (`X-Real-Ip`) и `mrserver.HeaderKeyForwardedFor`

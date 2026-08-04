@@ -17,7 +17,7 @@ const (
 
 type (
 	// ErrorDetailsResponse - модель пользовательской ошибки в формате RFC 9457 (Problem Details for HTTP APIs).
-	// Используется для ответов с кодами: 401, 403, 404, 409, 422, 5xx.
+	// Используется для ответов с кодами: 401, 403, 404, 409, 422, 429, 5xx.
 	// Content-Type: application/problem+json.
 	ErrorDetailsResponse struct {
 		// Type - URL с описанием типа проблемы.

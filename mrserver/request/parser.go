@@ -40,6 +40,7 @@ type (
 	ParserValidate interface {
 		Validate(r *http.Request, structPointer any) error
 		ValidateContent(ctx context.Context, content []byte, structPointer any) error
+		ValidateStruct(ctx context.Context, structPointer any) error
 	}
 
 	// ParserInt64 - извлекает целочисленные значения int64 из query-параметров.

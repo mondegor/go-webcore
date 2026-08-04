@@ -29,17 +29,24 @@ func NewValidator(
 	}
 }
 
-// Validate - возвращает в structPointer распарсеный внешний запрос или ошибку, если валидация запроса не прошла.
+// Validate - возвращает в structPointer распарсеный внешний запрос или ошибку,
+// если валидация запроса не прошла.
 func (p *Validator) Validate(r *http.Request, structPointer any) error {
-	return p.validate(r.Context(), r.Body, structPointer)
+	return p.parseAndValidate(r.Context(), r.Body, structPointer)
 }
 
-// ValidateContent - возвращает в structPointer распарсенный []byte или ошибку, если валидация запроса не прошла.
+// ValidateContent - возвращает в structPointer распарсенный []byte или ошибку,
+// если валидация запроса не прошла.
 func (p *Validator) ValidateContent(ctx context.Context, content []byte, structPointer any) error {
-	return p.validate(ctx, bytes.NewReader(content), structPointer)
+	return p.parseAndValidate(ctx, bytes.NewReader(content), structPointer)
 }
 
-func (p *Validator) validate(ctx context.Context, r io.Reader, structPointer any) error {
+// ValidateStruct - возвращает результат проверки заранее подготовленной структуры с данными.
+func (p *Validator) ValidateStruct(ctx context.Context, structPointer any) error {
+	return p.validator.Validate(ctx, structPointer)
+}
+
+func (p *Validator) parseAndValidate(ctx context.Context, r io.Reader, structPointer any) error {
 	if err := p.decoder.ParseToStruct(ctx, r, structPointer); err != nil {
 		return err
 	}
