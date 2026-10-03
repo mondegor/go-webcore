@@ -1,6 +1,27 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2026-10-03
+### Added
+- `mrclient/mail.ErrInternalParsingContentTypeFailed` - ошибка разбора типа содержимого письма;
+
+### Changed
+- Обновлены зависимости (`go-core` и др.);
+- `mrclient/mail.NewMessage()` проверяет значение `WithContentType()`: некорректный тип
+  (например, `text/html;;`, `text` без подтипа или wildcard-тип `text/*`, `*/*`), а также `charset`, отличный от `UTF-8`,
+  для `text/*` теперь приводят к ошибке `ErrInternalParsingContentTypeFailed`
+  (раньше значение записывалось в заголовок без проверки);
+- `mrclient/mail.NewMessage()` больше не добавляет `charset` к типам, отличным от `text/*`
+  (например, `multipart/*`);
+
+### Fixed
+- `mrclient/mail.NewMessage()` нормализует `Content-Type` через `mime.ParseMediaType` /
+  `mime.FormatMediaType`: медиа-тип приводится к нижнему регистру, для `text/*` `charset=UTF-8`
+  выставляется ровно один раз (раньше параметр дублировался:
+  `text/html; charset=utf-8; charset="UTF-8"`), прочие параметры сохраняются;
+- `mrclient/mail.NewMessage()` отклоняет значение `WithContentType()` с символами перевода строки
+  (CR/LF), что исключает внедрение произвольных заголовков в письмо;
+
 ## 2026-08-02
 ### Added
 - `request.ParserValidate` получил метод `ValidateStruct` - проверка заранее

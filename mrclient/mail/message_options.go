@@ -20,6 +20,8 @@ type (
 
 // WithContentType - устанавливает тип содержимого письма (contentType).
 // Например: "text/plain" для обычного текста или "text/html" для HTML.
+// Для типов text/* параметр charset, если указан, должен быть UTF-8 (в заголовок всегда пишется UTF-8),
+// прочие параметры (и все параметры остальных типов) сохраняются.
 func WithContentType(value string) MessageOption {
 	return func(o *messageOptions) {
 		o.contentType = value

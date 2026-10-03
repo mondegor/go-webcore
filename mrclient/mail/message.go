@@ -2,6 +2,7 @@ package mail
 
 import (
 	"encoding/base64"
+	"mime"
 	"net/mail"
 	"net/textproto"
 	"strings"
@@ -11,6 +12,7 @@ import (
 
 const (
 	defaultContentType          = "text/plain"
+	messageCharset              = "UTF-8"
 	defaultMessageSubject       = "The mail without a subject"
 	defaultUseExtendEmailFormat = true
 )
@@ -25,8 +27,13 @@ type (
 	}
 )
 
-// ErrInternalParsingAddressFailed - ошибка при неудачном разборе email-адреса.
-var ErrInternalParsingAddressFailed = errors.NewInternalProto("parsing address failed")
+var (
+	// ErrInternalParsingAddressFailed - ошибка при неудачном разборе email-адреса.
+	ErrInternalParsingAddressFailed = errors.NewInternalProto("parsing address failed")
+
+	// ErrInternalParsingContentTypeFailed - ошибка при неудачном разборе типа содержимого письма.
+	ErrInternalParsingContentTypeFailed = errors.NewInternalProto("parsing content type failed")
+)
 
 // NewMessage - создаёт и настраивает объект Message для отправки электронного письма.
 // Параметры:
@@ -34,7 +41,8 @@ var ErrInternalParsingAddressFailed = errors.NewInternalProto("parsing address f
 //   - to - email основного получателя;
 //
 // Опциональные параметры opts позволяют настроить тему, тип контента, копии и другие заголовки.
-// Возвращает ошибку ErrInternalParsingAddressFailed при некорректном формате email.
+// Возвращает ошибку ErrInternalParsingAddressFailed при некорректном формате email
+// и ErrInternalParsingContentTypeFailed при некорректном типе содержимого.
 func NewMessage(from, to string, opts ...MessageOption) (*Message, error) {
 	emailParser := mail.AddressParser{}
 
@@ -65,6 +73,13 @@ func NewMessage(from, to string, opts ...MessageOption) (*Message, error) {
 	if o.contentType == "" {
 		o.contentType = defaultContentType
 	}
+
+	contentType, err := normalizeContentType(o.contentType)
+	if err != nil {
+		return nil, err
+	}
+
+	o.contentType = contentType
 
 	if !o.useExtendEmailFormat {
 		fromEmail.Name = ""
@@ -122,8 +137,8 @@ func createMessageHeader(msg *messageOptions, from, to string) textproto.MIMEHea
 	header := make(textproto.MIMEHeader)
 
 	header.Set("Mime-Version", "1.0")
-	header.Set("Subject", encodeValue(msg.subject, "UTF-8"))
-	header.Set("Content-Type", msg.contentType+"; charset=\"UTF-8\"")
+	header.Set("Subject", encodeValue(msg.subject, messageCharset))
+	header.Set("Content-Type", msg.contentType)
 	header.Set("From", from)
 	header.Set("To", to)
 
@@ -147,6 +162,33 @@ func createMessageHeader(msg *messageOptions, from, to string) textproto.MIMEHea
 	header.Set("Return-Path", msg.returnEmail)
 
 	return header
+}
+
+// normalizeContentType - разбирает тип содержимого и собирает его заново:
+// медиа-тип приводится к нижнему регистру, для text/* charset допускается только UTF-8
+// (тело и тема письма всегда в UTF-8): отсутствующий выставляется, другой приводит к ошибке;
+// прочие параметры сохраняются.
+func normalizeContentType(value string) (string, error) {
+	mediaType, params, err := mime.ParseMediaType(value)
+	if err != nil {
+		return "", ErrInternalParsingContentTypeFailed.Wrap(err, "contentType", value)
+	}
+
+	// ParseMediaType допускает тип без подтипа (например, "text") и wildcard-типы
+	// (например, "text/*", "*/*"), для письма они некорректны.
+	if !strings.Contains(mediaType, "/") || strings.Contains(mediaType, "*") {
+		return "", ErrInternalParsingContentTypeFailed.New("contentType", value)
+	}
+
+	if strings.HasPrefix(mediaType, "text/") {
+		if charset, ok := params["charset"]; ok && !strings.EqualFold(charset, messageCharset) {
+			return "", ErrInternalParsingContentTypeFailed.New("contentType", value)
+		}
+
+		params["charset"] = messageCharset
+	}
+
+	return mime.FormatMediaType(mediaType, params), nil
 }
 
 func encodeValue(value, charset string) string {
