@@ -9,7 +9,7 @@ var (
 	regexpVariable          = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*$`)
 	regexpName              = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9/_.+-]*[a-zA-Z0-9]$`)
 	regexpRewriteName       = regexp.MustCompile(`^[a-z][a-z0-9-]*[a-z0-9]$`)
-	regexpPassword          = regexp.MustCompile(`^[a-zA-Z0-9!"#$%&'()*+,\-./:;<=>?@\[\\\]^_{|}~]+$`)
+	regexpPassword          = regexp.MustCompile(`^[!-~]+$`)
 	regexpDoubleSize        = regexp.MustCompile(`^[0-9]+x[0-9]+$`)
 	regexpTripleSize        = regexp.MustCompile(`^[0-9]+x[0-9]+x[0-9]+$`)
 )
@@ -99,7 +99,8 @@ func ValidateRewriteName(value string) bool {
 }
 
 // ValidatePassword - проверяет, что значение содержит допустимые символы для пароля.
-// Допустимые символы: буквы, цифры и специальные символы (без пробелов).
+// Допустимые символы: печатные символы ASCII, кроме пробела (латинские буквы, цифры
+// и специальные символы).
 func ValidatePassword(value string) bool {
 	return regexpPassword.MatchString(value)
 }
