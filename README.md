@@ -5,27 +5,33 @@
 Библиотека находится в стадии разработки.
 
 ## Описание библиотеки
-Библиотека с базовой функциональностью для разработки web сервисов, в которую входят:
-- общие интерфейсы, такие как `logger`, `router`, `validator` и другие, которые могут быть реализованы уже в конкретных проектах;
-- адаптеры логгеров: стандартного и `rs/zerolog`;
-- адаптер стандартного http сервера;
+Библиотека с базовой функциональностью для разработки web сервисов.
+Общие интерфейсы (логгер, контроль доступа, воркеры, идемпотентность, ошибки и т.д.)
+находятся в библиотеке [`go-core`](https://github.com/mondegor/go-core),
+а в GoWebCore располагаются их адаптеры и http-инфраструктура. В библиотеку входят:
+- интерфейсы http роутера (`mrserver.HttpRouter`), локализатора (`mrcore.Localizer`)
+  и валидатора (`mrview.Validator`), которые могут быть реализованы уже в конкретных проектах;
+- адаптер стандартного http сервера (`mrserver/httpserver`);
 - адаптеры http роутеров:
-    - `go-chi/chi/v5`;
-    - `julienschmidt/httprouter`;
+    - `go-chi/chi/v5` (`mrserver/mrchi`);
+    - `julienschmidt/httprouter` (`mrserver/mrjulienrouter`);
+- middleware: проверка доступа и токена доступа, идемпотентность, сбор статистики запросов,
+  перехват паник, генерация идентификатора запроса;
 - адаптер cors (`rs/cors`);
-- адаптер валидатора (`go-playground/v10`);
-- адаптер для отправки ошибок (`sentry`);
-- реализация метрик в `mrprometheus.ObserveRequest`;
-- многопоточный сервис запуска задач по расписанию (`TaskScheduler`);
-- многопоточный сервис обработки сообщений (`MessageProcessor`);
-- работа с пользовательскими разрешениями и привилегиями (ролевая модель);
-- разграничение доступа к модулям из различных API;
-- часто используемые программные, системные и пользовательские ошибки, которые возникают в разных слоях программы;
-- пакеты с часто используемыми функциями: генерация токенов, преобразование IP и т.д.;
-- парсеры для некоторых типов данных, которые поступают из http запросов;
+- адаптер валидатора (`go-playground/validator/v10`);
+- адаптеры для отправки ошибок в `sentry` (`mrclient/sentry`, handler для `slog` в `mrlog/slog/sentry`);
+- клиенты для отправки писем по SMTP (`mrclient/mail`) и сообщений в `telegram` (`mrclient/telegram`);
+- реализация метрик http запросов в `mrserver/mrprometheus.ObserveRequest`
+  и метрик пула соединений с БД в `mrstorage/mrprometheus.DBCollector`;
+- формирование http ответов (`mrserver/mrresp`, `mrserver/mrjson`);
+- парсеры для некоторых типов данных, которые поступают из http запросов
+  (в т.ч. определение IP клиента с учётом `X-Real-Ip` и `X-Forwarded-For`);
 - парсеры для работы с файлами и изображениями;
+- функции инициализации http модулей и метрик (`mrcore/initing`, `mrcore/mrinit`);
+- отладочные утилиты (`mrdebug`) и хелперы для тестов (`mrtests/helpers`);
+- готовые дашборды `grafana` для метрик (`grafana-dashboards`) и примеры использования (`examples`).
 
-## Подключение библиотеки к проекту
+## Подключение библиотеки
 `go get -u github.com/mondegor/go-webcore@v0.29.2`
 
 ## Установка библиотеки для её локальной разработки
@@ -34,8 +40,10 @@
 - `git clone git@github.com:mondegor/go-webcore.git .`
 - `cp .env.dist .env`
 - `mrcmd go-dev deps` // загрузка зависимостей проекта
-- Для работы утилит `gofumpt`, `goimports`, `mockgen` необходимо в `.env` проверить
-  значения переменных `GO_DEV_TOOLS_INSTALL_*` и запустить `mrcmd go-dev install-tools`
+- Для работы утилит `gofumpt`, `goimports`, `gci`, `golangci-lint` необходимо запустить
+  `mrcmd go-dev install-tools`. По умолчанию они устанавливаются последних версий;
+  чтобы закрепить версию, раскомментируйте переменную `GO_DEV_TOOLS_INSTALL_*` в `.env`.
+  `mockgen` и `gotext` в go-dev по умолчанию выключены и в библиотеке не используются
 
 ### Консольные команды используемые при разработке библиотеки
 
@@ -45,7 +53,8 @@
 - `mrcmd go-dev help` // выводит список всех доступных go-dev команд;
 - `mrcmd go-dev generate` // генерирует go файлы через встроенный механизм go:generate;
 - `mrcmd go-dev gofumpt-fix` // исправляет форматирование кода (`gofumpt -l -w -extra ./`);
-- `mrcmd go-dev goimports-fix` // исправляет imports, если это требуется (`goimports -d -local ${GO_DEV_IMPORTS_LOCAL_PREFIXES} ./`);
+- `mrcmd go-dev goimports-fix` // исправляет imports, если это требуется (`goimports -l -w -local ${GO_DEV_IMPORTS_LOCAL_PREFIXES}` для всех go файлов, кроме сгенерированных);
+- `mrcmd go-dev gci-fix` // упорядочивает imports (`gci`);
 - `mrcmd go-dev lint` // запускает линтеры для проверки кода (на основе `.golangci.yaml`);
 - `mrcmd go-dev test` // запускает тесты библиотеки;
 - `mrcmd go-dev test-report` // запускает тесты библиотеки с формированием отчёта о покрытии кода (`test-coverage-full.html`);
@@ -53,8 +62,9 @@
 
 #### Короткий вариант выше приведённых команд (Makefile)
 - `make deps` // аналог `mrcmd go-dev deps`
+- `make deps-upgrade` // аналог `mrcmd go-dev get -u ./...` + `mrcmd go-dev tidy`
 - `make generate` // аналог `mrcmd go-dev generate`
-- `make lint` // аналог `mrcmd go-dev lint`
+- `make lint` // аналог `mrcmd go-dev gofumpt-fix` + `goimports-fix` + `gci-fix` + `lint`
 - `make test` // аналог `mrcmd go-dev test`
 - `make test-report` // аналог `mrcmd go-dev test-report`
 - `make plantuml` // аналог `mrcmd plantuml build-all`
