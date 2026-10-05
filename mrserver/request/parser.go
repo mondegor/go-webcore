@@ -120,10 +120,12 @@ type (
 		FilterEnumList(r *http.Request, key string) []T
 	}
 
-	// ParserClientIP - парсер для получения IP-адреса клиента из запроса.
-	ParserClientIP interface {
+	// ParserClient - парсер сведений о клиенте из запроса: IP-адреса и User-Agent,
+	// приведённого к безопасному для хранения и вывода виду.
+	ParserClient interface {
 		RealIP(r *http.Request) netip.Addr
 		DetailedIP(r *http.Request) mrtype.DetailedIP
+		UserAgent(r *http.Request) string
 	}
 
 	// ParserLocale - парсер для определения локали и языка из запроса.
