@@ -1,6 +1,18 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2026-10-05
+### Added
+- `parser.Client.UserAgent()` - User-Agent клиента, приведённый к безопасному для хранения
+  и вывода виду (`xstrings.SanitizePrintable` из `go-core`): без невалидных байтов UTF-8
+  и непечатаемых символов, с ограничением длины `ClientOptions.UserAgentMaxLength`;
+
+### Changed
+- **ВНИМАНИЕ**: `parser.ClientIP` переименован в `parser.Client`, конструктор
+  `NewClientIP(logger, proxyHeaders...)` заменён на `NewClient(logger, ClientOptions{ProxyHeaders: ...})`;
+- **ВНИМАНИЕ**: интерфейс `request.ParserClientIP` заменён на `request.ParserClient`
+  (добавлен метод `UserAgent`);
+
 ## 2026-10-03
 ### Added
 - `mrclient/mail.ErrInternalParsingContentTypeFailed` - ошибка разбора типа содержимого письма;

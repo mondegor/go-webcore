@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/mondegor/go-core/mrlog"
 	"github.com/mondegor/go-core/mrtype"
@@ -14,14 +16,14 @@ import (
 	"github.com/mondegor/go-webcore/mrserver/request/parser"
 )
 
-// Make sure the ClientIP conforms with the request.ParserClientIP interface.
-func TestClientIPImplementsRequestParserClientIP(t *testing.T) {
+// Make sure the Client conforms with the request.ParserClient interface.
+func TestClientImplementsRequestParserClient(t *testing.T) {
 	t.Parallel()
 
-	assert.Implements(t, (*request.ParserClientIP)(nil), &parser.ClientIP{})
+	assert.Implements(t, (*request.ParserClient)(nil), &parser.Client{})
 }
 
-func TestClientIP_RealIP(t *testing.T) {
+func TestClient_RealIP(t *testing.T) {
 	t.Parallel()
 
 	type testCase struct {
@@ -58,7 +60,7 @@ func TestClientIP_RealIP(t *testing.T) {
 		},
 	}
 
-	p := parser.NewClientIP(mrlog.NopLogger())
+	p := parser.NewClient(mrlog.NopLogger(), parser.ClientOptions{})
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -74,7 +76,7 @@ func TestClientIP_RealIP(t *testing.T) {
 	}
 }
 
-func TestClientIP_DetailedIP(t *testing.T) {
+func TestClient_DetailedIP(t *testing.T) {
 	t.Parallel()
 
 	const remoteAddr = "192.0.2.1:1234"
@@ -163,7 +165,7 @@ func TestClientIP_DetailedIP(t *testing.T) {
 		},
 	}
 
-	p := parser.NewClientIP(mrlog.NopLogger())
+	p := parser.NewClient(mrlog.NopLogger(), parser.ClientOptions{})
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -181,13 +183,13 @@ func TestClientIP_DetailedIP(t *testing.T) {
 	}
 }
 
-func TestClientIP_DetailedIP_CustomHeaders(t *testing.T) {
+func TestClient_DetailedIP_CustomHeaders(t *testing.T) {
 	t.Parallel()
 
 	realIP := netip.MustParseAddr("192.0.2.1")
 	proxyIP := netip.MustParseAddr("203.0.113.5")
 
-	p := parser.NewClientIP(mrlog.NopLogger(), "X-My-IP")
+	p := parser.NewClient(mrlog.NopLogger(), parser.ClientOptions{ProxyHeaders: []string{"X-My-IP"}})
 
 	r := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
 	r.RemoteAddr = "192.0.2.1:1234"
@@ -196,4 +198,37 @@ func TestClientIP_DetailedIP_CustomHeaders(t *testing.T) {
 	r.Header.Set("X-My-IP", proxyIP.String())
 
 	assert.Equal(t, mrtype.DetailedIP{Real: realIP, Proxy: proxyIP}, p.DetailedIP(r))
+}
+
+func TestClient_UserAgent(t *testing.T) {
+	t.Parallel()
+
+	type testCase struct {
+		name      string
+		maxLength int
+		userAgent string
+		want      string
+	}
+
+	tests := []testCase{
+		{name: "absent", maxLength: 0, userAgent: "", want: ""},
+		{name: "regular", maxLength: 0, userAgent: "Mozilla/5.0 (X11)", want: "Mozilla/5.0 (X11)"},
+		{name: "sanitized", maxLength: 0, userAgent: " Mozilla/5.0\xff\x01 (X11)\u202e ", want: "Mozilla/5.0 (X11)"},
+		{name: "default limit", maxLength: 0, userAgent: strings.Repeat("я", 600), want: strings.Repeat("я", 512)},
+		{name: "custom limit", maxLength: 7, userAgent: "Mozilla/5.0", want: "Mozilla"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			r := httptest.NewRequest(http.MethodGet, "/", http.NoBody)
+			r.Header.Set("User-Agent", tt.userAgent)
+
+			got := parser.NewClient(mrlog.NopLogger(), parser.ClientOptions{UserAgentMaxLength: tt.maxLength}).UserAgent(r)
+
+			assert.Equal(t, tt.want, got)
+			assert.True(t, utf8.ValidString(got))
+		})
+	}
 }
