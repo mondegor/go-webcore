@@ -54,29 +54,45 @@ func NewListPager(logger mrlog.Logger, opts ListPagerOptions) *ListPager {
 		lp.pageSizeDefault = opts.PageSizeDefault
 	}
 
+	if lp.pageSizeDefault > lp.pageSizeMax {
+		if opts.PageSizeDefault > 0 {
+			mrlog.Warn(
+				logger, "ListPager: PageSizeDefault is greater than PageSizeMax, PageSizeMax is used",
+				"page_size_default", opts.PageSizeDefault,
+				"page_size_max", lp.pageSizeMax,
+			)
+		}
+
+		lp.pageSizeDefault = lp.pageSizeMax
+	}
+
 	return &lp
 }
 
 // PageParams - возвращает распарсенные параметры выборки части списка элементов.
+// Если размер страницы не указан или равен 0, то берётся размер по умолчанию, а если больше максимального - максимальный,
+// индекс страницы при этом сохраняется; если параметры не удалось распарсить, то возвращается первая страница с размером по умолчанию.
 func (p *ListPager) PageParams(r *http.Request) mrtype.PageParams {
-	value, err := parse.PageParams(
-		r.URL.Query().Get(p.paramNamePageIndex),
-		r.URL.Query().Get(p.paramNamePageSize),
-	)
+	query := r.URL.Query()
 
-	if err != nil || value.Size == 0 || value.Size > p.pageSizeMax {
-		if err != nil {
-			p.logger.Warn(
-				r.Context(), "PageParams",
-				"index_key", p.paramNamePageIndex,
-				"size_key", p.paramNamePageSize,
-				"error", err,
-			)
-		}
+	value, err := parse.PageParams(query.Get(p.paramNamePageIndex), query.Get(p.paramNamePageSize))
+	if err != nil {
+		p.logger.Warn(
+			r.Context(), "PageParams",
+			"index_key", p.paramNamePageIndex,
+			"size_key", p.paramNamePageSize,
+			"error", err,
+		)
 
 		return mrtype.PageParams{
 			Size: p.pageSizeDefault,
 		}
+	}
+
+	if value.Size < 1 {
+		value.Size = p.pageSizeDefault
+	} else if value.Size > p.pageSizeMax {
+		value.Size = p.pageSizeMax
 	}
 
 	return value
