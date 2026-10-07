@@ -1,6 +1,20 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2026-10-07
+### Added
+- Пакет `mrserver/request/validate` с агрегирующими парсерами HTTP-запроса
+  (приложение соединяет их между собой и с другими парсерами в зависимости от потребности):
+  - базовый `RequestParser` / `Parser` (`NewParser`): `Bool`, `Int64`, `Uint64`, `Float64`, `String`,
+    `DateTime`, `UUID`, `Validator`;
+  - параметров списка `RequestListParser` / `ListParser` (`NewListParser`): `ListPager`, `ListSorter`;
+  - контекста запроса `RequestContextParser` / `ContextParser` (`NewContextParser`): `Client`, `User`,
+    `Locale`, `TimeZone`.
+
+### Removed
+- **ВНИМАНИЕ**: удалён агрегатор `parser.Parser` (`NewParser`), вместо него используются
+  агрегаторы из `mrserver/request/validate`.
+
 ## 2026-10-05
 ### Added
 - `parser.Client.UserAgent()` - User-Agent клиента, приведённый к безопасному для хранения
