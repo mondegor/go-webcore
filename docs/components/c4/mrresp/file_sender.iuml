@@ -1,0 +1,1 @@
+Component(file_sender, "FileSender", "mrresp", "Отправляет файл inline или как вложение (Content-Disposition: attachment)")

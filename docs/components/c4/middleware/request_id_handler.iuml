@@ -1,0 +1,1 @@
+Component(request_id_handler, "RequestIDHandler", "middleware", "Генерирует RequestID, принимает CorrelationID; кладёт их в контекст и заголовки ответа")

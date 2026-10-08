@@ -1,0 +1,1 @@
+Component(json_encoder, "JsonEncoder", "mrjson", "Кодирует ответы в JSON, Content-Type для обычных ответов и application/problem+json")

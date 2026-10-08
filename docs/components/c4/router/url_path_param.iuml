@@ -1,0 +1,1 @@
+Component(url_path_param, "URLPathParam", "mrchi, mrjulienrouter", "Извлечение параметра пути из запроса средствами конкретного маршрутизатора")

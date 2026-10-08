@@ -1,0 +1,1 @@
+Component(cacheable_response_writer, "CacheableResponseWriter", "mrserver", "Декоратор http.ResponseWriter, сохраняющий копию ответа для кэширования")

@@ -1,0 +1,1 @@
+Component(server_adapter, "Adapter", "httpserver", "Обёртка http.Server: Start/Shutdown, таймауты чтения, записи и остановки")

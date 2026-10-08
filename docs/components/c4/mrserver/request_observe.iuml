@@ -1,0 +1,1 @@
+Component(request_observe, "RequestObserve", "mrserver", "Интерфейс отправки метрик запроса: время по статусу, размеры запроса и ответа")

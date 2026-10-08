@@ -1,0 +1,1 @@
+Component(clear_internal_headers_handler, "ClearInternalHeadersHandler", "middleware", "Удаляет заголовки X-Internal-*, подставленные клиентом")

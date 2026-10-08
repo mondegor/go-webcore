@@ -1,0 +1,1 @@
+Container(stat, "stat / observe", "Go package", "Сбор статистики HTTP-запросов: логирование, метрики, трассировка")

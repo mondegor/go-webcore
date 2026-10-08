@@ -9,7 +9,7 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/mondegor/go-core v0.15.4-0.20261005141210-be4b633e9d73
+	github.com/mondegor/go-core v0.15.4-0.20261007232709-c99646f1ba31
 	github.com/prometheus/client_golang v1.24.1
 	github.com/rs/cors v1.11.1
 	github.com/stretchr/testify v1.12.1

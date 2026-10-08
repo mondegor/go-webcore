@@ -1,0 +1,1 @@
+Component(recover_handler, "RecoverHandler", "middleware", "Перехватывает панику, логирует её со стеком и отдаёт ответ 500 (fatalFunc)")

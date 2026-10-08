@@ -1,0 +1,39 @@
+@startuml
+!include <C4/C4_Component>
+
+' title Middleware
+
+Boundary(mrserver_middleware, "Middleware") {
+  !include components/c4/middleware/recover_handler.iuml
+  !include components/c4/middleware/request_id_handler.iuml
+  !include components/c4/middleware/observer_handler.iuml
+  !include components/c4/middleware/cors_middleware.iuml
+  !include components/c4/middleware/check_access_handler.iuml
+  !include components/c4/middleware/clear_internal_headers_handler.iuml
+  !include components/c4/middleware/idempotency_handler.iuml
+}
+
+!include components/c4/mrserver/request_stat.iuml
+!include components/c4/mrserver/response_sender.iuml
+!include components/c4/mrserver/cacheable_response_writer.iuml
+!include components/c4/request/request_helpers.iuml
+!include components/c4/initing/prepare_handler.iuml
+!include components/c4/ext/mrtrace.iuml
+!include components/c4/ext/mraccess.iuml
+!include components/c4/ext/mridempotency.iuml
+!include components/c4/ext/mrlog_logger.iuml
+
+Rel(recover_handler, logger, "Логирует панику со стеком вызовов")
+Rel(request_id_handler, mrtrace, "Генерирует RequestID и сохраняет CorrelationID в контексте")
+Rel(request_id_handler, request_helpers, "Извлекает CorrelationID")
+Rel(observer_handler, request_stat, "Передаёт статистику завершённого запроса")
+Rel(prepare_handler, check_access_handler, "Оборачивает обработчик по таблице privilege/permission")
+Rel(prepare_handler, clear_internal_headers_handler, "Оборачивает public everyone/guest-only обработчики")
+Rel(prepare_handler, request_helpers, "Проверяет отсутствие токена доступа (guest-only)")
+Rel(check_access_handler, request_helpers, "Извлекает токен доступа")
+Rel(check_access_handler, mraccess, "Получает пользователя и проверяет его права")
+Rel(idempotency_handler, mridempotency, "Валидирует ключ, читает, блокирует и сохраняет ответ")
+Rel(idempotency_handler, cacheable_response_writer, "Перехватывает ответ обработчика для кэширования")
+Rel(idempotency_handler, response_sender, "Отправляет закэшированный ответ")
+
+@enduml

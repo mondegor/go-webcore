@@ -1,0 +1,1 @@
+Component(router_adapter, "RouterAdapter", "mrchi, mrjulienrouter", "Реализация HttpRouter: оборачивает обработчики через HandlerAdapter, преобразует VarRestOfURL, 404/405")

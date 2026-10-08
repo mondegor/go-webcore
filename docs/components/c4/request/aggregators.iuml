@@ -1,0 +1,1 @@
+Component(aggregators, "Parser / ListParser / ContextParser", "request/validate", "Агрегаторы парсеров, которые приложение встраивает в свои контроллеры")

@@ -1,0 +1,1 @@
+Component(json_decoder, "JsonDecoder", "mrjson", "Декодирует JSON тела запроса в структуру (DisallowUnknownFields)")

@@ -1,0 +1,1 @@
+Component(http_module, "HttpModule / HttpController", "mrcore/initing", "Описание модуля и его контроллеров: название, разрешение по умолчанию, фабрики")

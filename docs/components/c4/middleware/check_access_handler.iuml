@@ -1,0 +1,1 @@
+Component(check_access_handler, "CheckAccessHandler", "middleware", "Проверяет токен, привилегию и разрешение пользователя; передаёт данные пользователя во внутренних заголовках")

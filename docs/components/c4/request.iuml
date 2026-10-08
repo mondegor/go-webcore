@@ -1,0 +1,1 @@
+Container(request, "request", "Go package", "Интерфейсы и реализации парсеров HTTP-запроса и их агрегаторы (request/parser, request/validate)")

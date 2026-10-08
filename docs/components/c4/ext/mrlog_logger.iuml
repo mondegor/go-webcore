@@ -1,0 +1,1 @@
+Component_Ext(logger, "Logger", "go-core/mrlog", "Логирует сообщения в системном журнале")

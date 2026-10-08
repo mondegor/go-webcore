@@ -1,0 +1,1 @@
+Component(observe_wrappers, "RequestReader / ResponseWriter", "observe", "Обёртки запроса и ответа, считающие размеры и сохраняющие начало тел для трассировки")
