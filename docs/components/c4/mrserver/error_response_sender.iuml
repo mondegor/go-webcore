@@ -1,0 +1,1 @@
+Component(error_response_sender, "ErrorResponseSender", "mrserver", "Интерфейс отправки ответов об ошибках: SendError(w, r, err)")

@@ -1,0 +1,86 @@
+@startuml
+!include <C4/C4_Component>
+
+' mrserver
+!include components/c4/mrserver/cacheable_response_writer.iuml
+!include components/c4/mrserver/error_response_sender.iuml
+!include components/c4/mrserver/error_status_mapper.iuml
+!include components/c4/mrserver/http_controller.iuml
+!include components/c4/mrserver/http_handler.iuml
+!include components/c4/mrserver/http_router.iuml
+!include components/c4/mrserver/request_observe.iuml
+!include components/c4/mrserver/request_stat.iuml
+!include components/c4/mrserver/response_encoder.iuml
+!include components/c4/mrserver/response_sender.iuml
+
+' router
+!include components/c4/router/router_adapter.iuml
+!include components/c4/router/url_path_param.iuml
+
+' httpserver
+!include components/c4/httpserver/server_adapter.iuml
+
+' middleware
+!include components/c4/middleware/check_access_handler.iuml
+!include components/c4/middleware/clear_internal_headers_handler.iuml
+!include components/c4/middleware/cors_middleware.iuml
+!include components/c4/middleware/handler_adapter.iuml
+!include components/c4/middleware/idempotency_handler.iuml
+!include components/c4/middleware/observer_handler.iuml
+!include components/c4/middleware/recover_handler.iuml
+!include components/c4/middleware/request_id_handler.iuml
+
+' request
+!include components/c4/request/aggregators.iuml
+!include components/c4/request/json_decoder.iuml
+!include components/c4/request/parser_interfaces.iuml
+!include components/c4/request/parsers.iuml
+!include components/c4/request/request_helpers.iuml
+
+' mrresp
+!include components/c4/mrresp/error_sender.iuml
+!include components/c4/mrresp/file_sender.iuml
+!include components/c4/mrresp/json_encoder.iuml
+!include components/c4/mrresp/sender.iuml
+!include components/c4/mrresp/system_handlers.iuml
+
+' stat
+!include components/c4/stat/observe_request.iuml
+!include components/c4/stat/observe_wrappers.iuml
+!include components/c4/stat/request_logger.iuml
+!include components/c4/stat/request_metrics.iuml
+!include components/c4/stat/request_tracer.iuml
+
+' initing
+!include components/c4/initing/create_http_controllers.iuml
+!include components/c4/initing/http_module.iuml
+!include components/c4/initing/prepare_handler.iuml
+
+' ext
+!include components/c4/ext/chi.iuml
+!include components/c4/ext/developer.iuml
+!include components/c4/ext/errors_handler.iuml
+!include components/c4/ext/go_core.iuml
+!include components/c4/ext/localizer.iuml
+!include components/c4/ext/mraccess.iuml
+!include components/c4/ext/mridempotency.iuml
+!include components/c4/ext/mrlog_logger.iuml
+!include components/c4/ext/mrtrace.iuml
+!include components/c4/ext/observability.iuml
+!include components/c4/ext/prometheus.iuml
+!include components/c4/ext/user.iuml
+!include components/c4/ext/validator.iuml
+
+' containers
+!include components/c4/app.iuml
+!include components/c4/app_controller.iuml
+!include components/c4/app_error_handler.iuml
+!include components/c4/httpserver.iuml
+!include components/c4/router.iuml
+!include components/c4/middleware.iuml
+!include components/c4/request.iuml
+!include components/c4/mrresp.iuml
+!include components/c4/stat.iuml
+!include components/c4/initing.iuml
+
+@enduml

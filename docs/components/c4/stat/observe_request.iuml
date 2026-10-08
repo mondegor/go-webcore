@@ -1,0 +1,1 @@
+Component(observe_request, "ObserveRequest", "mrserver/mrprometheus", "Реализация RequestObserve: гистограмма времени и счётчики размеров запросов")

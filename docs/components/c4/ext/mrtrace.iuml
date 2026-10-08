@@ -1,0 +1,1 @@
+Component_Ext(mrtrace, "ContextManager / Tracer", "go-core/mrtrace", "Идентификаторы процессов (RequestID, CorrelationID) в контексте и трассировка")

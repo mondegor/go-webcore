@@ -1,0 +1,1 @@
+Component(http_handler, "HttpHandler", "mrserver", "Метод, URL, разрешение (Permission) и функция HttpHandlerFunc, возвращающая error")

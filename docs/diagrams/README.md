@@ -1,5 +1,5 @@
-[Назад](../../README.md)
+[Назад](../../mrserver/README.md)
 ---
 
-## High-level design примера архитектуры обработки ошибок
+## High-level design архитектуры обработки HTTP-запросов
 ![image](../resources/diagrams/c4/hld.svg)

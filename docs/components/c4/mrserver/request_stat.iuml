@@ -1,0 +1,1 @@
+Component(request_stat, "RequestStat / RequestContainer", "mrserver", "Интерфейс получателя статистики завершённого запроса и контейнер, рассылающий её нескольким получателям")

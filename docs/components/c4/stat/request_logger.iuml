@@ -1,0 +1,1 @@
+Component(request_logger, "RequestLogger", "stat", "Логирует статус, размеры и время выполнения запроса")

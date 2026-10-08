@@ -1,0 +1,1 @@
+Component_Ext(mridempotency, "Provider", "go-core/mridempotency", "Хранилище ключей идемпотентности и закэшированных ответов")

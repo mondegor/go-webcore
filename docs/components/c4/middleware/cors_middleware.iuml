@@ -1,0 +1,1 @@
+Component(cors_middleware, "mrrscors.Middleware", "mrrscors", "CORS middleware на основе rs/cors, обрабатывает preflight-запросы")

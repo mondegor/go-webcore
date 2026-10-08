@@ -1,0 +1,1 @@
+Component(create_http_controllers, "CreateHttpControllers", "mrcore/initing", "Создаёт контроллеры модулей, наследует разрешение модуля и применяет операции к обработчикам")

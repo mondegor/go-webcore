@@ -1,0 +1,1 @@
+Component(response_encoder, "ResponseEncoder", "mrserver", "Интерфейс кодировщика ответов (Content-Type, Marshal); реализация JsonEncoder в mrjson")

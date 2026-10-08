@@ -1,0 +1,1 @@
+Component(prepare_handler, "WithPermission / WithCheckAccessMiddleware", "mrcore/initing", "Операции над HttpHandler: разрешение по умолчанию, префикс группы и обёртка проверкой доступа")

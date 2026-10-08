@@ -1,0 +1,1 @@
+Component_Ext(mraccess, "UserProvider / RightsRegistry", "go-core/mraccess", "Получение пользователя по токену доступа, проверка привилегий и разрешений")

@@ -1,0 +1,1 @@
+System_Ext(go_core, "go-core", "Библиотека с интерфейсами и базовыми реализациями: errors, mrlog, mrtrace, mraccess, mridempotency, mrtype")

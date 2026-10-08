@@ -1,0 +1,32 @@
+@startuml
+!include <C4/C4_Component>
+
+' title Статистика HTTP-запросов
+
+Boundary(mrserver_stat, "Статистика HTTP-запросов") {
+  !include components/c4/mrserver/request_stat.iuml
+  !include components/c4/mrserver/request_observe.iuml
+  !include components/c4/stat/observe_wrappers.iuml
+  !include components/c4/stat/request_logger.iuml
+  !include components/c4/stat/request_metrics.iuml
+  !include components/c4/stat/request_tracer.iuml
+  !include components/c4/stat/observe_request.iuml
+}
+
+!include components/c4/middleware/observer_handler.iuml
+!include components/c4/ext/mrlog_logger.iuml
+!include components/c4/ext/mrtrace.iuml
+!include components/c4/ext/prometheus.iuml
+
+Rel(observer_handler, observe_wrappers, "Оборачивает запрос и ответ")
+Rel(observer_handler, request_stat, "Передаёт статистику завершённого запроса (Emit)")
+Rel(request_logger, request_stat, "Реализует интерфейс")
+Rel(request_metrics, request_stat, "Реализует интерфейс")
+Rel(request_tracer, request_stat, "Реализует интерфейс")
+Rel(request_logger, logger, "Логирует запрос")
+Rel(request_tracer, mrtrace, "Трассирует запрос")
+Rel(request_metrics, request_observe, "Передаёт метрики запроса")
+Rel(observe_request, request_observe, "Реализует интерфейс")
+Rel(prometheus, observe_request, "Собирает метрики (Collectors)")
+
+@enduml

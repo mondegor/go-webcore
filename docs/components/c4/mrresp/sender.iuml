@@ -1,0 +1,1 @@
+Component(sender, "Sender", "mrresp", "Отправляет успешные ответы: Send, SendBytes, SendNoContent")

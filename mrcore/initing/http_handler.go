@@ -11,6 +11,7 @@ import (
 
 	"github.com/mondegor/go-webcore/mrserver"
 	"github.com/mondegor/go-webcore/mrserver/middleware"
+	"github.com/mondegor/go-webcore/mrserver/request"
 )
 
 type (
@@ -23,7 +24,7 @@ type (
 // ==================|====================|============================|=================|===============|
 // Group privilege   | Handler permission |           Actions          | Access errors   | Init/set user |
 // ==================|====================|============================|=================|===============|
-//  public           | everyone           | no                         | no              | no            |
+//  public           | everyone           | clear internal headers     | no              | no            |
 // ------------------|--------------------|----------------------------|-----------------|---------------|
 //  public           | guest-only         | check token                | if exists: 403  | no            |
 // ------------------|--------------------|----------------------------|-----------------|---------------|
@@ -56,12 +57,20 @@ func WithPermission(permission string) PrepareHandlerFunc {
 // middleware проверки доступа. Middleware проверяет токен доступа, привилегии и разрешения пользователя.
 //
 // Логика работы зависит от комбинации Privilege группы и Permission обработчика:
-//   - public + everyone: без проверок (доступно всем, включая гостя);
-//   - privilege + everyone: доступ по наличию привилегии (401 без токена, 403 без привилегии; разрешение не проверяется);
-//   - public + guest-only: проверка токена (возврат 403 если токен существует);
-//   - any-user: требуется только аутентификация (возврат 401 без токена; разрешение не проверяется);
+//   - public + everyone: без проверок (доступно всем, включая гостя), из запроса удаляются внутренние заголовки;
+//   - privilege + everyone: доступ по наличию привилегии (401 без токена, 403 без привилегии);
+//   - public + guest-only: проверка токена (возврат 403 если токен существует), из запроса удаляются внутренние заголовки;
+//   - any-user: требуется только аутентификация (возврат 401 без токена), в приватной группе ещё и привилегия (403);
 //   - public/privilege + permission: проверка токена/привилегии/разрешения (возврат 401/403);
 //   - privilege + guest-only: предупреждение в лог и возврат 403.
+//
+// Служебные разрешения everyone и any-user передаются в systemPermissions провайдера ролей,
+// поэтому они есть у каждой роли. Незарегистрированное разрешение (в том числе служебное,
+// если его забыли передать) приводит к предупреждению в лог и возврату 403.
+//
+// Если userProvider не задан, в лог пишется ошибка, а обработчики, которым требуется пользователь,
+// всегда возвращают 401 (public + everyone/guest-only работают как обычно, а privilege + guest-only
+// и незарегистрированное разрешение по-прежнему дают предупреждение в лог и 403).
 func WithCheckAccessMiddleware(
 	logger mrlog.Logger,
 	actionGroup mraccess.ActionGroup,
@@ -85,14 +94,6 @@ func WithCheckAccessMiddleware(
 			"actionGroup", actionGroup.Name,
 			"error", errors.ErrInternalNilPointer.New(),
 		)
-
-		return func(handler mrserver.HttpHandler) mrserver.HttpHandler {
-			handler.Func = func(_ http.ResponseWriter, _ *http.Request) error {
-				return errors.ErrHttpClientUnauthorized
-			}
-
-			return handler
-		}
 	}
 
 	return func(handler mrserver.HttpHandler) mrserver.HttpHandler {
@@ -100,16 +101,22 @@ func WithCheckAccessMiddleware(
 
 		// everyone: доступно всем без проверок
 		if actionGroup.Privilege == mraccess.PrivilegePublic && handler.Permission == mraccess.PermissionEveryone {
+			handler.Func = middleware.ClearInternalHeadersHandler()(handler.Func)
+
 			return handler
 		}
 
 		if actionGroup.Privilege == mraccess.PrivilegePublic && handler.Permission == mraccess.PermissionGuestOnly {
-			middlewareFunc := middleware.CheckAccessTokenHandler(
-				logger,
-				handler.URL,
-			)
+			next := middleware.ClearInternalHeadersHandler()(handler.Func)
 
-			handler.Func = middlewareFunc(handler.Func)
+			handler.Func = func(w http.ResponseWriter, r *http.Request) error {
+				// guest-only доступен только неавторизованным пользователям
+				if request.AccessToken(r) != "" {
+					return errors.ErrHttpAccessForbidden
+				}
+
+				return next(w, r)
+			}
 
 			return handler
 		}
@@ -142,6 +149,15 @@ func WithCheckAccessMiddleware(
 
 			handler.Func = func(_ http.ResponseWriter, _ *http.Request) error {
 				return errors.ErrHttpAccessForbidden
+			}
+
+			return handler
+		}
+
+		// без UserProvider пользователя невозможно аутентифицировать
+		if userProvider == nil {
+			handler.Func = func(_ http.ResponseWriter, _ *http.Request) error {
+				return errors.ErrHttpClientUnauthorized
 			}
 
 			return handler

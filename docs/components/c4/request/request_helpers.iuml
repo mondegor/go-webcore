@@ -1,0 +1,1 @@
+Component(request_helpers, "AccessToken / CorrelationID", "request", "Извлечение токена доступа (Bearer) и CorrelationID из заголовков")

@@ -1,0 +1,49 @@
+@startuml
+!include <C4/C4_Component>
+
+'LAYOUT_LEFT_RIGHT()
+LAYOUT_WITH_LEGEND()
+
+' title Верхнеуровневая архитектура обработки HTTP-запросов
+
+!include components/c4/ext/user.iuml
+!include components/c4/ext/developer.iuml
+!include components/c4/ext/observability.iuml
+!include components/c4/ext/go_core.iuml
+
+Container_Boundary(project, "Конкретный проект") {
+  !include components/c4/app.iuml
+  !include components/c4/app_controller.iuml
+  !include components/c4/app_error_handler.iuml
+}
+
+Boundary(go_webcore, "Библиотека go-webcore (mrserver)") {
+  !include components/c4/httpserver.iuml
+  !include components/c4/router.iuml
+  !include components/c4/middleware.iuml
+  !include components/c4/request.iuml
+  !include components/c4/mrresp.iuml
+  !include components/c4/stat.iuml
+  !include components/c4/initing.iuml
+}
+
+Rel(user, httpserver, "Отправляет HTTP-запросы")
+Rel(app, initing, "Описывает модули и контроллеры, собирает их с проверкой доступа")
+Rel(app, router, "Регистрирует middleware и контроллеры")
+Rel(app, httpserver, "Запускает и останавливает сервер")
+Rel(httpserver, router, "Передаёт запросы")
+Rel(router, middleware, "Пропускает запрос через цепочку middleware")
+Rel(middleware, app_controller, "Вызывает обработчик (HttpHandlerFunc)")
+Rel(middleware, stat, "Передаёт статистику запроса")
+Rel(app_controller, request, "Разбирает и валидирует запрос")
+Rel(app_controller, mrresp, "Отправляет успешный ответ")
+Rel(middleware, mrresp, "Отправляет ответ по ошибке, возвращённой обработчиком")
+Rel(mrresp, app_error_handler, "Передаёт ошибки на обработку")
+Rel(go_webcore, go_core, "Использует интерфейсы errors, mrlog, mrtrace, mraccess, mridempotency")
+Rel(app_error_handler, observability, "Логирует, трассирует ошибки и отправляет информацию о них")
+Rel(stat, observability, "Логи, метрики и трассировка запросов")
+Rel(mrresp, user, "Возвращает ответ; при ошибке - Problem Details с ErrorTraceID")
+
+Rel(developer, observability, "Анализирует запросы и ошибки")
+
+@enduml

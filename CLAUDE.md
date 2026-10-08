@@ -43,7 +43,7 @@ The repo is organized into independent `mr*` top-level packages:
 - **mrtests** — test helpers (`helpers/http_request.go`).
 - **mrdebug** — debug utilities: `MultipartForm`/`MultipartFileHeader` (log multipart contents) and `PrepareNopServiceWithTimeoutToStart` (a nop service for testing process start/stop, e.g. with an app runner).
 
-`examples/` contains standalone runnable `main.go` demos (`validator`, `smtpmail`). `docs/` holds PlantUML diagrams (`make plantuml` regenerates SVGs). `grafana-dashboards/` ships ready-made dashboards for the Prometheus metrics.
+`examples/` contains standalone runnable `main.go` demos (`validator`, `smtpmail`). `mrserver/README.md` (Russian) is the authoritative description of the HTTP infrastructure (request lifecycle, access-check table, subsystems). `docs/` holds its C4 diagrams, laid out like go-core's: PlantUML sources (`docs/packages/c4/mrserver_*.puml`, `docs/diagrams/c4/hld.puml`, one shared `.iuml` per C4 element in `docs/components/c4/`, catalogued in `_list.puml`) and SVGs in `docs/resources/` referenced from `mrserver/README.md`; `make plantuml` regenerates them (it needs a TTY and an existing `docs/resources/`). `grafana-dashboards/` ships ready-made dashboards for the Prometheus metrics.
 
 ## Conventions worth knowing
 

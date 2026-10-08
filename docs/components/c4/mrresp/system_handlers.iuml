@@ -1,0 +1,1 @@
+Component(system_handlers, "Служебные обработчики", "mrresp", "404/405/500 в формате RFC 9457, liveness/readiness, информация о системе")

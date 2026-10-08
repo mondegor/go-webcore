@@ -1,0 +1,1 @@
+Component_Ext(errors_handler, "Handler", "go-core/errors/handler", "Единая точка обработки ошибок (логирование, трассировка, мониторинг)")

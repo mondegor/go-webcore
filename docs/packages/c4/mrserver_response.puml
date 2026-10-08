@@ -1,0 +1,34 @@
+@startuml
+!include <C4/C4_Component>
+
+' title Формирование ответов и ошибок
+
+Boundary(mrserver_response, "Формирование ответов и ошибок") {
+  !include components/c4/mrserver/response_encoder.iuml
+  !include components/c4/mrserver/response_sender.iuml
+  !include components/c4/mrserver/error_response_sender.iuml
+  !include components/c4/mrserver/error_status_mapper.iuml
+  !include components/c4/mrresp/sender.iuml
+  !include components/c4/mrresp/file_sender.iuml
+  !include components/c4/mrresp/error_sender.iuml
+  !include components/c4/mrresp/system_handlers.iuml
+  !include components/c4/mrresp/json_encoder.iuml
+}
+
+!include components/c4/middleware/handler_adapter.iuml
+!include components/c4/ext/errors_handler.iuml
+!include components/c4/ext/localizer.iuml
+
+Rel(json_encoder, response_encoder, "Реализует интерфейс")
+Rel(sender, response_sender, "Реализует ResponseSender")
+Rel(file_sender, response_sender, "Реализует FileResponseSender")
+Rel(file_sender, sender, "Встраивает базовый Sender")
+Rel(sender, response_encoder, "Сериализует данные ответа")
+Rel(error_sender, error_response_sender, "Реализует интерфейс")
+Rel(handler_adapter, error_response_sender, "Передаёт ошибку обработчика")
+Rel(error_sender, errors_handler, "Передаёт ошибку на обработку (логирование, трассировка)")
+Rel(error_sender, error_status_mapper, "Определяет HTTP-статус системных и внутренних ошибок")
+Rel(error_sender, localizer, "Переводит сообщение об ошибке на язык клиента")
+Rel(error_sender, response_encoder, "Берёт Content-Type для ответа об ошибке")
+
+@enduml

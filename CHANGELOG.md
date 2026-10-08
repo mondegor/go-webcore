@@ -1,6 +1,22 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2026-10-08
+### Added
+- Описание пакета `mrserver` (`mrserver/README.md`): ключевые решения, таблица проверки доступа,
+  жизненный цикл HTTP-запроса, подсистемы пакета;
+- C4-диаграммы пакета `mrserver` в `docs/` (компоненты, подсистемы, верхнеуровневая архитектура)
+  по аналогии с документацией `go-core`;
+- `middleware.ClearInternalHeadersHandler` - удаляет из запроса подставленные клиентом внутренние заголовки,
+  которые устанавливает `CheckAccessHandler` (`X-Internal-UserId-Group`, `X-Internal-Session-Id`,
+  `X-Internal-Lang-Code`, `X-Internal-Time-Zone`); подключается `initing.WithCheckAccessMiddleware`
+  для public + everyone/guest-only.
+
+### Removed
+- **ВНИМАНИЕ**: удалён `middleware.CheckAccessTokenHandler`, проверка guest-only (отсутствие токена доступа
+  и удаление внутренних заголовков) выполняется в `initing.WithCheckAccessMiddleware`;
+- Устаревшие материалы из `docs/`, не относящиеся к библиотеке (`modules.md`, диаграмма запуска приложения).
+
 ## 2026-10-07
 ### Added
 - Пакет `mrserver/request/validate` с агрегирующими парсерами HTTP-запроса

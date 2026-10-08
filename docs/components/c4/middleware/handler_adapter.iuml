@@ -1,0 +1,1 @@
+Component(handler_adapter, "HandlerAdapter", "middleware", "Преобразует HttpHandlerFunc в http.HandlerFunc; возвращённую ошибку передаёт в ErrorResponseSender")

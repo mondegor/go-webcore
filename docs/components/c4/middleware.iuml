@@ -1,0 +1,1 @@
+Container(middleware, "middleware", "Go package", "Middleware запроса: перехват паник, RequestID, сбор статистики, проверка доступа, идемпотентность, адаптер HttpHandlerFunc")

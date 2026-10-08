@@ -1,0 +1,30 @@
+@startuml
+!include <C4/C4_Component>
+
+' title Разбор HTTP-запроса
+
+Boundary(mrserver_request, "Разбор HTTP-запроса") {
+  !include components/c4/request/parser_interfaces.iuml
+  !include components/c4/request/request_helpers.iuml
+  !include components/c4/request/parsers.iuml
+  !include components/c4/request/aggregators.iuml
+  !include components/c4/request/json_decoder.iuml
+}
+
+!include components/c4/app_controller.iuml
+!include components/c4/router/url_path_param.iuml
+!include components/c4/middleware/check_access_handler.iuml
+!include components/c4/ext/validator.iuml
+!include components/c4/ext/localizer.iuml
+
+Rel(app_controller, aggregators, "Встраивает агрегаторы или отдельные интерфейсы парсеров")
+Rel(aggregators, parser_interfaces, "Объединяют интерфейсы: базовые, списка, контекста запроса")
+Rel(parsers, parser_interfaces, "Реализуют интерфейсы")
+Rel(parsers, url_path_param, "Получают параметры пути через функцию конкретного маршрутизатора")
+Rel(parsers, json_decoder, "Декодируют тело запроса (Validator)")
+Rel(parsers, validator, "Валидируют структуру по тегам (Validator)")
+Rel(parsers, localizer, "Выбирают локализатор по языку запроса (Locale)")
+Rel(parsers, check_access_handler, "Читают данные пользователя из внутренних заголовков (User, Locale, TimeZone)")
+Rel(json_decoder, parser_interfaces, "Реализует ParserDecode")
+
+@enduml

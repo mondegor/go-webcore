@@ -1,0 +1,1 @@
+Container(router, "mrchi / mrjulienrouter", "Go package", "Адаптеры маршрутизаторов, реализующие HttpRouter: цепочка middleware, регистрация контроллеров, 404/405")

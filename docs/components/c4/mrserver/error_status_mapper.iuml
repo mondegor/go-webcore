@@ -1,0 +1,1 @@
+Component(error_status_mapper, "ErrorStatusMapper", "mrserver", "Маппинг кода ошибки в HTTP-статус 4xx/5xx (NewHttpErrorStatusMapper)")

@@ -1,0 +1,1 @@
+Component(response_sender, "ResponseSender / FileResponseSender", "mrserver", "Интерфейсы отправки успешных ответов и файлов")

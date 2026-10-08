@@ -1,0 +1,1 @@
+Component(http_router, "HttpRouter", "mrserver", "Интерфейс маршрутизатора: RegisterMiddleware, Register(controllers), HandlerFunc, ServeHTTP")
