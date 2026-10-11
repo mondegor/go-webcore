@@ -12,19 +12,23 @@ This module is tightly coupled to the sibling module `github.com/mondegor/go-cor
 
 ## Commands
 
-Development tasks go through the `mrcmd` tool (see https://github.com/mondegor/mrcmd) wrapped by the `Makefile`:
+Tooling is driven by [`mrcmd`](https://github.com/mondegor/mrcmd) with the `go-dev` plugin; `make` targets wrap it. When `mrcmd` is not installed, use the direct equivalents.
 
-- `make lint` — run gofumpt/goimports/gci formatting + golangci-lint (config in `.golangci.yaml`, golangci-lint v2); `mrcmd go-dev lint` runs only golangci-lint
-- `make test` — run all tests
-- `make test-report` — tests with coverage report (`test-coverage-full.html`)
-- `make generate` — run `go:generate`
-- `make deps` — download dependencies
-- `make deps-upgrade` — upgrade dependencies (`go get -u ./...` + `go mod tidy`)
-- `make plantuml` — render `.puml` diagrams under `docs/` to images
-- `make check-and-fix` — generate + format + lint + test + plantuml (full pre-commit pass; defined in `Makefile.mk`)
+| Task | make | mrcmd | Without mrcmd |
+|------|------|-------|---------------|
+| Download deps | `make deps` | `mrcmd go-dev deps` | `go get ./... && go mod tidy` |
+| Upgrade deps | `make deps-upgrade` | `mrcmd go-dev get -u ./...` + `mrcmd go-dev tidy` | `go get -u ./... && go mod tidy` |
+| Codegen | `make generate` | `mrcmd go-dev generate` | `go generate ./...` |
+| Format + lint | `make lint` | `mrcmd go-dev fmt` + `mrcmd go-dev lint` | `golangci-lint fmt && golangci-lint run ./...` |
+| Format diff only | — | `mrcmd go-dev fmt-diff` | `golangci-lint fmt -d` |
+| Validate lint config | `make lint-verify` | `mrcmd go-dev lint-verify` | `golangci-lint config verify` (needs network access to golangci-lint.run; not part of CI) |
+| Run all tests | `make test` | `mrcmd go-dev test` | `go test -cover ./...` |
+| Coverage report (`test-coverage-full.html`) | `make test-report` | `mrcmd go-dev test-report` | — |
+| Diagrams from `.puml` (`docs/`) | `make plantuml` | `mrcmd plantuml build-all` | — |
 
-Without `mrcmd` installed:
-- All tests: `go test ./...`
+- Extra local make targets can be added in a gitignored `Makefile.mk` (included by `Makefile` if present).
+- Formatters (gofmt, goimports, gci, gofumpt) and linters are both configured in `.golangci.yaml` (golangci-lint v2); `golangci-lint fmt` skips generated files.
+- Dev tools are installed via `mrcmd go-dev install-tools`: `golangci-lint` is pinned in `.env.dist` to the version CI uses (bump both together); `mockgen` and `gotext` are disabled in go-dev and not used by this library.
 - Single package: `go test ./mrserver/request/parser/`
 - Single test: `go test -run TestName -v ./mrserver/request/parser/`
 
@@ -50,5 +54,5 @@ The repo is organized into independent `mr*` top-level packages:
 - `.golangci.yaml` is strict: `gochecknoglobals` and `gochecknoinits` are enabled (no global vars or `init()` funcs), `godot` requires comments to end with a period, error sentinels must be `Err`-prefixed and error types `Error`-suffixed (`errname`). Run `make lint` before considering work done.
 - Sentinel errors are built with go-core `errors` factories (e.g. `errors.NewInternalProto(...)`, see `mrclient/mail/message.go`), not `errors.New`.
 - Adapter packages named `mrprometheus` exist under multiple parents (`mrserver/mrprometheus`, `mrstorage/mrprometheus`) — they are distinct packages; check the import path.
-- `.env`, `Makefile.mk`, `tmp/`, `.cache/` are local and gitignored (`.env.dist` is the committed template for `mrcmd`).
+- `.env`, `tmp/`, `.cache/` are local and gitignored (`.env.dist` is the committed template for `mrcmd`).
 - Project skills live in `.claude/skills/`: `go-style-guide` (code style), `check-go-style` (style compliance check), `audit-go-package` (deep package audit).

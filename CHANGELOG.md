@@ -1,6 +1,18 @@
 # GoWebCore Changelog
 Все изменения библиотеки GoWebCore будут документироваться на этой странице.
 
+## 2026-10-11
+### Changed
+- Форматирование кода переведено на `golangci-lint fmt` (форматтеры и их настройки берутся
+  из раздела `formatters` в `.golangci.yaml`, сгенерированные файлы пропускаются):
+  `make lint` вызывает `mrcmd go-dev fmt` вместо `fmt`, `fmti`, `fmti2`;
+  для просмотра изменений без записи добавлена команда `mrcmd go-dev fmt-diff`;
+- Из `.env.dist` удалены переменные `GO_DEV_IMPORTS_LOCAL_PREFIXES` и
+  `GO_DEV_TOOLS_INSTALL_{GOFUMPT,GOIMPORTS,GCI}_VERSION`: утилиты `gofumpt`, `goimports`, `gci`
+  больше не нужны, локальный префикс imports задаётся только в `.golangci.yaml`;
+- В `.env.dist` закреплена версия `golangci-lint` v2.11.4 — та же, что в CI;
+  в уже созданном `.env` обновите `GO_DEV_TOOLS_INSTALL_GOLANGCI_LINT_VERSION` вручную;
+
 ## 2026-10-08
 ### Added
 - Описание пакета `mrserver` (`mrserver/README.md`): ключевые решения, таблица проверки доступа,
